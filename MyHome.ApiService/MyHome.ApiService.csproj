@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>8e9990a2-0623-4d24-a38b-23d5046094dd</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyHome.Core\MyHome.Core.csproj" />
+    <ProjectReference Include="..\MyHome.ServiceDefaults\MyHome.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+	<PackageReference Include="Cronos" Version="0.8.4" />
+	  <PackageReference Include="AsyncAwaitBestPractices" Version="9.0.0" />
+
+  </ItemGroup>
+
+</Project>

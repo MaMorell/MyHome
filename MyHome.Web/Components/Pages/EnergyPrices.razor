@@ -1,0 +1,50 @@
+﻿@page "/energyprices"
+@using MyHome.Web.Dtos
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+
+@inject EnergyPriceClient EnergyPriceClient
+
+<PageTitle>Elprisreglering</PageTitle>
+
+<h1>Elprisreglering</h1>
+
+<p>Hur värmen kommer justeras baserat på elpriset.</p>
+
+@if (prices == null)
+{
+    <p><em>Laddar...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Pris (sek)</th>
+                <th>Prisnivå</th>
+                <th>Värmereglering</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var price in prices)
+            {
+                <tr>
+                    <td>@price.Time.ToString()</td>
+                    <td>@Math.Round(price.Price, 2) SEK</td>
+                    <td>@price.PriceLevel.ToString()</td>
+                    <td>@price.RelativePriceLevel</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<EnergyPriceDto>? prices;
+
+    protected override async Task OnInitializedAsync()
+    {
+        prices = await EnergyPriceClient.GetEnergyPricesAsync();
+    }
+}
