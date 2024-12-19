@@ -27,7 +27,7 @@ public class HeatResulatorService(
         }
 
         var currentHour = DateTime.Now.Hour;
-        var price = HeatRegulator.CreateEneryPrices(prices, currentHour);
+        var price = EnergyPriceCalculator.CreateEneryPrices(prices, currentHour);
         var heatOffset = HomeConfiguration.GetHeatOffset(price.RelativePriceLevel);
         var targetTemprature = HomeConfiguration.GetTargetTemperature(price.RelativePriceLevel);
         var comfortMode = HomeConfiguration.GetComfortMode(price.RelativePriceLevel);

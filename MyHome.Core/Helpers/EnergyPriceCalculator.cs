@@ -5,8 +5,10 @@ using Tibber.Sdk;
 
 namespace MyHome.Core.Helpers;
 
-public class HeatRegulator
+public class EnergyPriceCalculator
 {
+    private const decimal ExtremelyHighPrice = 3m;
+
     public static EnergyPrice CreateEneryPrices(ICollection<Price> prices, int hour)
     {
         if (hour < 0 || hour > 24)
@@ -39,14 +41,24 @@ public class HeatRegulator
             }).ToList(); ;
     }
 
-    private static RelativePriceLevel GetDayPriceLevel(decimal veryHighThreshold, decimal highThreshold, decimal lowThreshold, decimal veryLowThreshold, decimal? price, PriceLevel? priceLevel)
+    private static RelativePriceLevel GetDayPriceLevel(
+        decimal veryHighThreshold,
+        decimal highThreshold,
+        decimal lowThreshold,
+        decimal veryLowThreshold,
+        decimal? price,
+        PriceLevel? priceLevel)
     {
         if (price is null || priceLevel is null)
         {
             throw new ArgumentException($"Price or PriceLevel is null. Price: {price}. PriceLevel: {priceLevel}");
         }
 
-        if (price >= veryHighThreshold && priceLevel == PriceLevel.VeryExpensive)
+        if (price >= veryHighThreshold && priceLevel == PriceLevel.VeryExpensive && price > ExtremelyHighPrice)
+        {
+            return RelativePriceLevel.Extreme;
+        }
+        else if (price >= veryHighThreshold && priceLevel == PriceLevel.VeryExpensive)
         {
             return RelativePriceLevel.VeryHigh;
         }

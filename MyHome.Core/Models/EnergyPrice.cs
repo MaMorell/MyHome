@@ -10,6 +10,7 @@ public enum RelativePriceLevel
     Normal,
     High,
     VeryHigh,
+    Extreme,
 }
 
 public record EnergyPrice

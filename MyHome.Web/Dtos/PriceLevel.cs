@@ -13,5 +13,7 @@ public enum PriceLevel
     [EnumMember(Value = "EXPENSIVE")]
     Expensive,
     [EnumMember(Value = "VERY_EXPENSIVE")]
-    VeryExpensive
+    VeryExpensive,
+    [EnumMember(Value = "EXTREME")]
+    Extreme
 }

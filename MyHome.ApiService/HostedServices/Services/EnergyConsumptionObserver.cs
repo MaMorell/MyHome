@@ -63,34 +63,26 @@ public sealed class EnergyConsumptionObserver : IObserver<RealTimeMeasurement>
 
     private async Task HandleConsumptionLastHour(decimal accumulatedConsumptionLastHour)
     {
-        try
+        if (accumulatedConsumptionLastHour < LastHourConsumptionLimitKWH)
         {
-            if (accumulatedConsumptionLastHour < LastHourConsumptionLimitKWH)
-            {
-                return;
-            }
-
-            using var scope = _serviceScopeFactory.CreateScope();
-            var heatRegulatorService = scope.ServiceProvider.GetRequiredService<HeatResulatorService>();
-
-            _logger.LogInformation(
-                "Accumulated Consumption Last Hour {Consumption} is above the threshold {Threshold} kWh. " +
-                "Applying Max savings",
-                accumulatedConsumptionLastHour,
-                LastHourConsumptionLimitKWH);
-
-            await heatRegulatorService.SetHeat(
-                HomeConfiguration.HeatOffsets.Economic,
-                HomeConfiguration.Temperatures.Economic,
-                HomeConfiguration.ComfortModes.Economic,
-                CancellationToken.None);
-
-            _lastEnergyPriceAdjustmentCheck = DateTime.Now;
+            return;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Heat regulation cycle failed");
-            throw;
-        }
+
+        using var scope = _serviceScopeFactory.CreateScope();
+        var heatRegulatorService = scope.ServiceProvider.GetRequiredService<HeatResulatorService>();
+
+        _logger.LogInformation(
+            "Accumulated Consumption Last Hour {Consumption} is above the threshold {Threshold} kWh. " +
+            "Applying Max savings",
+            accumulatedConsumptionLastHour,
+            LastHourConsumptionLimitKWH);
+
+        await heatRegulatorService.SetHeat(
+            HomeConfiguration.HeatOffsets.MaxSavings,
+            HomeConfiguration.Temperatures.MaxSavings,
+            HomeConfiguration.ComfortModes.MaxSavings,
+            CancellationToken.None);
+
+        _lastEnergyPriceAdjustmentCheck = DateTime.Now;
     }
 }

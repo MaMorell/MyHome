@@ -13,13 +13,13 @@ public class EnergyPriceService(IEnergyRepository energyRepository)
         var result = new List<EnergyPrice>();
 
         var todaysPrices = await _energyRepository.GetTodaysEnergyPrices();
-        result.AddRange(HeatRegulator.CreateEneryPrices(todaysPrices));
+        result.AddRange(EnergyPriceCalculator.CreateEneryPrices(todaysPrices));
 
         if (DateTime.Now.Hour > 14)
         {
             var tomorrowsPrices = await _energyRepository.GetTomorrowsEnergyPrices();
 
-            result.AddRange(HeatRegulator.CreateEneryPrices(tomorrowsPrices));
+            result.AddRange(EnergyPriceCalculator.CreateEneryPrices(tomorrowsPrices));
         }
 
         return result;
