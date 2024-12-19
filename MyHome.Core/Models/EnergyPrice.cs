@@ -4,9 +4,10 @@ namespace MyHome.Core.Models;
 
 public enum RelativePriceLevel
 {
-    Normal,
+    Unknown,
     VeryLow,
     Low,
+    Normal,
     High,
     VeryHigh,
 }

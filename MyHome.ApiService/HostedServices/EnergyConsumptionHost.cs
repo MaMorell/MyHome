@@ -12,7 +12,7 @@ public sealed class EnergyConsumptionHost(
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
 
     private readonly TimeSpan _workingHoursStart = TimeSpan.FromHours(7);  // 07:00
-    private readonly TimeSpan _workingHoursEnd = TimeSpan.FromHours(19);   // 19:00
+    private readonly TimeSpan _workingHoursEnd = TimeSpan.FromHours(21);   // 19:00
     private readonly TimeSpan _schedulerInterval = TimeSpan.FromMinutes(1);
 
     private Guid _homeId;

@@ -1,5 +1,8 @@
-﻿@page "/energyprices"
+﻿@page "/table"
+@using MudBlazor.Components.Chart.Models
 @using MyHome.Web.Dtos
+@using MudBlazor
+
 @attribute [StreamRendering(true)]
 @attribute [OutputCache(Duration = 5)]
 
@@ -7,44 +10,47 @@
 
 <PageTitle>Elprisreglering</PageTitle>
 
-<h1>Elprisreglering</h1>
+<MudContainer Class="ma-4">
+    <h1>Elprisreglering</h1>
 
-<p>Hur värmen kommer justeras baserat på elpriset.</p>
+    <MudTable Class="ma-4" Items="prices" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+        <HeaderContent>
+            <MudTh>Datum</MudTh>
+            <MudTh>Pris (sek)</MudTh>
+            <MudTh>Prisnivå</MudTh>
+            <MudTh>Värmereglering</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Datum">@context.Time.ToString()</MudTd>
+            <MudTd DataLabel="Pris (sek)">@Math.Round(@context.Price, 2) SEK</MudTd>
+            <MudTd DataLabel="Prisnivå">@context.PriceLevel.ToString()</MudTd>
+            <MudTd DataLabel="Värmereglering">@context.RelativePriceLevel</MudTd>
 
-@if (prices == null)
-{
-    <p><em>Laddar...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Datum</th>
-                <th>Pris (sek)</th>
-                <th>Prisnivå</th>
-                <th>Värmereglering</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var price in prices)
-            {
-                <tr>
-                    <td>@price.Time.ToString()</td>
-                    <td>@Math.Round(price.Price, 2) SEK</td>
-                    <td>@price.PriceLevel.ToString()</td>
-                    <td>@price.RelativePriceLevel</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
 
 @code {
-    private IEnumerable<EnergyPriceDto>? prices;
+    private IEnumerable<EnergyPriceDto> prices = new List<EnergyPriceDto>();
+    private bool _loading;
 
     protected override async Task OnInitializedAsync()
     {
-        prices = await EnergyPriceClient.GetEnergyPricesAsync();
+        _loading = true;
+
+        try
+        {
+            var pricesTask = EnergyPriceClient.GetEnergyPricesAsync();
+            var waitTask = Task.Delay(500);
+
+            await Task.WhenAll(pricesTask, waitTask);
+
+            prices = await pricesTask;
+        }
+        finally
+        {
+            _loading = false;
+        }
+
     }
 }

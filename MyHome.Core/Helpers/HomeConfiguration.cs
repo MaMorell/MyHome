@@ -16,7 +16,7 @@ public static class HomeConfiguration
     public static class ComfortModes
     {
         public const ComfortMode Baseline = ComfortMode.Normal;
-        public const ComfortMode Enhanced = ComfortMode.Luxury;
+        public const ComfortMode Enhanced = ComfortMode.Normal;
         public const ComfortMode Moderate = ComfortMode.Normal;
         public const ComfortMode Economic = ComfortMode.Economy;
         public const ComfortMode MaxSavings = ComfortMode.Economy;
@@ -25,8 +25,8 @@ public static class HomeConfiguration
     public static class Temperatures
     {
         public const int Baseline = 7;
-        public const int Enhanced = 12;
-        public const int Moderate = 10;
+        public const int Enhanced = 10;
+        public const int Moderate = 8;
         public const int Economic = 5;
         public const int MaxSavings = 5;
     }

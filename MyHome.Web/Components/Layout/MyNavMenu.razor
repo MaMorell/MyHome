@@ -1,0 +1,19 @@
+﻿@using MudBlazor
+
+<MudNavMenu Color="Color.Primary" Class="pa-2">
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+        Dashboard
+    </MudNavLink>
+    <MudNavLink Href="/charts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Timeline">
+        Priser - Graf
+    </MudNavLink>
+    <MudNavLink Href="/table" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TableChart">
+        Priser - Tabell
+    </MudNavLink>
+
+    @* Optional: Add a nested menu group *@
+    <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="false">
+        <MudNavLink Href="/profile" Match="NavLinkMatch.Prefix">Profile</MudNavLink>
+        <MudNavLink Href="/security" Match="NavLinkMatch.Prefix">Security</MudNavLink>
+    </MudNavGroup>
+</MudNavMenu>

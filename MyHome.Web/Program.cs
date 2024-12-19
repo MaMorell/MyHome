@@ -1,3 +1,4 @@
+using MudBlazor.Services;
 using MyHome.Web;
 using MyHome.Web.Components;
 
@@ -18,6 +19,7 @@ builder.Services.AddHttpClient<EnergyPriceClient>(client =>
         // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
         client.BaseAddress = new("https+http://apiservice");
     });
+builder.Services.AddMudServices();
 
 var app = builder.Build();
 

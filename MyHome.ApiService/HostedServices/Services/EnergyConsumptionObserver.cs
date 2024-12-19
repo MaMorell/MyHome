@@ -33,16 +33,6 @@ public sealed class EnergyConsumptionObserver : IObserver<RealTimeMeasurement>
 
     public void OnNext(RealTimeMeasurement value)
     {
-        _logger.LogInformation(
-            "Current power usage: {Power:N0} W (average: {AveragePower:N0} W); " +
-            "Consumption last hour: {Consumption:N3} kWh; " +
-            "Cost since last midnight: {Cost:N2} {Currency}",
-            value.Power,
-            value.AveragePower,
-            value.AccumulatedConsumptionLastHour,
-            value.AccumulatedCost,
-            value.Currency);
-
         var minutesSinceLastCheck = (DateTime.Now - _lastEnergyPriceAdjustmentCheck).Minutes;
         if (minutesSinceLastCheck < MinimumMinutesBetweenChecks)
         {
@@ -56,6 +46,16 @@ public sealed class EnergyConsumptionObserver : IObserver<RealTimeMeasurement>
                 minutesSinceLastCheck);
             return;
         }
+
+        _logger.LogInformation(
+            "Current power usage: {Power:N0} W (average: {AveragePower:N0} W); " +
+            "Consumption last hour: {Consumption:N3} kWh; " +
+            "Cost since last midnight: {Cost:N2} {Currency}",
+            value.Power,
+            value.AveragePower,
+            value.AccumulatedConsumptionLastHour,
+            value.AccumulatedCost,
+            value.Currency);
 
         HandleConsumptionLastHour(value.AccumulatedConsumptionLastHour)
             .SafeFireAndForget(e => _logger.LogError("Adjust heat failed: {ErrorMessage}", e.Message));

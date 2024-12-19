@@ -59,16 +59,6 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergyReposito
         return customQueryBuilder.Build();
     }
 
-    private static DateOnly GetCacheKey(PriceType priceType)
-    {
-        return priceType switch
-        {
-            PriceType.Today => DateOnly.FromDateTime(DateTime.Now),
-            PriceType.Tomorrow => DateOnly.FromDateTime(DateTime.Now.AddDays(1)),
-            _ => throw new ArgumentOutOfRangeException(nameof(priceType), priceType, null),
-        };
-    }
-
     private static ReadOnlyCollection<Price>? GetPricesFromQueryResponse(TibberApiQueryResponse result, PriceType priceType)
     {
         var prices = priceType switch
