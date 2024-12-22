@@ -1,25 +1,25 @@
 ﻿using AsyncAwaitBestPractices;
+using MyHome.ApiService.Constants;
 using MyHome.Core;
 using MyHome.Core.Helpers;
+using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Repositories;
 using Tibber.Sdk;
 
 namespace MyHome.ApiService.HostedServices.Services;
 
-public sealed class EnergyConsumptionObserver : IObserver<RealTimeMeasurement>
+public sealed class EnergyConsumptionObserver(
+    ILogger<EnergyConsumptionObserver> logger,
+    IServiceScopeFactory serviceScopeFactory,
+    IRepository<EnergyMeasurement> energyMeasurementRepository) : IObserver<RealTimeMeasurement>
 {
-    private readonly ILogger<EnergyConsumptionObserver> _logger;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ILogger<EnergyConsumptionObserver> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
+    private readonly IRepository<EnergyMeasurement> _energyMeasurementRepository = energyMeasurementRepository;
+
     private DateTime _lastEnergyPriceAdjustmentCheck = DateTime.MinValue;
     private const int LastHourConsumptionLimitKWH = 3;
     private const int MinimumMinutesBetweenChecks = 10;
-
-    public EnergyConsumptionObserver(
-        ILogger<EnergyConsumptionObserver> logger,
-        IServiceScopeFactory serviceScopeFactory)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
-    }
 
     public void OnCompleted()
     {
@@ -33,6 +33,13 @@ public sealed class EnergyConsumptionObserver : IObserver<RealTimeMeasurement>
 
     public void OnNext(RealTimeMeasurement value)
     {
+        _energyMeasurementRepository.UpsertAsync(new EnergyMeasurement
+        {
+            Id = MyHomeConstants.MyTibberHomeId,
+            Power = value.Power,
+            AccumulatedConsumptionLastHour = value.AccumulatedConsumptionLastHour
+        }).SafeFireAndForget(e => _logger.LogError("Add energy measurement failed: {ErrorMessage}", e.Message));
+
         var minutesSinceLastCheck = (DateTime.Now - _lastEnergyPriceAdjustmentCheck).Minutes;
         if (minutesSinceLastCheck < MinimumMinutesBetweenChecks)
         {

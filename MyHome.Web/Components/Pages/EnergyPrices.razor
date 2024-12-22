@@ -1,6 +1,6 @@
 ﻿@page "/table"
 @using MudBlazor.Components.Chart.Models
-@using MyHome.Web.Dtos
+@using MyHome.Core.Models.EnergySupplier
 @using MudBlazor
 
 @attribute [StreamRendering(true)]
@@ -31,7 +31,7 @@
 </MudContainer>
 
 @code {
-    private IEnumerable<EnergyPriceDto> prices = new List<EnergyPriceDto>();
+    private IEnumerable<EnergyPrice> prices = new List<EnergyPrice>();
     private bool _loading;
 
     protected override async Task OnInitializedAsync()

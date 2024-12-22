@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MyHome.Core.Options;
-using MyHome.Core.Repositories;
+using MyHome.Core.Repositories.WifiSocket;
 
 namespace MyHome.ApiService.Extensions;
 

@@ -1,8 +1,9 @@
 ﻿@page "/charts"
+@using MudBlazor.Components.Chart.Models
 
 @using MudBlazor
 @using MudBlazor.Components.Chart.Models
-@using MyHome.Web.Dtos
+@using MyHome.Core.Models.EnergySupplier
 @inject EnergyPriceClient EnergyPriceClient
 
 @attribute [StreamRendering(true)]
@@ -30,7 +31,7 @@
 </MudContainer>
 
 @code {
-    private IEnumerable<EnergyPriceDto> prices = new List<EnergyPriceDto>();
+    private IEnumerable<EnergyPrice> prices = new List<EnergyPrice>();
     private bool _loading;
 
     private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.

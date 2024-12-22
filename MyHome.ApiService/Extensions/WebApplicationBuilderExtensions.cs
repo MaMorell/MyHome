@@ -1,11 +1,14 @@
-﻿using System.Net.Http.Headers;
-using Tibber.Sdk;
+﻿using MyHome.ApiService.HostedServices.Services;
 using MyHome.ApiService.Services;
+using MyHome.Core;
 using MyHome.Core.Interfaces;
+using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Options;
 using MyHome.Core.Repositories;
-using MyHome.Core;
-using MyHome.ApiService.HostedServices.Services;
+using MyHome.Core.Repositories.EnergySupplier;
+using MyHome.Core.Repositories.HeatPump;
+using System.Net.Http.Headers;
+using Tibber.Sdk;
 
 namespace MyHome.ApiService.Extensions;
 
@@ -21,6 +24,7 @@ public static class WebApplicationBuilderExtensions
         services.AddScoped<IEnergyRepository, EnergyRepository>();
         services.AddScoped<HeatpumpClient>();
         services.AddSingleton<IObserver<RealTimeMeasurement>, EnergyConsumptionObserver>();
+        services.AddSingleton<IRepository<EnergyMeasurement>, InMemoryRepository<EnergyMeasurement>>();
 
         services.AddScoped(s =>
         {

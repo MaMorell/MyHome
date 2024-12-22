@@ -1,7 +1,6 @@
-﻿using MyHome.Core.Models;
-using System.Diagnostics;
-using System.IO.Pipelines;
+﻿using MyHome.Core.Models.EnergySupplier;
 using Tibber.Sdk;
+using PriceLevel = Tibber.Sdk.PriceLevel;
 
 namespace MyHome.Core.Helpers;
 
@@ -36,9 +35,15 @@ public class EnergyPriceCalculator
             {
                 Time = DateTime.Parse(p.StartsAt),
                 Price = p.Total ?? 0,
-                PriceLevel = p.Level ?? PriceLevel.Normal,
+                PriceLevel = ConvertToPriceLevel(p.Level),
                 RelativePriceLevel = GetDayPriceLevel(veryHighThreshold, highThreshold, lowThreshold, veryLowThreshold, p.Total, p.Level),
             }).ToList(); ;
+    }
+
+    public static Models.EnergySupplier.PriceLevel ConvertToPriceLevel(PriceLevel? level)
+    {
+        var levelString = level?.ToString() ?? PriceLevel.Normal.ToString();
+        return Enum.Parse<Models.EnergySupplier.PriceLevel>(levelString);
     }
 
     private static RelativePriceLevel GetDayPriceLevel(

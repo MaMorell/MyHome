@@ -2,20 +2,6 @@
 
 namespace MyHome.Core.Models.WifiSocket;
 
-public class SetTempratureResponse
-{
-    [JsonPropertyName("status")]
-    public string Status { get; set; } = string.Empty;
-}
-
-public class SetTemprature
-{
-    [JsonPropertyName("type")]
-    public string Type { get; set; } = "Normal";
-    [JsonPropertyName("value")]
-    public int Value { get; set; }
-}
-
 public class ControllStatus
 {
     [JsonPropertyName("ambient_temperature")]

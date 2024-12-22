@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace MyHome.Core.Repositories;
+namespace MyHome.Core.Repositories.WifiSocket;
 
 public class WifiSocketsService
 {

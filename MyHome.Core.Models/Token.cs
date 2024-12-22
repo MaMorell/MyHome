@@ -2,7 +2,7 @@
 
 namespace MyHome.Core.Models;
 
-internal class Token
+public class Token
 {
     [JsonPropertyName("access_token")]
     public string AccessToken { get; set; } = string.Empty;

@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using Tibber.Sdk;
 
-namespace MyHome.Core.Repositories;
+namespace MyHome.Core.Repositories.EnergySupplier;
 
 public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergyRepository
 {

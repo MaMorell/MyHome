@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace MyHome.Web.Dtos;
+namespace MyHome.Core.Models.EnergySupplier;
 
 public enum PriceLevel
 {

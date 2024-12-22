@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyHome.Core.Models;
+using MyHome.Core.Models.HeatPump;
 using MyHome.Core.Options;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace MyHome.Core.Repositories;
+namespace MyHome.Core.Repositories.HeatPump;
 
 public class HeatpumpClient(IHttpClientFactory httpClientFactory, IOptions<UpLinkCredentialsOptions> upLinkCredentialsOptions, ILogger<HeatpumpClient> logger)
 {

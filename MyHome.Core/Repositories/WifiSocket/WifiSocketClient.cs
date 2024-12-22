@@ -5,7 +5,7 @@ using MyHome.Core.Options;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace MyHome.Core.Repositories;
+namespace MyHome.Core.Repositories.WifiSocket;
 
 public class WifiSocketClient(IHttpClientFactory httpClientFactory, IOptions<WifiSocketOptions> wifiSocketOptions, ILogger<WifiSocketClient> logger)
 {

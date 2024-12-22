@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using MyHome.Core.Helpers;
 using MyHome.Core.Interfaces;
-using MyHome.Core.Models;
-using MyHome.Core.Repositories;
+using MyHome.Core.Models.HeatPump;
+using MyHome.Core.Repositories.HeatPump;
+using MyHome.Core.Repositories.WifiSocket;
 
 namespace MyHome.Core;
 

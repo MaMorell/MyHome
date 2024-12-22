@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using MyHome.ApiService.Services;
+using MyHome.ApiService.Constants;
 using MyHome.ApiService.Extensions;
 using MyHome.ApiService.HostedServices;
+using MyHome.ApiService.Services;
+using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Repositories;
+using MyHome.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +43,12 @@ app.MapGet("/energyprice", async ([FromServices] EnergyPriceService energyPriceS
     return await energyPriceService.GetEnergyPriceAsync();
 })
 .WithName("GetEnergyPrices");
+
+app.MapGet("/energymeasurement", async ([FromServices] IRepository<EnergyMeasurement> repository) =>
+{
+    return await repository.GetByIdAsync(MyHomeConstants.MyTibberHomeId);
+})
+.WithName("GetLastEnergyMeasurement");
 
 app.MapDefaultEndpoints();
 

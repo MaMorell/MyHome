@@ -1,4 +1,4 @@
-﻿namespace MyHome.Web.Dtos;
+﻿namespace MyHome.Core.Models.EnergySupplier;
 
 public enum RelativePriceLevel
 {
@@ -8,4 +8,5 @@ public enum RelativePriceLevel
     Normal,
     High,
     VeryHigh,
+    Extreme,
 }

@@ -1,6 +1,6 @@
-﻿namespace MyHome.Web.Dtos;
+﻿namespace MyHome.Core.Models.EnergySupplier;
 
-public record EnergyPriceDto
+public record EnergyPrice
 {
     public DateTime Time { get; init; }
     public decimal Price { get; init; }

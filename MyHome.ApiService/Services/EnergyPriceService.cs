@@ -1,6 +1,6 @@
 ﻿using MyHome.Core.Helpers;
 using MyHome.Core.Interfaces;
-using MyHome.Core.Models;
+using MyHome.Core.Models.EnergySupplier;
 
 namespace MyHome.ApiService.Services;
 

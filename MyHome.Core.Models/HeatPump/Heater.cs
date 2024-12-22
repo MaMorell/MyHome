@@ -1,4 +1,4 @@
-﻿namespace MyHome.Core.Models;
+﻿namespace MyHome.Core.Models.HeatPump;
 
 public class Heater
 {
