@@ -19,42 +19,14 @@ public sealed class EnergyConsumptionObserver(
 
     private DateTime _lastEnergyPriceAdjustmentCheck = DateTime.MinValue;
     private const int LastHourConsumptionLimitKWH = 3;
-    private const int MinimumMinutesBetweenChecks = 10;
 
-    public void OnCompleted()
-    {
-        _logger.LogInformation("{Observer} completed", nameof(EnergyConsumptionObserver));
-    }
+    public void OnCompleted() => _logger.LogInformation("{Observer} completed", nameof(EnergyConsumptionObserver));
 
-    public void OnError(Exception error)
-    {
-        _logger.LogError(error.Message);
-    }
+    public void OnError(Exception error) => _logger.LogError(error.Message);
 
     public void OnNext(RealTimeMeasurement value)
     {
-        _energyMeasurementRepository.UpsertAsync(new EnergyMeasurement
-        {
-            Id = MyHomeConstants.MyTibberHomeId,
-            Power = value.Power,
-            AccumulatedConsumptionLastHour = value.AccumulatedConsumptionLastHour
-        }).SafeFireAndForget(e => _logger.LogError("Add energy measurement failed: {ErrorMessage}", e.Message));
-
-        var minutesSinceLastCheck = (DateTime.Now - _lastEnergyPriceAdjustmentCheck).Minutes;
-        if (minutesSinceLastCheck < MinimumMinutesBetweenChecks)
-        {
-            _logger.LogDebug(
-                "Less than {MinimumMinutes} minutes passed since last energy price check. " +
-                "Current time: {CurrentTime}. Last check: {LastCheck}. " +
-                "Minutes since last check: {MinutesPassed}",
-                MinimumMinutesBetweenChecks,
-                DateTime.Now,
-                _lastEnergyPriceAdjustmentCheck,
-                minutesSinceLastCheck);
-            return;
-        }
-
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Current power usage: {Power:N0} W (average: {AveragePower:N0} W); " +
             "Consumption last hour: {Consumption:N3} kWh; " +
             "Cost since last midnight: {Cost:N2} {Currency}",
@@ -64,12 +36,20 @@ public sealed class EnergyConsumptionObserver(
             value.AccumulatedCost,
             value.Currency);
 
-        HandleConsumptionLastHour(value.AccumulatedConsumptionLastHour)
+        HandleConsumptionLastHour(value.AccumulatedConsumptionLastHour, value.Power)
             .SafeFireAndForget(e => _logger.LogError("Adjust heat failed: {ErrorMessage}", e.Message));
     }
 
-    private async Task HandleConsumptionLastHour(decimal accumulatedConsumptionLastHour)
+    private async Task HandleConsumptionLastHour(decimal accumulatedConsumptionLastHour, decimal power)
     {
+        await _energyMeasurementRepository.UpsertAsync(new EnergyMeasurement
+        {
+            Id = MyHomeConstants.MyTibberHomeId,
+            Power = power,
+            AccumulatedConsumptionLastHour = accumulatedConsumptionLastHour,
+            UpdatedAt = DateTime.Now
+        });
+
         if (accumulatedConsumptionLastHour < LastHourConsumptionLimitKWH)
         {
             return;

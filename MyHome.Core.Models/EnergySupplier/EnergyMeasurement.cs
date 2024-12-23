@@ -1,6 +1,4 @@
-﻿using MyHome.Core.Models;
-
-namespace MyHome.Core.Models.EnergySupplier;
+﻿namespace MyHome.Core.Models.EnergySupplier;
 
 public record EnergyMeasurement : IEntity
 {
@@ -9,5 +7,7 @@ public record EnergyMeasurement : IEntity
     public decimal Power { get; set; }
 
     public decimal AccumulatedConsumptionLastHour { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
 
 }

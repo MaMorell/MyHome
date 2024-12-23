@@ -6,14 +6,17 @@
 @attribute [StreamRendering(true)]
 @attribute [OutputCache(Duration = 5)]
 
-@inject EnergyPriceClient EnergyPriceClient
+@inject EnergySupplierClient EnergyPriceClient
 
 <PageTitle>Elprisreglering</PageTitle>
 
 <MudContainer Class="ma-4">
-    <h1>Elprisreglering</h1>
+    <MudPaper Elevation="0" Class="mb-8">
+        <MudText Typo="Typo.h3" Color="Color.Primary" Class="mb-2">Elprisöversikt</MudText>
+        <MudText Typo="Typo.subtitle1">Översikt över elpriser och prisnivåer över tid</MudText>
+    </MudPaper>
 
-    <MudTable Class="ma-4" Items="prices" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+    <MudTable Class="mb-8" Items="prices" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
         <HeaderContent>
             <MudTh>Datum</MudTh>
             <MudTh>Pris (sek)</MudTh>
