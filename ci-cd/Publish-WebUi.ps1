@@ -16,7 +16,7 @@ function Update-Appsettings {
         [string]$TibberApiAccessToken
     )
     
-    $configPath = ".\appsettings.json"
+    $configPath = "C:\GIT\other\MyHome\MyHome.ApiService\appsettings.json"
 
     if (-not (Test-Path $configPath)) {
         Write-Error "Configuration file not found at: $configPath"
@@ -41,11 +41,11 @@ if ((Test-Path $PublishPath) -eq $false) {
 
 Update-Appsettings $MyUplinkClientSecret $TibberApiAccessToken
 Push-Location "C:\GIT\other\MyHome\MyHome.ApiService\"
-dotnet publish --configuration Release --output $PublishPath --runtime $RunTime
+dotnet publish --configuration Release --output "$PublishPath\MyHomeApi" --runtime $RunTime
 Pop-Location
 
 Push-Location "C:\GIT\other\MyHome\MyHome.Web\"
-dotnet publish --configuration Release --output $PublishPath --runtime $RunTime
+dotnet publish --configuration Release --output "$PublishPath\MyHomeWebUi" --runtime $RunTime
 Pop-Location
 
 Update-Appsettings "" ""
