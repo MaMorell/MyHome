@@ -18,11 +18,6 @@ builder.Services.AddProblemDetails();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-if (!builder.Environment.IsDevelopment())
-{
-    builder.Services.AddApplicationInsightsTelemetry();
-}
-
 builder.Services.RegisterLocalDependencies(builder.Configuration);
 
 builder.Services.AddHostedService<HeatRegulatorHost>();
