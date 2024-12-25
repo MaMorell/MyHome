@@ -16,6 +16,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyHome.Core", "MyHome.Core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyHome.Core.Models", "MyHome.Core.Models\MyHome.Core.Models.csproj", "{7BE483A5-FFAC-475A-A348-F28C7AB37B6E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI-CD", "CI-CD", "{ECC8C5B3-F2D8-41E3-B89F-43D476774046}"
+	ProjectSection(SolutionItems) = preProject
+		ci-cd\Publish-WebUi.ps1 = ci-cd\Publish-WebUi.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
