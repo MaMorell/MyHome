@@ -20,8 +20,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.RegisterLocalDependencies(builder.Configuration);
 
-builder.Services.AddHostedService<HeatRegulatorHost>();
-builder.Services.AddHostedService<EnergyConsumptionHost>();
+//builder.Services.AddHostedService<HeatRegulatorHost>();
+//builder.Services.AddHostedService<EnergyConsumptionHost>();
 
 var app = builder.Build();
 
