@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using MudBlazor
 @rendermode InteractiveServer
+
 <PageTitle>Home</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-10">
@@ -15,12 +16,7 @@
                 </MudText>
             </CardHeaderContent>
             <CardHeaderActions>
-                <MudTooltip Text="Uppdatera data">
-                    <MudIconButton Icon="@Icons.Material.Filled.Refresh"
-                                   Color="Color.Primary"
-                                   OnClick="OnRefresh"
-                                   Class="ma-2" />
-                </MudTooltip>
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="OnRefresh" />
             </CardHeaderActions>
         </MudCardHeader>
 
