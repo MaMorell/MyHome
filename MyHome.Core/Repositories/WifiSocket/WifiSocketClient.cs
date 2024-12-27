@@ -15,7 +15,7 @@ public class WifiSocketClient(IHttpClientFactory httpClientFactory, IOptions<Wif
     private readonly WifiSocketOptions _wifiSocketOptions = wifiSocketOptions?.Value ?? throw new ArgumentNullException(nameof(wifiSocketOptions));
     private readonly ILogger<WifiSocketClient> _logger = logger;
 
-    public string Name => _wifiSocketOptions.Name;
+    public WifiSocketName Name => _wifiSocketOptions.Name;
 
     public async Task<bool> UpdateHeat(int value, CancellationToken cancellationToken)
     {
@@ -38,10 +38,11 @@ public class WifiSocketClient(IHttpClientFactory httpClientFactory, IOptions<Wif
     {
         var httpClient = GetHttpClient();
 
-        var response = await httpClient.GetFromJsonAsync<ControllStatus>("control-status");
+        var response = await httpClient.GetFromJsonAsync<ControllStatus>("control-status") ?? throw new HttpRequestException("Failed to retrieve control status from radiator endpoint.");
+        
+        response.Name = _wifiSocketOptions.Name;
 
-        return response
-            ?? throw new HttpRequestException("Failed to retrieve control status from radiator endpoint.");
+        return response;
     }
 
     private async Task<bool> SetTemprature(int value, CancellationToken cancellationToken)

@@ -4,7 +4,9 @@ using MyHome.ApiService.Extensions;
 using MyHome.ApiService.HostedServices;
 using MyHome.ApiService.Services;
 using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Models.WifiSocket;
 using MyHome.Core.Repositories;
+using MyHome.Core.Repositories.WifiSocket;
 using MyHome.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,17 +35,23 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapGet("/energyprice", async ([FromServices] EnergyPriceService energyPriceService) =>
+app.MapGet("energysupplier/energyprice", async ([FromServices] EnergyPriceService energyPriceService) =>
 {
     return await energyPriceService.GetEnergyPriceAsync();
 })
 .WithName("GetEnergyPrices");
 
-app.MapGet("/energymeasurement", async ([FromServices] IRepository<EnergyMeasurement> repository) =>
+app.MapGet("energysupplier/energymeasurement", async ([FromServices] IRepository<EnergyMeasurement> repository) =>
 {
     return await repository.GetByIdAsync(MyHomeConstants.MyTibberHomeId);
 })
 .WithName("GetLastEnergyMeasurement");
+
+app.MapGet("/wifisocket/{name}/status", async ([FromServices] WifiSocketsService service, WifiSocketName name) =>
+{
+    return await service.GetStatus(name);
+})
+.WithName("GetWifiSocketStatus");
 
 app.MapDefaultEndpoints();
 

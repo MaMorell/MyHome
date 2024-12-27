@@ -1,0 +1,63 @@
+﻿@using MudBlazor
+@using MyHome.Core.Models.WifiSocket
+
+<MudCard Elevation="3" Class="rounded-lg ma-5">
+    <MudCardHeader Class="pb-0">
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5">
+                <MudIcon Icon="@Icons.Material.Filled.HeatPump" Class="mr-2" Color="Color.Primary" />
+                Element - @WifiSocketname
+            </MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="RefreshData" />
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudDivider Class="mx-6" />
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="6">
+                <MudPaper Class="d-flex align-center pa-4" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.PowerSettingsNew" Color="@(Status?.SwitchedOn == true ? Color.Success : Color.Error)" Class="mr-2" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Status</MudText>
+                        <MudText Typo="Typo.body1">@(Status?.Status ?? "N/A")</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6">
+                <MudPaper Class="d-flex align-center pa-4" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Class="mr-2" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Förbrukning</MudText>
+                        <MudText Typo="Typo.body1">@(Status?.CurrentPower ?? 0) W</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6">
+                <MudPaper Class="d-flex align-center pa-4" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.WaterDrop" Color="Color.Info" Class="mr-2" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Luftfuktighet</MudText>
+                        <MudText Typo="Typo.body1">@Math.Round(Status?.Humidity ?? 0)%</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6">
+                <MudPaper Class="d-flex align-center pa-4" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.Thermostat" Color="@GetTemperatureColor(Status?.AmbientTemperature)" Class="mr-2" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Temperatur</MudText>
+                        <MudText Typo="Typo.body1">@Math.Round(Status?.AmbientTemperature ?? 0)°C</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+    <MudCardContent Class="pt-0">
+        <MudText Typo="Typo.caption" class="d-flex align-center">
+            <MudIcon Icon="@Icons.Material.Filled.Update" Size="Size.Small" Class="mr-2" />
+            Uppdaterat: @DataUpdatedAt
+        </MudText>
+    </MudCardContent>
+</MudCard>

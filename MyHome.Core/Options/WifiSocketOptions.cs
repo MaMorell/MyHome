@@ -1,7 +1,9 @@
-﻿namespace MyHome.Core.Options;
+﻿using MyHome.Core.Models.WifiSocket;
+
+namespace MyHome.Core.Options;
 
 public class WifiSocketOptions
 {
-    public string Name { get; set; } = string.Empty;
+    public WifiSocketName Name { get; set; }
     public string BaseAddress { get; set; } = string.Empty;
 }

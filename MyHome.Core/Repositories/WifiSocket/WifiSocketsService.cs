@@ -1,19 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
+using MyHome.Core.Models.WifiSocket;
 
 namespace MyHome.Core.Repositories.WifiSocket;
 
-public class WifiSocketsService
+public class WifiSocketsService(
+    IEnumerable<WifiSocketClient> clients,
+    ILogger<WifiSocketsService> logger)
 {
-    private readonly IEnumerable<WifiSocketClient> _wifiSocketClients;
-    private readonly ILogger<WifiSocketsService> _logger;
-
-    public WifiSocketsService(
-        IEnumerable<WifiSocketClient> radiators,
-        ILogger<WifiSocketsService> logger)
-    {
-        _wifiSocketClients = radiators ?? throw new ArgumentNullException(nameof(radiators));
-        _logger = logger;
-    }
+    private readonly IEnumerable<WifiSocketClient> _wifiSocketClients = clients ?? throw new ArgumentNullException(nameof(clients));
+    private readonly ILogger<WifiSocketsService> _logger = logger;
 
     public async Task UpdateAllClients(int temperature, CancellationToken cancellationToken)
     {
@@ -25,6 +20,17 @@ public class WifiSocketsService
         }
 
         await Task.WhenAll(tasks);
+    }
+
+    public async Task<ControllStatus> GetStatus(WifiSocketName name)
+    {
+        var client = _wifiSocketClients.FirstOrDefault(c => c.Name == name);
+        if (client == null)
+        {
+            throw new ArgumentException($"No client found for wifi socket {name}", nameof(name));
+        }
+
+        return await client.GetStatus();
     }
 
     private async Task UpdateWifiSocketSafely(WifiSocketClient client, int temperature, CancellationToken cancellationToken)

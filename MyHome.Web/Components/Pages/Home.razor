@@ -1,49 +1,18 @@
 ﻿@page "/"
 @using MudBlazor
+@using MyHome.Core.Models.WifiSocket
 @rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
-
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-10">
     <MudText Typo="Typo.h2" Color="Color.Primary" Class="mb-8">Mitt Hem</MudText>
-
-    <MudCard Elevation="3" Class="rounded-lg">
-        <MudCardHeader Class="pb-0">
-            <CardHeaderContent>
-                <MudText Typo="Typo.h5">
-                    <MudIcon Icon="@Icons.Material.Filled.ElectricMeter" Class="mr-2" Color="Color.Primary"/>
-                    Nuvarande förbrukning
-                </MudText>
-            </CardHeaderContent>
-            <CardHeaderActions>
-                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="OnRefresh" />
-            </CardHeaderActions>
-        </MudCardHeader>
-
-        <MudDivider Class="my-4 mx-6" />
-
-        <MudCardContent>
-            <MudGrid>
-                <MudItem xs="12" sm="6">
-                    <MudPaper Elevation="0" Class="pa-4">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Nuvarande förbrukning</MudText>
-                        <MudText Typo="Typo.h4">@RealTimePowerUsage kWh</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6">
-                    <MudPaper Elevation="0" Class="pa-4">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Förbrukning senaste timmen</MudText>
-                        <MudText Typo="Typo.h4">@AccumulatedConsumptionLastHour kWh</MudText>
-                    </MudPaper>
-                </MudItem>
-            </MudGrid>
-        </MudCardContent>
-
-        <MudCardContent Class="pt-0">
-            <MudText Typo="Typo.caption" Class="d-flex align-center">
-                <MudIcon Icon="@Icons.Material.Filled.Update" Size="Size.Small" Class="mr-2" />
-                Uppdaterat: @DataUpdatedAt
-            </MudText>
-        </MudCardContent>
-    </MudCard>
+    <EnergyMeter />
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <WifiSocketStatus WifiSocketname="WifiSocketName.Garage" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <WifiSocketStatus WifiSocketname="WifiSocketName.Shed" />
+        </MudItem>
+    </MudGrid>
 </MudContainer>

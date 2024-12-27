@@ -1,7 +1,7 @@
 using MudBlazor.Services;
 using MyHome.ServiceDefaults;
-using MyHome.Web;
 using MyHome.Web.Components;
+using MyHome.Web.HttpClients;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,12 +14,10 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddOutputCache();
 
-builder.Services.AddHttpClient<EnergySupplierClient>(client =>
-    {
-        // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
-        // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
-        client.BaseAddress = new("https+http://apiservice");
-    });
+builder.Services
+    .AddApiClient<EnergySupplierClient>()
+    .AddApiClient<WifiSocketClient>();
+
 builder.Services.AddMudServices();
 
 var app = builder.Build();

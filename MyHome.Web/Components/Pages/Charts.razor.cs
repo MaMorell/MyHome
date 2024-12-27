@@ -1,10 +1,15 @@
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using MudBlazor.Components.Chart.Models;
 using MyHome.Core.Models.EnergySupplier;
+using MyHome.Web.HttpClients;
 
 namespace MyHome.Web.Components.Pages;
 public partial class Charts
 {
+    [Inject]
+    private EnergySupplierClient EnergySupplierClient { get; set; } = default!;
+
     private bool _loading;
     private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
 
@@ -68,7 +73,7 @@ public partial class Charts
 
     private async Task<IEnumerable<EnergyPrice>> GetPrices()
     {
-        var pricesTask = EnergyPriceClient.GetEnergyPricesAsync();
+        var pricesTask = EnergySupplierClient.GetEnergyPricesAsync();
         var waitTask = Task.Delay(500);
 
         await Task.WhenAll(pricesTask, waitTask);

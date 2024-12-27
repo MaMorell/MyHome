@@ -6,8 +6,6 @@
 @attribute [StreamRendering(true)]
 @attribute [OutputCache(Duration = 5)]
 
-@inject EnergySupplierClient EnergyPriceClient
-
 <PageTitle>Elprisreglering</PageTitle>
 
 <MudContainer Class="ma-4">
@@ -33,27 +31,4 @@
     </MudTable>
 </MudContainer>
 
-@code {
-    private IEnumerable<EnergyPrice> prices = new List<EnergyPrice>();
-    private bool _loading;
 
-    protected override async Task OnInitializedAsync()
-    {
-        _loading = true;
-
-        try
-        {
-            var pricesTask = EnergyPriceClient.GetEnergyPricesAsync();
-            var waitTask = Task.Delay(500);
-
-            await Task.WhenAll(pricesTask, waitTask);
-
-            prices = await pricesTask;
-        }
-        finally
-        {
-            _loading = false;
-        }
-
-    }
-}

@@ -15,7 +15,7 @@ public class EnergyPriceService(IEnergyRepository energyRepository)
         var todaysPrices = await _energyRepository.GetTodaysEnergyPrices();
         result.AddRange(EnergyPriceCalculator.CreateEneryPrices(todaysPrices));
 
-        if (DateTime.Now.Hour > 14)
+        if (DateTime.Now.Hour >= 14)
         {
             var tomorrowsPrices = await _energyRepository.GetTomorrowsEnergyPrices();
 
