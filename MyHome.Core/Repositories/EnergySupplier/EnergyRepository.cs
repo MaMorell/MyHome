@@ -13,6 +13,17 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergyReposito
     public Task<ReadOnlyCollection<Price>> GetTodaysEnergyPrices() =>
         GetEnergyPrices(PriceType.Today);
 
+    public async Task<ICollection<ConsumptionEntry>> GetTodaysConsumption()
+    {
+        var homeId = await GetHomeId();
+        var query = BuildEnergyConsumptionQuery(homeId);
+        var queryResponse = await tibberApiClient.Query(query);
+        var result = queryResponse.Data.Viewer.Home?.Consumption?.Nodes ??
+            throw new TibberApiException(GetTibberApiErrorMessage(queryResponse.Data));
+
+        return result;
+    }
+
     private async Task<ReadOnlyCollection<Price>> GetEnergyPrices(PriceType priceType)
     {
         var homeId = await GetHomeId();
@@ -52,6 +63,24 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergyReposito
                                     .WithAllScalarFields()
                                     .WithPriceInfo(priceInfoBuilder)
                             ),
+                        homeId
+                    )
+            );
+
+        return customQueryBuilder.Build();
+    }
+
+    private static string BuildEnergyConsumptionQuery(Guid homeId)
+    {
+        var customQueryBuilder = new TibberQueryBuilder()
+            .WithAllScalarFields()
+            .WithViewer(
+                new ViewerQueryBuilder()
+                    .WithAllScalarFields()
+                    .WithHome(
+                        new HomeQueryBuilder()
+                            .WithAllScalarFields()
+                            .WithConsumption(EnergyResolution.Hourly, DateTime.Now.Hour),
                         homeId
                     )
             );

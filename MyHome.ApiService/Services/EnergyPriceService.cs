@@ -22,6 +22,28 @@ public class EnergyPriceService(IEnergyRepository energyRepository)
             result.AddRange(EnergyPriceCalculator.CreateEneryPrices(tomorrowsPrices));
         }
 
+        await AddConsumption(result);
+
         return result;
+    }
+
+    private async Task AddConsumption(List<EnergyPrice> prices)
+    {
+        var todaysConsumption = await _energyRepository.GetTodaysConsumption();
+
+        foreach (var price in prices)
+        {
+            var consumption = todaysConsumption.FirstOrDefault(c =>
+            {
+                return c.From.HasValue && c.From.Value == price.Time;
+            });
+            if (consumption is null)
+            {
+                continue;
+            }
+
+            price.Consumption = consumption?.Consumption;
+            price.Cost = consumption?.Cost;
+        }
     }
 }
