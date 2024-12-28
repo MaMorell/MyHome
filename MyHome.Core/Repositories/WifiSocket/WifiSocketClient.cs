@@ -39,7 +39,7 @@ public class WifiSocketClient(IHttpClientFactory httpClientFactory, IOptions<Wif
         var httpClient = GetHttpClient();
 
         var response = await httpClient.GetFromJsonAsync<ControllStatus>("control-status") ?? throw new HttpRequestException("Failed to retrieve control status from radiator endpoint.");
-        
+
         response.Name = _wifiSocketOptions.Name;
 
         return response;

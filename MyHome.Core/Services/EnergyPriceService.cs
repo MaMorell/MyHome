@@ -2,7 +2,7 @@
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
 
-namespace MyHome.ApiService.Services;
+namespace MyHome.Core.Services;
 
 public class EnergyPriceService(IEnergyRepository energyRepository)
 {

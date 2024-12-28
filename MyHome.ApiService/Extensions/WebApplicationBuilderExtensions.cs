@@ -1,5 +1,4 @@
 ﻿using MyHome.ApiService.HostedServices.Services;
-using MyHome.ApiService.Services;
 using MyHome.Core;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
@@ -7,6 +6,7 @@ using MyHome.Core.Options;
 using MyHome.Core.Repositories;
 using MyHome.Core.Repositories.EnergySupplier;
 using MyHome.Core.Repositories.HeatPump;
+using MyHome.Core.Services;
 using System.Net.Http.Headers;
 using Tibber.Sdk;
 
