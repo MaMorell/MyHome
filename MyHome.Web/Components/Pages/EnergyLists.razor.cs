@@ -3,7 +3,7 @@ using MyHome.Core.Models.EnergySupplier;
 using MyHome.Web.HttpClients;
 
 namespace MyHome.Web.Components.Pages;
-public partial class EnergyPrices
+public partial class EnergyLists
 {
     [Inject]
     private EnergySupplierClient EnergySupplierClient { get; set; } = default!;

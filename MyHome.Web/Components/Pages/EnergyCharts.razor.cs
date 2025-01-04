@@ -5,7 +5,7 @@ using MyHome.Core.Models.EnergySupplier;
 using MyHome.Web.HttpClients;
 
 namespace MyHome.Web.Components.Pages;
-public partial class Charts
+public partial class EnergyCharts
 {
     [Inject]
     private EnergySupplierClient EnergySupplierClient { get; set; } = default!;
