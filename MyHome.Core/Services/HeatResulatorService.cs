@@ -5,7 +5,7 @@ using MyHome.Core.Models.HeatPump;
 using MyHome.Core.Repositories.HeatPump;
 using MyHome.Core.Repositories.WifiSocket;
 
-namespace MyHome.Core;
+namespace MyHome.Core.Services;
 
 public class HeatResulatorService(
     IEnergyRepository energyRepository,

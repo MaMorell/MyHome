@@ -4,7 +4,7 @@ namespace MyHome.Core.Models.WifiSocket;
 
 public class ControllStatus
 {
-    public WifiSocketName Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [JsonPropertyName("ambient_temperature")]
     public double AmbientTemperature { get; set; }

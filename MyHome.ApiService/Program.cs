@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MyHome.ApiService.Constants;
 using MyHome.ApiService.Extensions;
+using MyHome.ApiService.HostedServices;
 using MyHome.Core.Models.EnergySupplier;
-using MyHome.Core.Models.WifiSocket;
 using MyHome.Core.Repositories;
 using MyHome.Core.Repositories.WifiSocket;
 using MyHome.Core.Services;
@@ -19,9 +19,11 @@ builder.Services.AddProblemDetails();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.RegisterLocalDependencies(builder.Configuration);
 
-//builder.Services.AddHostedService<HeatRegulatorHost>();
+builder.Services.AddHostedService<HeatRegulatorHost>();
 //builder.Services.AddHostedService<EnergyConsumptionHost>();
 
 var app = builder.Build();
@@ -46,11 +48,18 @@ app.MapGet("energysupplier/energymeasurement", async ([FromServices] IRepository
 })
 .WithName("GetLastEnergyMeasurement");
 
-app.MapGet("/wifisocket/{name}/status", async ([FromServices] WifiSocketsService service, WifiSocketName name) =>
+app.MapGet("/wifisocket/{name}/status", async ([FromServices] WifiSocketsService service, string name) =>
 {
     return await service.GetStatus(name);
 })
 .WithName("GetWifiSocketStatus");
+
+app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> repository, [FromQuery]int count) =>
+{
+    var result = await repository.GetAllAsync();
+    return result.Take(count);
+})
+.WithName("GetAuditEvents");
 
 app.MapDefaultEndpoints();
 

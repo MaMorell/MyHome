@@ -22,7 +22,7 @@ public class WifiSocketsService(
         await Task.WhenAll(tasks);
     }
 
-    public async Task<ControllStatus> GetStatus(WifiSocketName name)
+    public async Task<ControllStatus> GetStatus(string name)
     {
         var client = _wifiSocketClients.FirstOrDefault(c => c.Name == name);
         if (client == null)

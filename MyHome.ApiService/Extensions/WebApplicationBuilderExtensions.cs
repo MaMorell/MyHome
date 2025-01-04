@@ -1,5 +1,6 @@
-﻿using MyHome.ApiService.HostedServices.Services;
-using MyHome.Core;
+﻿using Microsoft.Extensions.DependencyInjection;
+using MyHome.ApiService.HostedServices.Services;
+using MyHome.Core.Http;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Options;
@@ -14,31 +15,77 @@ namespace MyHome.ApiService.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static IServiceCollection RegisterLocalDependencies(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection RegisterLocalDependencies(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        services.AddHttpClient();
-        services.AddWifiSocketClients(configuration);
+        services.AddSingleton<IRepository<AuditEvent>, InMemoryRepository<AuditEvent>>();
 
+        services
+            .AddWifiSocketServices(configuration)
+            .AddEnergySupplierServices(configuration)
+            .AddHeatPumpServices(configuration);
+
+        return services;
+    }
+
+    private static IServiceCollection AddEnergySupplierServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
         services.AddScoped<EnergyPriceService>();
-        services.AddScoped<HeatResulatorService>();
         services.AddScoped<IEnergyRepository, EnergyRepository>();
-        services.AddScoped<HeatpumpClient>();
         services.AddSingleton<IObserver<RealTimeMeasurement>, EnergyConsumptionObserver>();
         services.AddSingleton<IRepository<EnergyMeasurement>, InMemoryRepository<EnergyMeasurement>>();
 
-        services.AddScoped(s =>
+        services.AddTibberClient(configuration);
+
+        return services;
+    }
+
+    private static IServiceCollection AddTibberClient(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddScoped(serviceProvider =>
         {
-            var accessToken = configuration["TibberApiClient:AccessToken"];
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                throw new KeyNotFoundException("TibberApiClient:AccessToken is missing in appsettings.json");
-            }
+            var accessToken = configuration["TibberApiClient:AccessToken"]
+                ?? throw new KeyNotFoundException("TibberApiClient:AccessToken is missing in appsettings.json");
+
             var userAgent = new ProductInfoHeaderValue("My-home-automation-system", "1.2");
+
             return new TibberApiClient(accessToken, userAgent);
         });
 
-        services.Configure<UpLinkCredentialsOptions>(
-            configuration.GetSection(UpLinkCredentialsOptions.UpLinkCredentials));
+        return services;
+    }
+
+    private static IServiceCollection AddHeatPumpServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddScoped<HeatResulatorService>();
+        services.AddScoped<HeatpumpClient>();
+        services.AddMyUplinkClient(configuration);
+        return services;
+    }
+
+    private static IServiceCollection AddMyUplinkClient(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddTransient<OAuthHandler<MyUplinkOptions>>();
+
+        var myUplinkOptionsSection = configuration.GetSection(MyUplinkOptions.UplinkOptions);
+        services.Configure<ExternalClientOptions<MyUplinkOptions>>(myUplinkOptionsSection);
+
+        var options = myUplinkOptionsSection.Get<MyUplinkOptions>() ?? throw new InvalidOperationException($"Failed to get {nameof(MyUplinkOptions)}");
+        services.AddHttpClient(options.Name, client =>
+        {
+            client.BaseAddress = new Uri(options.BaseAddress);
+        }).AddHttpMessageHandler<OAuthHandler<MyUplinkOptions>>();
+
+        services.AddScoped<AuditedHttpClient<MyUplinkOptions>>();
 
         return services;
     }

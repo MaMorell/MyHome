@@ -1,71 +1,81 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyHome.Core.Http;
 using MyHome.Core.Models.WifiSocket;
 using MyHome.Core.Options;
-using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace MyHome.Core.Repositories.WifiSocket;
 
-public class WifiSocketClient(IHttpClientFactory httpClientFactory, IOptions<WifiSocketOptions> wifiSocketOptions, ILogger<WifiSocketClient> logger)
+public class WifiSocketClient(
+    AuditedHttpClient<WifiSocketOptions> externalHttpClient,
+    IOptions<WifiSocketOptions> wifiSocketOptions,
+    ILogger<WifiSocketClient> logger)
 {
     private const string STATUS_OK = "ok";
 
-    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly AuditedHttpClient<WifiSocketOptions> _externalHttpClient = externalHttpClient;
     private readonly WifiSocketOptions _wifiSocketOptions = wifiSocketOptions?.Value ?? throw new ArgumentNullException(nameof(wifiSocketOptions));
     private readonly ILogger<WifiSocketClient> _logger = logger;
 
-    public WifiSocketName Name => _wifiSocketOptions.Name;
+    public string Name => _wifiSocketOptions.Name;
 
-    public async Task<bool> UpdateHeat(int value, CancellationToken cancellationToken)
+    public async Task<ControllStatus> GetStatus(CancellationToken cancellationToken = default)
     {
-        if (value < 5 || value > 20)
-        {
-            throw new ArgumentException($"Invalid value: {value}. Must be between 5 and 20", nameof(value));
-        }
-
-        var status = await GetStatus();
-        if (status.Status != STATUS_OK)
-        {
-            _logger.LogWarning($"Radiator is not in a valid state for temperature update. Current status: {status.Status}. Expected status: {STATUS_OK}");
-            return false;
-        }
-
-        return await SetTemprature(value, cancellationToken);
-    }
-
-    public async Task<ControllStatus> GetStatus()
-    {
-        var httpClient = GetHttpClient();
-
-        var response = await httpClient.GetFromJsonAsync<ControllStatus>("control-status") ?? throw new HttpRequestException("Failed to retrieve control status from radiator endpoint.");
+        var response = await _externalHttpClient.GetAsync<ControllStatus>("control-status", cancellationToken);
 
         response.Name = _wifiSocketOptions.Name;
 
         return response;
     }
 
+    public Task<bool> UpdateHeat(int value, CancellationToken cancellationToken)
+    {
+        if (value < 5 || value > 20)
+        {
+            throw new ArgumentException($"Invalid value: {value}. Must be between 5 and 20", nameof(value));
+        }
+
+        return UpdateHeatAsync(value, cancellationToken);
+    }
+
+    private async Task<bool> UpdateHeatAsync(int value, CancellationToken cancellationToken)
+    {
+        var status = await GetStatus(cancellationToken);
+        
+        if (status.Status != STATUS_OK)
+        {
+            _logger.LogWarning($"Radiator is not in a valid state for temperature update. Current status: {status.Status}. Expected status: {STATUS_OK}");
+            return false;
+        }
+
+        if ((int)status.RawAmbientTemperature == value)
+        {
+            return true;
+        }
+
+        return await SetTemprature(value, cancellationToken);
+    }
+
     private async Task<bool> SetTemprature(int value, CancellationToken cancellationToken)
     {
-        var httpClient = GetHttpClient();
+        var auditEvent = new AuditEvent(AuditAction.Update, AuditTarget.WifiSocket)
+        {
+            NewValue = value,
+            TargetName = Name.ToString()
+        };
 
         var requestBody = new SetTemprature()
         {
             Value = value
         };
-        var requestContent = new StringContent(JsonSerializer.Serialize(requestBody));
 
-        var response = await httpClient.PostAsync("set-temperature", requestContent, cancellationToken);
+        var setTempratureResponse = await _externalHttpClient.PostAsync<SetTempratureResponse>(requestBody, "set-temperature", auditEvent, cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync(cancellationToken) ?? string.Empty;
-            _logger.LogWarning("Set Wifi-socket temparature failed. Response code: {statuscode}. Respone message: {message}", response.StatusCode, content);
-            return false;
-        }
+        return EvaluateSetTempratureResponse(setTempratureResponse);
+    }
 
-        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-        var setTempratureResponse = JsonSerializer.Deserialize<SetTempratureResponse>(responseContent);
+    private bool EvaluateSetTempratureResponse(SetTempratureResponse? setTempratureResponse)
+    {
         if (setTempratureResponse != null && setTempratureResponse.Status != "ok")
         {
             _logger.LogWarning("Set temprature failed. Expected response 'ok' but got '{setTempratureResponse}'", setTempratureResponse);
@@ -73,12 +83,5 @@ public class WifiSocketClient(IHttpClientFactory httpClientFactory, IOptions<Wif
         }
 
         return true;
-    }
-
-    private HttpClient GetHttpClient()
-    {
-        var httpClient = _httpClientFactory.CreateClient();
-        httpClient.BaseAddress = new Uri(_wifiSocketOptions.BaseAddress);
-        return httpClient;
     }
 }

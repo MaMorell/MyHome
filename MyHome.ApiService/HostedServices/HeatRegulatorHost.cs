@@ -1,5 +1,5 @@
 ﻿using Cronos;
-using MyHome.Core;
+using MyHome.Core.Services;
 
 namespace MyHome.ApiService.HostedServices;
 

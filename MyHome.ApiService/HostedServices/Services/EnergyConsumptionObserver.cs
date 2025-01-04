@@ -1,9 +1,9 @@
 ﻿using AsyncAwaitBestPractices;
 using MyHome.ApiService.Constants;
-using MyHome.Core;
 using MyHome.Core.Helpers;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Repositories;
+using MyHome.Core.Services;
 using Tibber.Sdk;
 
 namespace MyHome.ApiService.HostedServices.Services;
