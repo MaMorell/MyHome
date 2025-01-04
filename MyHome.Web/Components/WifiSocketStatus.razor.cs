@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using MyHome.Core.Models.WifiSocket;
-using MyHome.Web.HttpClients;
 
 namespace MyHome.Web.Components;
 

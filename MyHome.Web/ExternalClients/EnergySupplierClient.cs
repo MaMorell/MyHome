@@ -1,6 +1,7 @@
 using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Repositories;
 
-namespace MyHome.Web.HttpClients;
+namespace MyHome.Web.ExternalClients;
 
 public class EnergySupplierClient(HttpClient httpClient)
 {
@@ -16,5 +17,15 @@ public class EnergySupplierClient(HttpClient httpClient)
         var result = await httpClient.GetFromJsonAsync<EnergyMeasurement>("energysupplier/energymeasurement", cancellationToken);
 
         return result ?? new EnergyMeasurement();
+    }
+}
+
+public class AuditClient(HttpClient httpClient)
+{
+    public async Task<IEnumerable<AuditEvent>> GetAuditEventsAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await httpClient.GetFromJsonAsync<IEnumerable<AuditEvent>>($"auditevents?count={20}", cancellationToken);
+
+        return result ?? [];
     }
 }

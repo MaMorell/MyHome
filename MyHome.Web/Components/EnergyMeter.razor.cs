@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using MyHome.Web.HttpClients;
+using MyHome.Web.ExternalClients;
 
 namespace MyHome.Web.Components;
 

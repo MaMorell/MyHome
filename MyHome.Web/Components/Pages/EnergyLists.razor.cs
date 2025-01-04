@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using MyHome.Core.Models.EnergySupplier;
-using MyHome.Web.HttpClients;
+using MyHome.Web.ExternalClients;
 
 namespace MyHome.Web.Components.Pages;
 public partial class EnergyLists

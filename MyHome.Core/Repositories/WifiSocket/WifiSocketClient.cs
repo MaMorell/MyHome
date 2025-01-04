@@ -48,7 +48,7 @@ public class WifiSocketClient(
             return false;
         }
 
-        if ((int)status.RawAmbientTemperature == value)
+        if (status.SetTemperature == value)
         {
             return true;
         }

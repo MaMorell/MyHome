@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using MyHome.ApiService.HostedServices.Services;
+﻿using MyHome.ApiService.HostedServices.Services;
 using MyHome.Core.Http;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
@@ -19,7 +18,23 @@ public static class WebApplicationBuilderExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddSingleton<IRepository<AuditEvent>, InMemoryRepository<AuditEvent>>();
+        //services.AddSingleton<IRepository<AuditEvent>, InMemoryRepository<AuditEvent>>();
+        services.AddSingleton<IRepository<AuditEvent>>(s =>
+        {
+            var foo = new InMemoryRepository<AuditEvent>();
+
+            foo.AddAsync(new AuditEvent(AuditAction.Update, AuditTarget.WifiSocket)
+            {
+                NewValue = "123",
+                TargetName = "Test WifiSocket!",
+            });
+            foo.AddAsync(new AuditEvent(AuditAction.Update, AuditTarget.HeatPump)
+            {
+                NewValue = "999",
+                TargetName = "Test HeatPump!",
+            });
+            return foo;
+        });
 
         services
             .AddWifiSocketServices(configuration)

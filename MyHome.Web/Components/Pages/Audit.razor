@@ -1,0 +1,32 @@
+﻿@page "/audit"
+
+@using MudBlazor
+@attribute [StreamRendering]
+@attribute [OutputCache(Duration = 5)]
+
+<PageTitle>Händelser</PageTitle>
+
+<MudContainer Class="ma-4">
+    <MudPaper Elevation="0" Class="mb-8">
+        <MudText Typo="Typo.h3" Color="Color.Primary" Class="mb-2">Händelser</MudText>
+    </MudPaper>
+
+    <MudTable Class="mb-8" Items="events" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+        <HeaderContent>
+            <MudTh>Datum</MudTh>
+            <MudTh>Enhet</MudTh>
+            <MudTh>Händelse</MudTh>
+            <MudTh>Nytt värde</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Datum">@context.Timestamp</MudTd>
+            <MudTd DataLabel="Datum">@context.Target</MudTd>
+            <MudTd DataLabel="Datum">@context.Action</MudTd>
+            <MudTd DataLabel="Datum">@context.NewValue</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+
+
+

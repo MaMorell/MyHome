@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using MudBlazor.Components.Chart.Models;
 using MyHome.Core.Models.EnergySupplier;
-using MyHome.Web.HttpClients;
+using MyHome.Web.ExternalClients;
 
 namespace MyHome.Web.Components.Pages;
 public partial class EnergyCharts
@@ -65,7 +65,7 @@ public partial class EnergyCharts
         }
     }
 
-    private static List<TimeSeriesChartSeries.TimeValue> GetConsumptionChartData(IEnumerable<EnergyPrice> prices) => 
+    private static List<TimeSeriesChartSeries.TimeValue> GetConsumptionChartData(IEnumerable<EnergyPrice> prices) =>
         prices
             .Where(p => p.Consumption.HasValue)
             .Select(p => new TimeSeriesChartSeries.TimeValue(p.Time, p.Consumption.HasValue ? (double)p.Consumption : 0))

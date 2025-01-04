@@ -1,7 +1,7 @@
 using MudBlazor.Services;
 using MyHome.ServiceDefaults;
 using MyHome.Web.Components;
-using MyHome.Web.HttpClients;
+using MyHome.Web.ExternalClients;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +16,7 @@ builder.Services.AddOutputCache();
 
 builder.Services
     .AddApiClient<EnergySupplierClient>()
+    .AddApiClient<AuditClient>()
     .AddApiClient<WifiSocketClient>();
 
 builder.Services.AddMudServices();

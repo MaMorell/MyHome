@@ -1,6 +1,6 @@
 ﻿using MyHome.Core.Models.WifiSocket;
 
-namespace MyHome.Web.HttpClients;
+namespace MyHome.Web.ExternalClients;
 
 public class WifiSocketClient(HttpClient httpClient)
 {
