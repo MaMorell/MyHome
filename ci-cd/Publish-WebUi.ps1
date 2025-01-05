@@ -10,10 +10,34 @@ param (
     [string]$RunTime = "linux-arm64"
 )
 
-function Update-Appsettings {
+function Update-WebAppsettings {
+    param(
+        [string]$ApiServiceBaseUrl
+    )
+    
+    $configPath = "C:\GIT\other\MyHome\MyHome.Web\appsettings.json"
+
+    if (-not (Test-Path $configPath)) {
+        Write-Error "Configuration file not found at: $configPath"
+        exit 1
+    }
+
+    $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json
+
+    $config.ApiService.BaseUrl = $ApiServiceBaseUrl
+
+    $updatedJson = $config | ConvertTo-Json -Depth 10
+
+    $updatedJson | Set-Content -Path $configPath -Encoding UTF8
+
+    Write-Host "Configuration updated successfully!"
+}
+
+function Update-ApiAppsettings {
     param(
         [string]$MyUplinkClientSecret,
-        [string]$TibberApiAccessToken
+        [string]$TibberApiAccessToken,
+        [string]$ApplicationInsightsConnectionString
     )
     
     $configPath = "C:\GIT\other\MyHome\MyHome.ApiService\appsettings.json"
@@ -25,8 +49,9 @@ function Update-Appsettings {
 
     $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json
 
-    $config.UpLinkCredentials.ClientSecret = $MyUplinkClientSecret
+    $config.UpLinkOptions.ClientSecret = $MyUplinkClientSecret
     $config.TibberApiClient.AccessToken = $TibberApiAccessToken
+    $config.APPLICATIONINSIGHTS_CONNECTION_STRING = $ApplicationInsightsConnectionString
 
     $updatedJson = $config | ConvertTo-Json -Depth 10
 
@@ -39,7 +64,8 @@ if ((Test-Path $PublishPath) -eq $false) {
     throw "Network share '$PublishPath' not found"
 }
 
-Update-Appsettings $MyUplinkClientSecret $TibberApiAccessToken
+Update-WebAppsettings 'http://0.0.0.0:5001/'
+Update-ApiAppsettings $MyUplinkClientSecret $TibberApiAccessToken 'InstrumentationKey=01f9ce82-2749-434d-9a43-cdd996c12dae;IngestionEndpoint=https://swedencentral-0.in.applicationinsights.azure.com/;ApplicationId=49260d0a-163f-48a9-b79a-7a1b2e373bf0'
 Push-Location "C:\GIT\other\MyHome\MyHome.ApiService\"
 dotnet publish --configuration Release --output "$PublishPath\MyHomeApi" --runtime $RunTime
 Pop-Location
@@ -48,8 +74,8 @@ Push-Location "C:\GIT\other\MyHome\MyHome.Web\"
 dotnet publish --configuration Release --output "$PublishPath\MyHomeWebUi" --runtime $RunTime
 Pop-Location
 
-Update-Appsettings "" ""
-
+Update-WebAppsettings 'https+http://apiservice'
+Update-ApiAppsettings "" "" 'InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://swedencentral-0.in.applicationinsights.azure.com/;ApplicationId=00000000-0000-0000-0000-000000000000'
 
 write-Host "How to run on RP:"
 

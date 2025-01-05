@@ -15,9 +15,9 @@ builder.Services.AddRazorComponents()
 builder.Services.AddOutputCache();
 
 builder.Services
-    .AddApiClient<EnergySupplierClient>()
-    .AddApiClient<AuditClient>()
-    .AddApiClient<WifiSocketClient>();
+    .AddApiClient<EnergySupplierClient>(builder.Configuration)
+    .AddApiClient<AuditClient>(builder.Configuration)
+    .AddApiClient<WifiSocketClient>(builder.Configuration);
 
 builder.Services.AddMudServices();
 
