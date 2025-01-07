@@ -64,7 +64,7 @@ if ((Test-Path $PublishPath) -eq $false) {
     throw "Network share '$PublishPath' not found"
 }
 
-Update-WebAppsettings 'http://0.0.0.0:5001/'
+Update-WebAppsettings 'http://192.168.10.244:5001/'
 Update-ApiAppsettings $MyUplinkClientSecret $TibberApiAccessToken 'InstrumentationKey=01f9ce82-2749-434d-9a43-cdd996c12dae;IngestionEndpoint=https://swedencentral-0.in.applicationinsights.azure.com/;ApplicationId=49260d0a-163f-48a9-b79a-7a1b2e373bf0'
 Push-Location "C:\GIT\other\MyHome\MyHome.ApiService\"
 dotnet publish --configuration Release --output "$PublishPath\MyHomeApi" --runtime $RunTime
