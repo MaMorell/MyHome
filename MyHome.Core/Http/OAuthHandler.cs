@@ -20,8 +20,10 @@ public class OAuthHandler<TOptions>(
     {
         var token = await _cache.GetOrCreateAsync($"token-{_options.ClientIdentifier}", async entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12);
-            return await GetAuthToken();
+            var token = await GetAuthToken();
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(token.ExpiresIn - 100);
+
+            return token;
         });
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token?.AccessToken);
 
