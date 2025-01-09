@@ -14,17 +14,36 @@ public class HeatPumpPoint
 public class HeatpumpClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient)
 {
     private const int HeatingOffsetPoint = 47011;
-    
-    private readonly AuditedHttpClient<MyUplinkOptions> _externalHttpClient = externalHttpClient;
+    private const int ComfortModePoint = 47041;
+
+    private readonly AuditedHttpClient<MyUplinkOptions> _httpClient = externalHttpClient;
 
     public async Task<HeatPumpPoint> GetHeat(CancellationToken cancellationToken)
     {
         var uri = GetDevicePointsApiPath();
 
-        var result = await _externalHttpClient.GetAsync<IEnumerable<HeatPumpPoint>>(uri, cancellationToken);
+        var result = await _httpClient.GetAsync<IEnumerable<HeatPumpPoint>>(uri, cancellationToken);
 
         return result.SingleOrDefault(result => result.ParameterId == HeatingOffsetPoint.ToString())
             ?? throw new InvalidOperationException($"Could not find heat point with id {HeatingOffsetPoint}");
+    }
+
+    public async Task<ComfortMode> GetComfortMode(CancellationToken cancellationToken)
+    {
+        var uri = GetDevicePointsApiPath();
+
+        var response = await _httpClient.GetAsync<IEnumerable<HeatPumpPoint>>(uri, cancellationToken);
+
+        var comfortModePoint = response.SingleOrDefault(result => result.ParameterId == ComfortModePoint.ToString())
+            ?? throw new InvalidOperationException($"Could not find heat point with id {HeatingOffsetPoint}");
+
+        return (int)comfortModePoint.Value switch
+        {
+            0 => ComfortMode.Economy,
+            1 => ComfortMode.Normal,
+            2 => ComfortMode.Luxury,
+            _ => throw new InvalidOperationException($"Invalid comfort mode value: {comfortModePoint.Value}")
+        };
     }
 
     public async Task UpdateHeat(int value, CancellationToken cancellationToken)
@@ -45,11 +64,14 @@ public class HeatpumpClient(AuditedHttpClient<MyUplinkOptions> externalHttpClien
 
     public async Task UpdateComfortMode(ComfortMode value, CancellationToken cancellationToken)
     {
-        const int ComfortModePoint = 47041;
+        var currentComfortMode = await GetComfortMode(cancellationToken);
+        if (currentComfortMode == value)
+        {
+            return;
+        }
 
         await PatchPoint(value, ComfortModePoint, cancellationToken);
     }
-
 
     private async Task PatchPoint(object value, int point, CancellationToken cancellationToken)
     {
@@ -61,12 +83,19 @@ public class HeatpumpClient(AuditedHttpClient<MyUplinkOptions> externalHttpClien
         var auditEvent = new AuditEvent(AuditAction.Update, AuditTarget.HeatPump)
         {
             NewValue = value,
-            TargetName = "NIBE Värmepump"
+            TargetName = GetAuditTargetName(point)
         };
 
         var uri = GetDevicePointsApiPath();
-        await _externalHttpClient.PatchAsync(requestBody, uri, auditEvent, cancellationToken);
+        await _httpClient.PatchAsync(requestBody, uri, auditEvent, cancellationToken);
     }
+
+    private static string GetAuditTargetName(int point) => point switch
+    {
+        ComfortModePoint => "Nibe värmepump - Varmvatten",
+        HeatingOffsetPoint => "Nibe värmepump - Värme",
+        _ => "NIBE Värmepump",
+    };
 
     private static string GetDevicePointsApiPath()
     {

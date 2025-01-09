@@ -17,8 +17,9 @@ public sealed class EnergyConsumptionObserver(
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
     private readonly IRepository<EnergyMeasurement> _energyMeasurementRepository = energyMeasurementRepository;
 
-    private DateTime _lastEnergyPriceAdjustmentCheck = DateTime.MinValue;
-    private const int LastHourConsumptionLimitKWH = 3;
+    private const int HourlyConsumptionLimitKWH = 3;
+    private readonly TimeSpan _workingHoursStart = TimeSpan.FromHours(7);  // 07:00
+    private readonly TimeSpan _workingHoursEnd = TimeSpan.FromHours(19);   // 19:00
 
     public void OnCompleted() => _logger.LogInformation("{Observer} completed", nameof(EnergyConsumptionObserver));
 
@@ -40,6 +41,19 @@ public sealed class EnergyConsumptionObserver(
             .SafeFireAndForget(e => _logger.LogError("Adjust heat failed: {ErrorMessage}", e.Message));
     }
 
+    private bool IsWithinWorkingHours()
+    {
+        var now = DateTime.Now;
+        var currentTime = now.TimeOfDay;
+
+        if (now.DayOfWeek == DayOfWeek.Saturday || now.DayOfWeek == DayOfWeek.Sunday)
+        {
+            return false;
+        }
+
+        return currentTime >= _workingHoursStart && currentTime < _workingHoursEnd;
+    }
+
     private async Task HandleConsumptionLastHour(decimal accumulatedConsumptionLastHour, decimal power)
     {
         await _energyMeasurementRepository.UpsertAsync(new EnergyMeasurement
@@ -50,7 +64,13 @@ public sealed class EnergyConsumptionObserver(
             UpdatedAt = DateTime.Now
         });
 
-        if (accumulatedConsumptionLastHour < LastHourConsumptionLimitKWH)
+        // Only proceed with heat adjustment during working hours
+        if (!IsWithinWorkingHours())
+        {
+            return;
+        }
+
+        if (accumulatedConsumptionLastHour < HourlyConsumptionLimitKWH)
         {
             return;
         }
@@ -62,14 +82,12 @@ public sealed class EnergyConsumptionObserver(
             "Accumulated Consumption Last Hour {Consumption} is above the threshold {Threshold} kWh. " +
             "Applying Max savings",
             accumulatedConsumptionLastHour,
-            LastHourConsumptionLimitKWH);
+            HourlyConsumptionLimitKWH);
 
         await heatRegulatorService.SetHeat(
             HomeConfiguration.HeatOffsets.MaxSavings,
             HomeConfiguration.Temperatures.MaxSavings,
             HomeConfiguration.ComfortModes.MaxSavings,
             CancellationToken.None);
-
-        _lastEnergyPriceAdjustmentCheck = DateTime.Now;
     }
 }

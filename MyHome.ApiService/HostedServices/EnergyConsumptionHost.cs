@@ -11,13 +11,7 @@ public sealed class EnergyConsumptionHost(
     private readonly IObserver<RealTimeMeasurement> _observer = observer ?? throw new ArgumentNullException(nameof(observer));
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
 
-    private readonly TimeSpan _workingHoursStart = TimeSpan.FromHours(7);  // 07:00
-    private readonly TimeSpan _workingHoursEnd = TimeSpan.FromHours(19);   // 19:00
-    private readonly TimeSpan _schedulerInterval = TimeSpan.FromMinutes(1);
-
     private Guid _homeId;
-    private Timer? _schedulerTimer;
-    private bool _isRunning;
     private IDisposable? _listenerSubscription;
     private IServiceScope? _currentScope;
 
@@ -32,12 +26,7 @@ public sealed class EnergyConsumptionHost(
 
             await tibberClient.ValidateRealtimeDevice(cancellationToken);
             _homeId = await GetHomeId(tibberClient, cancellationToken);
-
-            _schedulerTimer = new Timer(
-                CheckSchedule,
-                null,
-                TimeSpan.Zero,
-                _schedulerInterval);
+            await StartListener(cancellationToken);
 
             _logger.LogInformation("{Service} started successfully", nameof(EnergyConsumptionHost));
         }
@@ -54,17 +43,7 @@ public sealed class EnergyConsumptionHost(
 
         try
         {
-            if (_schedulerTimer != null)
-            {
-                await _schedulerTimer.DisposeAsync();
-                _schedulerTimer = null;
-            }
-
-            if (_isRunning)
-            {
-                await StopListener(cancellationToken);
-            }
-
+            await StopListener(cancellationToken);
             _logger.LogInformation("{Service} stopped successfully", nameof(EnergyConsumptionHost));
         }
         catch (Exception ex)
@@ -74,45 +53,20 @@ public sealed class EnergyConsumptionHost(
         }
     }
 
-    private async void CheckSchedule(object? state)
-    {
-        try
-        {
-            var shouldBeRunning = IsWithinWorkingHours();
-
-            if (shouldBeRunning && !_isRunning)
-            {
-                await StartListener(CancellationToken.None);
-            }
-            else if (!shouldBeRunning && _isRunning)
-            {
-                await StopListener(CancellationToken.None);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in schedule check");
-        }
-    }
-
     private async Task StartListener(CancellationToken cancellationToken)
     {
         try
         {
-            // Create a new scope for the listener session
-            _currentScope?.Dispose();
             _currentScope = _serviceScopeFactory.CreateScope();
             var tibberClient = _currentScope.ServiceProvider.GetRequiredService<TibberApiClient>();
 
             var listener = await tibberClient.StartRealTimeMeasurementListener(_homeId, cancellationToken);
             _listenerSubscription = listener.Subscribe(_observer);
-            _isRunning = true;
-            _logger.LogInformation("Real Time Measurement listener started at {Time}", DateTime.Now.ToString("HH:mm"));
+            _logger.LogInformation("Real Time Measurement listener started");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to start Real Time Measurement listener");
-            _isRunning = false;
             _listenerSubscription?.Dispose();
             _currentScope?.Dispose();
             _currentScope = null;
@@ -133,30 +87,14 @@ public sealed class EnergyConsumptionHost(
             _listenerSubscription?.Dispose();
             _currentScope?.Dispose();
             _currentScope = null;
-            _isRunning = false;
 
-            _logger.LogInformation("Real Time Measurement listener stopped at {Time}", DateTime.Now.ToString("HH:mm"));
+            _logger.LogInformation("Real Time Measurement listener stopped");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to stop Real Time Measurement listener");
             throw;
         }
-    }
-
-    private bool IsWithinWorkingHours()
-    {
-        var now = DateTime.Now;
-        var currentTime = now.TimeOfDay;
-
-        // Check if it's a working day (Monday-Friday)
-        if (now.DayOfWeek == DayOfWeek.Saturday || now.DayOfWeek == DayOfWeek.Sunday)
-        {
-            return false;
-        }
-
-        // Check if current time is within working hours
-        return currentTime >= _workingHoursStart && currentTime < _workingHoursEnd;
     }
 
     private static async Task<Guid> GetHomeId(TibberApiClient tibberApiClient, CancellationToken cancellationToken)
@@ -173,7 +111,6 @@ public sealed class EnergyConsumptionHost(
 
     public void Dispose()
     {
-        _schedulerTimer?.Dispose();
         _listenerSubscription?.Dispose();
         _currentScope?.Dispose();
     }

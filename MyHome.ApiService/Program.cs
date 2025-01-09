@@ -57,7 +57,7 @@ app.MapGet("/wifisocket/{name}/status", async ([FromServices] WifiSocketsService
 app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> repository, [FromQuery]int count) =>
 {
     var result = await repository.GetAllAsync();
-    return result.Take(count);
+    return result.OrderByDescending(r => r.Timestamp).Take(count);
 })
 .WithName("GetAuditEvents");
 
