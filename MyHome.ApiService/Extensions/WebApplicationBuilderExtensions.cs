@@ -5,6 +5,7 @@ using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Options;
 using MyHome.Core.Repositories;
 using MyHome.Core.Repositories.EnergySupplier;
+using MyHome.Core.Repositories.FloorHeating;
 using MyHome.Core.Repositories.HeatPump;
 using MyHome.Core.Services;
 using System.Net.Http.Headers;
@@ -23,7 +24,8 @@ public static class WebApplicationBuilderExtensions
         services
             .AddWifiSocketServices(configuration)
             .AddEnergySupplierServices(configuration)
-            .AddHeatPumpServices(configuration);
+            .AddHeatPumpServices(configuration)
+            .AddFloorHeatServices(configuration);
 
         return services;
     }
@@ -38,6 +40,14 @@ public static class WebApplicationBuilderExtensions
         services.AddSingleton<IRepository<EnergyMeasurement>, InMemoryRepository<EnergyMeasurement>>();
 
         services.AddTibberClient(configuration);
+
+        return services;
+    }
+
+    private static IServiceCollection AddFloorHeatServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<FloorHeaterOptions>(configuration.GetSection(FloorHeaterOptions.ConfigurationSection));
+        services.AddScoped<FloorHeaterRepository>();
 
         return services;
     }

@@ -82,12 +82,13 @@ public sealed class EnergyConsumptionObserver(
             "Accumulated Consumption Last Hour {Consumption} is above the threshold {Threshold} kWh. " +
             "Applying Max savings",
             accumulatedConsumptionLastHour,
-            HourlyConsumptionLimitKWH);
+            HourlyConsumptionLimitKWH); 
 
         await heatRegulatorService.SetHeat(
             HomeConfiguration.HeatOffsets.MaxSavings,
-            HomeConfiguration.Temperatures.MaxSavings,
+            HomeConfiguration.RadiatorTemperatures.MaxSavings,
             HomeConfiguration.ComfortModes.MaxSavings,
+            HomeConfiguration.RadiatorTemperatures.MaxSavings,
             CancellationToken.None);
     }
 }
