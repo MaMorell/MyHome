@@ -1,4 +1,4 @@
-﻿namespace MyHome.Core.Models.EnergySupplier;
+﻿namespace MyHome.Core.Models.EnergySupplier.Enums;
 
 public enum RelativePriceLevel
 {

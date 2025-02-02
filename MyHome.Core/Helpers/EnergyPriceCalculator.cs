@@ -1,4 +1,5 @@
 ﻿using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Models.EnergySupplier.Enums;
 using Tibber.Sdk;
 using PriceLevel = Tibber.Sdk.PriceLevel;
 
@@ -40,10 +41,10 @@ public class EnergyPriceCalculator
             }).ToList(); ;
     }
 
-    public static Models.EnergySupplier.PriceLevel ConvertToPriceLevel(PriceLevel? level)
+    public static Models.EnergySupplier.Enums.PriceLevel ConvertToPriceLevel(PriceLevel? level)
     {
         var levelString = level?.ToString() ?? PriceLevel.Normal.ToString();
-        return Enum.Parse<Models.EnergySupplier.PriceLevel>(levelString);
+        return Enum.Parse<Models.EnergySupplier.Enums.PriceLevel>(levelString);
     }
 
     private static RelativePriceLevel GetDayPriceLevel(

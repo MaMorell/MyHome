@@ -1,4 +1,4 @@
-﻿using MyHome.Core.Models.EnergySupplier;
+﻿using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.HeatPump;
 
 namespace MyHome.Core.Helpers;

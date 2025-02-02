@@ -1,5 +1,6 @@
 ﻿using AsyncAwaitBestPractices;
 using MyHome.ApiService.Constants;
+using MyHome.Core.Extensions;
 using MyHome.Core.Helpers;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Repositories;
@@ -44,14 +45,13 @@ public sealed class EnergyConsumptionObserver(
     private bool IsWithinWorkingHours()
     {
         var now = DateTime.Now;
-        var currentTime = now.TimeOfDay;
 
-        if (now.DayOfWeek == DayOfWeek.Saturday || now.DayOfWeek == DayOfWeek.Sunday)
+        if (now.IsWeekend())
         {
             return false;
         }
 
-        return currentTime >= _workingHoursStart && currentTime < _workingHoursEnd;
+        return now.TimeOfDay >= _workingHoursStart && now.TimeOfDay < _workingHoursEnd;
     }
 
     private async Task HandleConsumptionLastHour(decimal accumulatedConsumptionLastHour, decimal power)

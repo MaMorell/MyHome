@@ -1,4 +1,6 @@
-﻿namespace MyHome.Core.Models.EnergySupplier;
+﻿using MyHome.Core.Models.EnergySupplier.Enums;
+
+namespace MyHome.Core.Models.EnergySupplier;
 
 public record EnergyPrice
 {

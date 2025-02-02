@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MyHome.ApiService.Constants;
 using MyHome.ApiService.Extensions;
-using MyHome.ApiService.HostedServices;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Repositories;
 using MyHome.Core.Repositories.WifiSocket;
@@ -23,8 +22,8 @@ builder.Services.AddMemoryCache();
 
 builder.Services.RegisterLocalDependencies(builder.Configuration);
 
-builder.Services.AddHostedService<HeatRegulatorHost>();
-builder.Services.AddHostedService<EnergyConsumptionHost>();
+//builder.Services.AddHostedService<HeatRegulatorHost>();
+//builder.Services.AddHostedService<EnergyConsumptionHost>();
 
 var app = builder.Build();
 
@@ -36,9 +35,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapGet("energysupplier/energyprice", async ([FromServices] EnergyPriceService energyPriceService) =>
+app.MapGet("energysupplier/energyprice", async ([FromServices] EnergySupplierService energyPriceService) =>
 {
-    return await energyPriceService.GetEnergyPriceAsync();
+    return await energyPriceService.GetFutureEnergyPricesAsync();
 })
 .WithName("GetEnergyPrices");
 
@@ -48,13 +47,22 @@ app.MapGet("energysupplier/energymeasurement", async ([FromServices] IRepository
 })
 .WithName("GetLastEnergyMeasurement");
 
+app.MapGet("/energysupplier/consumption/currentmonth/top", async (
+    [FromServices] EnergySupplierService energyPriceService, 
+    [FromQuery] int limit = 3, 
+    [FromQuery] bool onlyDuringWeekdays = true) =>
+{
+    return await energyPriceService.GetTopConumptionAsync(limit, onlyDuringWeekdays);
+})
+.WithName("GetTopMonthlyConsumption");
+
 app.MapGet("/wifisocket/{name}/status", async ([FromServices] WifiSocketsService service, string name) =>
 {
     return await service.GetStatus(name);
 })
 .WithName("GetWifiSocketStatus");
 
-app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> repository, [FromQuery]int count) =>
+app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> repository, [FromQuery] int count) =>
 {
     var result = await repository.GetAllAsync();
     return result.OrderByDescending(r => r.Timestamp).Take(count);
