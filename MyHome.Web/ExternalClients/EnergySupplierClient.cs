@@ -21,7 +21,7 @@ public class EnergySupplierClient(HttpClient httpClient)
         bool onlyDuringWeekdays = true,
         CancellationToken cancellationToken = default)
     {
-        var query = $"energy-suppliers/consumptions/rankings/monthly?limit={limit}&onlyDuringWeekdays={onlyDuringWeekdays}";
+        var query = $"energysupplier/consumption/currentmonth/top?limit={limit}&onlyDuringWeekdays={onlyDuringWeekdays}";
         var result = await httpClient.GetFromJsonAsync<IEnumerable<EnergyConsumption>>(query, cancellationToken);
         return result ?? [];
     }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using MyHome.Core.Models.EnergySupplier;
 using MyHome.Web.ExternalClients;
 
 namespace MyHome.Web.Components;
@@ -11,6 +12,7 @@ public partial class EnergyMeter
     private decimal RealTimePowerUsage { get; set; }
     private decimal AccumulatedConsumptionLastHour { get; set; }
     private DateTime DataUpdatedAt { get; set; }
+    public IEnumerable<EnergyConsumption> TopConsumption { get; set; }
 
     protected override async Task OnInitializedAsync() => await RefreshData();
 
@@ -18,9 +20,11 @@ public partial class EnergyMeter
 
     private async Task RefreshData()
     {
-        var result = await EnergySupplierClient.GetLastEnergyMeasurementAsync();
-        RealTimePowerUsage = result.Power;
-        AccumulatedConsumptionLastHour = result.AccumulatedConsumptionLastHour;
-        DataUpdatedAt = result.UpdatedAt;
+        var latestMeasurement = await EnergySupplierClient.GetLastEnergyMeasurementAsync();
+        RealTimePowerUsage = latestMeasurement.Power;
+        AccumulatedConsumptionLastHour = latestMeasurement.AccumulatedConsumptionLastHour;
+        DataUpdatedAt = latestMeasurement.UpdatedAt;
+
+        TopConsumption = await EnergySupplierClient.GetHighestMonthlyConsumptionAsync();
     }
 }
