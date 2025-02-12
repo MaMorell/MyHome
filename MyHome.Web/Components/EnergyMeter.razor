@@ -1,5 +1,4 @@
 ﻿@using MudBlazor
-
 <MudCard Elevation="3" Class="rounded-lg ma-5">
     <MudCardHeader Class="pb-0">
         <CardHeaderContent>
@@ -26,6 +25,40 @@
                     <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Förbrukning senaste timmen</MudText>
                     <MudText Typo="Typo.h4">@AccumulatedConsumptionLastHour kWh</MudText>
                 </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+    <MudDivider Class="my-4 mx-6" />
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" />
+                    Högsta månadsförbrukning
+                </MudText>
+                @if (TopConsumption != null && TopConsumption.Any())
+                {
+                    <MudList T="string" ReadOnly="true">
+                        @foreach (var item in TopConsumption)
+                        {
+                            <MudListItem>
+                                <div class="d-flex flex-column">
+                                    <div class="d-flex justify-space-between align-center">
+                                        <MudText Typo="Typo.body1">@item.Consumption.ToString("N2") kWh</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@item.Cost.ToString("C2")</MudText>
+                                    </div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @item.From.ToString("MM-dd HH:mm")
+                                    </MudText>
+                                </div>
+                            </MudListItem>
+                        }
+                    </MudList>
+                }
+                else
+                {
+                    <MudText>Ingen förbrukningsdata tillgänglig</MudText>
+                }
             </MudItem>
         </MudGrid>
     </MudCardContent>
