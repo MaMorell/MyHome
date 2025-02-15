@@ -1,6 +1,5 @@
 ﻿using AsyncAwaitBestPractices;
 using MyHome.ApiService.Constants;
-using MyHome.Core.Extensions;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.PriceCalculations;
 using MyHome.Core.Repositories;
@@ -19,8 +18,8 @@ public sealed class EnergyConsumptionObserver(
     private readonly IRepository<EnergyMeasurement> _energyMeasurementRepository = energyMeasurementRepository;
 
     private const int HourlyConsumptionLimitKWH = 3;
-    private readonly TimeSpan _workingHoursStart = TimeSpan.FromHours(7);  // 07:00
-    private readonly TimeSpan _workingHoursEnd = TimeSpan.FromHours(19);   // 19:00
+    private readonly TimeSpan _workingHoursStart = TimeSpan.FromHours(7);
+    private readonly TimeSpan _workingHoursEnd = TimeSpan.FromHours(19);
 
     public void OnCompleted() => _logger.LogInformation("{Observer} completed", nameof(EnergyConsumptionObserver));
 
@@ -64,7 +63,6 @@ public sealed class EnergyConsumptionObserver(
             UpdatedAt = DateTime.Now
         });
 
-        // Only proceed with heat adjustment during working hours
         if (!IsWithinWorkingHours())
         {
             return;
@@ -82,13 +80,15 @@ public sealed class EnergyConsumptionObserver(
             "Accumulated Consumption Last Hour {Consumption} is above the threshold {Threshold} kWh. " +
             "Applying Max savings",
             accumulatedConsumptionLastHour,
-            HourlyConsumptionLimitKWH); 
+            HourlyConsumptionLimitKWH);
 
-        await heatRegulatorService.SetHeat(
+        var settings = new HeatSettings(
             HomeConfiguration.HeatOffsets.MaxSavings,
             HomeConfiguration.RadiatorTemperatures.MaxSavings,
             HomeConfiguration.ComfortModes.MaxSavings,
-            HomeConfiguration.RadiatorTemperatures.MaxSavings,
-            CancellationToken.None);
+            HomeConfiguration.OpModes.MaxSavings,
+            HomeConfiguration.RadiatorTemperatures.MaxSavings);
+
+        await heatRegulatorService.SetHeat(settings, CancellationToken.None);
     }
 }

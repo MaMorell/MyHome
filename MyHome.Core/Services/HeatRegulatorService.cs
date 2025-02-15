@@ -32,30 +32,24 @@ public class HeatRegulatorService(
 
         var price = EnergyPriceCalculator.CreateEneryPrices(prices, DateTime.Now.Hour);
 
-        var heatOffset = HomeConfiguration.GetHeatOffset(price.RelativePriceLevel);
-        var targetTemprature = HomeConfiguration.GetRadiatorTemperature(price.RelativePriceLevel);
-        var comfortMode = HomeConfiguration.GetComfortMode(price.RelativePriceLevel);
-        var floorTemperature = HomeConfiguration.GetFloorHeaterTemperature(price.RelativePriceLevel, DateTime.Now);
+        var heatSettings = HeatSettings.CreateFromPriceLevel(price);
 
-        _logger.LogInformation(
-            "Current energy price {Price:F2} SEK ({Level}). " +
-            "Price level considering today's prices: {DayPriceLevel}. " +
-            "Heat offset {HeatOffset}. " +
-            "Floor temprature {FloorTemperature}. " +
-            "Comfort mode {ComfortMode}. " +
-            "Target temprature {TargetTemprature}.",
-            price.Price, price.PriceLevel, price.RelativePriceLevel, heatOffset, floorTemperature, comfortMode, targetTemprature);
-
-        await SetHeat(heatOffset, targetTemprature, comfortMode, floorTemperature, cancellationToken);
+        await SetHeat(heatSettings, cancellationToken);
     }
 
-    public async Task SetHeat(int heatOffset, int targetTemprature, ComfortMode comfortMode, int floorTemprature, CancellationToken cancellationToken)
+    public async Task SetHeat(HeatSettings settings, CancellationToken cancellationToken)
     {
-        var updateWifiSocketsTask = _wifiSocketsService.UpdateAllClients(targetTemprature, cancellationToken);
-        var updateHeatPumpHeatTask = _heatpumpReposiory.UpdateHeat(heatOffset, cancellationToken);
-        var updateComfortModeTask = _heatpumpReposiory.UpdateComfortMode(comfortMode, cancellationToken);
-        var updateFloorTempratureTask = _floorHeaterRepository.UpdateSetTemperatureAsync(floorTemprature);
+        var configureHeatPumpTask = ConfigureHeatPump(settings, cancellationToken);
+        var updateWifiSocketsTask = _wifiSocketsService.UpdateAllClients(settings.StorageTemprature, cancellationToken);
+        var opModeTask = _heatpumpReposiory.UpdateOpMode(settings.OpMode, cancellationToken);
+        var updateFloorTempratureTask = _floorHeaterRepository.UpdateSetTemperatureAsync(settings.FloorTemperature);
 
-        await Task.WhenAll(updateWifiSocketsTask, updateHeatPumpHeatTask, updateComfortModeTask, updateFloorTempratureTask);
+        await Task.WhenAll(updateWifiSocketsTask, configureHeatPumpTask, updateFloorTempratureTask);
+    }
+
+    private async Task ConfigureHeatPump(HeatSettings settings, CancellationToken cancellationToken)
+    {
+        await _heatpumpReposiory.UpdateHeat(settings.HeatOffset, cancellationToken);
+        await _heatpumpReposiory.UpdateComfortMode(settings.ComfortMode, cancellationToken);
     }
 }

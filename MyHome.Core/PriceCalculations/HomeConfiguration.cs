@@ -1,5 +1,10 @@
-﻿using MyHome.Core.Models.EnergySupplier.Enums;
+﻿using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Repositories.HeatPump.Dtos;
+using System.ComponentModel.Design;
+using Tibber.Sdk;
+using static MyHome.Core.PriceCalculations.HomeConfiguration;
+using PriceLevel = MyHome.Core.Models.EnergySupplier.Enums.PriceLevel;
 
 namespace MyHome.Core.PriceCalculations;
 
@@ -23,6 +28,16 @@ public static class HomeConfiguration
         public const ComfortMode Economic = ComfortMode.Economy;
         public const ComfortMode MaxSavings = ComfortMode.Economy;
         public const ComfortMode ExtremeSavings = ComfortMode.Economy;
+    }
+
+    public static class OpModes
+    {
+        public const OpMode Baseline = OpMode.Auto;
+        public const OpMode Enhanced = OpMode.Auto;
+        public const OpMode Moderate = OpMode.Auto;
+        public const OpMode Economic = OpMode.Manual;
+        public const OpMode MaxSavings = OpMode.Manual;
+        public const OpMode ExtremeSavings = OpMode.Manual;
     }
 
     public static class RadiatorTemperatures
@@ -67,6 +82,27 @@ public static class HomeConfiguration
         _ => ComfortModes.Baseline,
     };
 
+    public static OpMode GetOpMode(EnergyPrice energyPrice)
+    {
+        var priceLevelIsCheap = 
+            energyPrice.PriceLevel == PriceLevel.Cheap || 
+            energyPrice.PriceLevel == PriceLevel.VeryCheap;
+
+        var priceLimit = DateTime.Now.IsNightTime() 
+            ? 1.2m 
+            : 1.0m;
+        var priceIsCheap = energyPrice.Price < priceLimit;
+
+        if (priceLevelIsCheap && priceIsCheap)
+        {
+            return OpMode.Auto;
+        }
+        else
+        {
+            return OpMode.Manual;
+        }
+    }
+
     public static int GetRadiatorTemperature(RelativePriceLevel priceLevel) => priceLevel switch
     {
         RelativePriceLevel.Normal => RadiatorTemperatures.Baseline,
@@ -78,7 +114,7 @@ public static class HomeConfiguration
         _ => RadiatorTemperatures.Baseline,
     };
 
-    public static int GetFloorHeaterTemperature(RelativePriceLevel priceLevel, DateTime currentDate)
+    public static int GetFloorHeaterTemperature(RelativePriceLevel priceLevel)
     {
         var result = priceLevel switch
         {
@@ -91,21 +127,21 @@ public static class HomeConfiguration
             _ => FloorHeaterTemperatures.Baseline,
         };
 
-        result = AdjustTempratureForTimeOfDay(currentDate, result);
+        result = AdjustTempratureForTimeOfDay(result);
 
         return result;
     }
 
-    private static int AdjustTempratureForTimeOfDay(DateTime currentDate, int result)
+    private static int AdjustTempratureForTimeOfDay(int result)
     {
-        var currentTime = TimeOnly.FromDateTime(currentDate);
+        var now = DateTime.Now;
 
-        if (IsNightTime(currentTime))
+        if (now.IsNightTime())
         {
             result -= 4;
         }
 
-        if (IsWeekdayMidDay(currentDate, currentTime))
+        if (now.IsWeekdayMidDay())
         {
             result -= 3;
         }
@@ -117,24 +153,5 @@ public static class HomeConfiguration
         }
 
         return result;
-    }
-
-    private static bool IsWeekdayMidDay(DateTime date, TimeOnly time)
-    {
-        var weekDayMidDayStart = new TimeOnly(10, 0);
-        var weekDayMidDayEnd = new TimeOnly(15, 0);
-
-        return
-            date.DayOfWeek != DayOfWeek.Saturday &&
-            date.DayOfWeek != DayOfWeek.Sunday &&
-            time.IsBetween(weekDayMidDayStart, weekDayMidDayEnd);
-    }
-
-    private static bool IsNightTime(TimeOnly time)
-    {
-        var nightStart = new TimeOnly(1, 0);
-        var nightEnd = new TimeOnly(4, 0);
-
-        return time.IsBetween(nightStart, nightEnd);
     }
 }
