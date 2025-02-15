@@ -1,9 +1,7 @@
-﻿using MyHome.Core.Models.EnergySupplier;
+﻿using MyHome.Core.Extensions;
+using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Repositories.HeatPump.Dtos;
-using System.ComponentModel.Design;
-using Tibber.Sdk;
-using static MyHome.Core.PriceCalculations.HomeConfiguration;
 using PriceLevel = MyHome.Core.Models.EnergySupplier.Enums.PriceLevel;
 
 namespace MyHome.Core.PriceCalculations;
@@ -84,12 +82,12 @@ public static class HomeConfiguration
 
     public static OpMode GetOpMode(EnergyPrice energyPrice)
     {
-        var priceLevelIsCheap = 
-            energyPrice.PriceLevel == PriceLevel.Cheap || 
+        var priceLevelIsCheap =
+            energyPrice.PriceLevel == PriceLevel.Cheap ||
             energyPrice.PriceLevel == PriceLevel.VeryCheap;
 
-        var priceLimit = DateTime.Now.IsNightTime() 
-            ? 1.2m 
+        var priceLimit = DateTime.Now.IsNightTime()
+            ? 1.2m
             : 1.0m;
         var priceIsCheap = energyPrice.Price < priceLimit;
 

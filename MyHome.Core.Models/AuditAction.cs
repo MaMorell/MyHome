@@ -1,4 +1,4 @@
-﻿namespace MyHome.Core.Repositories;
+﻿namespace MyHome.Core.Models;
 
 public enum AuditAction
 {

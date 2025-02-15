@@ -1,4 +1,5 @@
 ﻿using MyHome.Core.Http;
+using MyHome.Core.Models;
 using MyHome.Core.Options;
 using MyHome.Core.Repositories.HeatPump.Dtos;
 

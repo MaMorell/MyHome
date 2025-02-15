@@ -1,6 +1,4 @@
-﻿using MyHome.Core.Models;
-
-namespace MyHome.Core.Repositories;
+﻿namespace MyHome.Core.Models;
 
 public record AuditEvent(AuditAction Action, AuditTarget Target) : IEntity
 {

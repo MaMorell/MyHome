@@ -3,7 +3,6 @@ using MyHome.Core.Interfaces;
 using MyHome.Core.PriceCalculations;
 using MyHome.Core.Repositories.FloorHeating;
 using MyHome.Core.Repositories.HeatPump;
-using MyHome.Core.Repositories.HeatPump.Dtos;
 using MyHome.Core.Repositories.WifiSocket;
 
 namespace MyHome.Core.Services;

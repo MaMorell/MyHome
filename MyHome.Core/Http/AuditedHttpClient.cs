@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyHome.Core.Models;
 using MyHome.Core.Options;
 using MyHome.Core.Repositories;
 using System.Net;

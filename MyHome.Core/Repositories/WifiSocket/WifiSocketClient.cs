@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyHome.Core.Http;
+using MyHome.Core.Models;
 using MyHome.Core.Models.WifiSocket;
 using MyHome.Core.Options;
 

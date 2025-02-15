@@ -1,5 +1,6 @@
 ﻿using AsyncAwaitBestPractices;
 using MyHome.ApiService.Constants;
+using MyHome.Core.Extensions;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.PriceCalculations;
 using MyHome.Core.Repositories;

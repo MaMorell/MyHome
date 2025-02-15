@@ -1,6 +1,7 @@
 ﻿using MyHome.ApiService.HostedServices.Services;
 using MyHome.Core.Http;
 using MyHome.Core.Interfaces;
+using MyHome.Core.Models;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Options;
 using MyHome.Core.Repositories;

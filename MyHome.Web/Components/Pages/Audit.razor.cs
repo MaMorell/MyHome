@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using MyHome.Core.Repositories;
+using MyHome.Core.Models;
 using MyHome.Web.ExternalClients;
 
 namespace MyHome.Web.Components.Pages;

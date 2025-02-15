@@ -17,7 +17,7 @@ public class EnergySupplierClient(HttpClient httpClient)
     }
 
     public async Task<IEnumerable<EnergyConsumption>> GetHighestMonthlyConsumptionAsync(
-        int limit = 3,
+        int limit = 5,
         bool onlyDuringWeekdays = true,
         CancellationToken cancellationToken = default)
     {

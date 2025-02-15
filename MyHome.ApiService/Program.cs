@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MyHome.ApiService.Constants;
 using MyHome.ApiService.Extensions;
+using MyHome.ApiService.HostedServices;
+using MyHome.Core.Models;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Repositories;
 using MyHome.Core.Repositories.WifiSocket;
@@ -22,8 +24,8 @@ builder.Services.AddMemoryCache();
 
 builder.Services.RegisterLocalDependencies(builder.Configuration);
 
-//builder.Services.AddHostedService<HeatRegulatorHost>();
-//builder.Services.AddHostedService<EnergyConsumptionHost>();
+builder.Services.AddHostedService<HeatRegulatorHost>();
+builder.Services.AddHostedService<EnergyConsumptionHost>();
 
 var app = builder.Build();
 
@@ -48,8 +50,8 @@ app.MapGet("energysupplier/energymeasurement", async ([FromServices] IRepository
 .WithName("GetLastEnergyMeasurement");
 
 app.MapGet("/energysupplier/consumption/currentmonth/top", async (
-    [FromServices] EnergySupplierService energyPriceService, 
-    [FromQuery] int limit = 3, 
+    [FromServices] EnergySupplierService energyPriceService,
+    [FromQuery] int limit = 3,
     [FromQuery] bool onlyDuringWeekdays = true) =>
 {
     return await energyPriceService.GetTopConumptionAsync(limit, onlyDuringWeekdays);

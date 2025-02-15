@@ -1,4 +1,4 @@
-﻿using MyHome.Core.Repositories;
+﻿using MyHome.Core.Models;
 
 namespace MyHome.Web.ExternalClients;
 

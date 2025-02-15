@@ -1,4 +1,4 @@
-﻿namespace MyHome.Core.PriceCalculations;
+﻿namespace MyHome.Core.Extensions;
 
 public static class DateTimeExtensions
 {
@@ -25,7 +25,7 @@ public static class DateTimeExtensions
         var weekDayMidDayStart = new TimeOnly(10, 0);
         var weekDayMidDayEnd = new TimeOnly(15, 0);
 
-        return 
+        return
             date.IsWeekday() &&
             time.IsBetween(weekDayMidDayStart, weekDayMidDayEnd);
     }
