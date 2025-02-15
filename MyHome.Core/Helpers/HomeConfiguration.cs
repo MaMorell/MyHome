@@ -37,9 +37,9 @@ public static class HomeConfiguration
 
     public static class FloorHeaterTemperatures
     {
-        public const int Baseline = 20;
-        public const int Enhanced = 24;
-        public const int Moderate = 22;
+        public const int Baseline = 22;
+        public const int Enhanced = 25;
+        public const int Moderate = 24;
         public const int Economic = 15;
         public const int MaxSavings = 10;
         public const int ExtremeSavings = 5;
@@ -122,7 +122,7 @@ public static class HomeConfiguration
     private static bool IsWeekdayMidDay(DateTime date, TimeOnly time)
     {
         var weekDayMidDayStart = new TimeOnly(10, 0);
-        var weekDayMidDayEnd = new TimeOnly(14, 0);
+        var weekDayMidDayEnd = new TimeOnly(15, 0);
 
         return
             date.DayOfWeek != DayOfWeek.Saturday &&
