@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace MyHome.Core.Repositories.FloorHeating;
 
 public class FloorHeaterRepository
-{   
+{
     private const string CODE_TEMP_SET = "temp_set";
 
     private readonly TuyaApi _tuyaApi;

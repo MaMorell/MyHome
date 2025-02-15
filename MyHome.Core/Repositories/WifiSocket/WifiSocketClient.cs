@@ -41,7 +41,7 @@ public class WifiSocketClient(
     private async Task<bool> UpdateHeatAsync(int value, CancellationToken cancellationToken)
     {
         var status = await GetStatus(cancellationToken);
-        
+
         if (status.Status != STATUS_OK)
         {
             _logger.LogWarning($"Radiator is not in a valid state for temperature update. Current status: {status.Status}. Expected status: {STATUS_OK}");

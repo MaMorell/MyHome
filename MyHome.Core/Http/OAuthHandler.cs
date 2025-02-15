@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using MyHome.Core.Models;
 using MyHome.Core.Options;
-using System.Net.Http;
 using System.Text.Json;
 
 namespace MyHome.Core.Http;

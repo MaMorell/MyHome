@@ -1,5 +1,5 @@
 ﻿using MyHome.Core.Models.EnergySupplier.Enums;
-using MyHome.Core.Models.HeatPump;
+using MyHome.Core.Repositories.HeatPump.Dtos;
 
 namespace MyHome.Core.Helpers;
 

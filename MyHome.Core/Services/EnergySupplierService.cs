@@ -33,7 +33,7 @@ public class EnergySupplierService(IEnergyRepository energyRepository)
             ? await _energyRepository.GetTopConsumptionDuringWeekdays(limit)
             : await _energyRepository.GetTopConsumption(limit);
 
-        return conumption.Select( c => new EnergyConsumption()
+        return conumption.Select(c => new EnergyConsumption()
         {
             Consumption = c.Consumption ?? 0,
             Cost = c.Cost ?? 0,

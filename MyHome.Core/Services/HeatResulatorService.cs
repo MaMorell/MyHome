@@ -1,22 +1,22 @@
 ﻿using Microsoft.Extensions.Logging;
 using MyHome.Core.Helpers;
 using MyHome.Core.Interfaces;
-using MyHome.Core.Models.HeatPump;
 using MyHome.Core.Repositories.FloorHeating;
 using MyHome.Core.Repositories.HeatPump;
+using MyHome.Core.Repositories.HeatPump.Dtos;
 using MyHome.Core.Repositories.WifiSocket;
 
 namespace MyHome.Core.Services;
 
 public class HeatResulatorService(
     IEnergyRepository energyRepository,
-    HeatpumpClient heatpumpReposiory,
+    NibeClient heatpumpReposiory,
     WifiSocketsService wifiSocketsService,
     FloorHeaterRepository floorHeaterRepository,
     ILogger<HeatResulatorService> logger)
 {
     private readonly IEnergyRepository _energyRepository = energyRepository ?? throw new ArgumentNullException(nameof(energyRepository));
-    private readonly HeatpumpClient _heatpumpReposiory = heatpumpReposiory ?? throw new ArgumentNullException(nameof(heatpumpReposiory));
+    private readonly NibeClient _heatpumpReposiory = heatpumpReposiory ?? throw new ArgumentNullException(nameof(heatpumpReposiory));
     private readonly WifiSocketsService _wifiSocketsService = wifiSocketsService;
     private readonly FloorHeaterRepository _floorHeaterRepository = floorHeaterRepository;
     private readonly ILogger<HeatResulatorService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));

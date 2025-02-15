@@ -1,8 +1,8 @@
-﻿using MyHome.Core.Interfaces;
+﻿using MyHome.Core.Extensions;
+using MyHome.Core.Interfaces;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using Tibber.Sdk;
-using MyHome.Core.Extensions;
 
 namespace MyHome.Core.Repositories.EnergySupplier;
 
@@ -31,10 +31,10 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergyReposito
         var result = await GetConsumptionByHighestConsumption(tibberApiClient);
 
         return result
-            .Where(x => 
-                x.From.HasValue && 
-                x.From.Value.Date.IsWeekday() && 
-                x.From.Value.DateTime.Hour >= 7 && 
+            .Where(x =>
+                x.From.HasValue &&
+                x.From.Value.Date.IsWeekday() &&
+                x.From.Value.DateTime.Hour >= 7 &&
                 x.From.Value.DateTime.Hour < 19)
             .Take(limit)
             .ToList();
@@ -148,8 +148,8 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergyReposito
             _ => throw new ArgumentOutOfRangeException(nameof(priceType), priceType, null)
         };
 
-        return prices != null 
-            ? new ReadOnlyCollection<Price>(prices) 
+        return prices != null
+            ? new ReadOnlyCollection<Price>(prices)
             : null;
     }
 

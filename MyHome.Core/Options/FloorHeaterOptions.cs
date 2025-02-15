@@ -1,4 +1,4 @@
-﻿namespace MyHome.Core.Repositories.FloorHeating;
+﻿namespace MyHome.Core.Options;
 
 public class FloorHeaterOptions
 {
@@ -7,4 +7,3 @@ public class FloorHeaterOptions
     public required string ApiSecret { get; set; }
     public required string DeviceId { get; set; }
 }
-    
