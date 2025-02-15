@@ -1,6 +1,6 @@
-﻿using MyHome.Core.Helpers;
-using MyHome.Core.Interfaces;
+﻿using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.PriceCalculations;
 
 namespace MyHome.Core.Services;
 
@@ -10,17 +10,9 @@ public class EnergySupplierService(IEnergyRepository energyRepository)
 
     public async Task<IEnumerable<EnergyPrice>> GetFutureEnergyPricesAsync()
     {
-        var todaysPrices = await _energyRepository.GetEnergyPricesForToday();
+        var prices = await _energyRepository.GetAllAvailableEnergyPrices();
 
-        var result = new List<EnergyPrice>();
-        result.AddRange(EnergyPriceCalculator.CreateEneryPrices(todaysPrices));
-
-        if (DateTime.Now.Hour >= 14)
-        {
-            var tomorrowsPrices = await _energyRepository.GetEnergyPricesForTomorrow();
-
-            result.AddRange(EnergyPriceCalculator.CreateEneryPrices(tomorrowsPrices));
-        }
+        var result = EnergyPriceCalculator.CreateEneryPrices(prices);
 
         await AddConsumptionToPrices(result);
 
@@ -43,7 +35,7 @@ public class EnergySupplierService(IEnergyRepository energyRepository)
         }).ToList();
     }
 
-    private async Task AddConsumptionToPrices(List<EnergyPrice> prices)
+    private async Task AddConsumptionToPrices(IEnumerable<EnergyPrice> prices)
     {
         var todaysConsumption = await _energyRepository.GetConsumptionForToday();
 

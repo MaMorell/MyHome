@@ -1,8 +1,8 @@
 ﻿using AsyncAwaitBestPractices;
 using MyHome.ApiService.Constants;
 using MyHome.Core.Extensions;
-using MyHome.Core.Helpers;
 using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.PriceCalculations;
 using MyHome.Core.Repositories;
 using MyHome.Core.Services;
 using Tibber.Sdk;
@@ -76,7 +76,7 @@ public sealed class EnergyConsumptionObserver(
         }
 
         using var scope = _serviceScopeFactory.CreateScope();
-        var heatRegulatorService = scope.ServiceProvider.GetRequiredService<HeatResulatorService>();
+        var heatRegulatorService = scope.ServiceProvider.GetRequiredService<HeatRegulatorService>();
 
         _logger.LogInformation(
             "Accumulated Consumption Last Hour {Consumption} is above the threshold {Threshold} kWh. " +

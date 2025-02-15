@@ -53,7 +53,7 @@ public sealed class HeatRegulatorHost : BackgroundService
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            var heatResulatorService = scope.ServiceProvider.GetRequiredService<HeatResulatorService>();
+            var heatResulatorService = scope.ServiceProvider.GetRequiredService<HeatRegulatorService>();
 
             await heatResulatorService.RegulateHeat(cancellationToken);
         }

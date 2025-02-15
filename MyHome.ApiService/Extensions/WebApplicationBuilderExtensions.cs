@@ -73,7 +73,7 @@ public static class WebApplicationBuilderExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddScoped<HeatResulatorService>();
+        services.AddScoped<HeatRegulatorService>();
         services.AddScoped<NibeClient>();
         services.AddMyUplinkClient(configuration);
         return services;

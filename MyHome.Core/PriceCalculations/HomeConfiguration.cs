@@ -1,7 +1,7 @@
 ﻿using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Repositories.HeatPump.Dtos;
 
-namespace MyHome.Core.Helpers;
+namespace MyHome.Core.PriceCalculations;
 
 public static class HomeConfiguration
 {

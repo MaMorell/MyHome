@@ -20,13 +20,14 @@
             <MudTh>Pris (sek)</MudTh>
             <MudTh>Prisnivå</MudTh>
             <MudTh>Värmereglering</MudTh>
+            <MudTh>Förbrukning</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Datum">@context.Time.ToString()</MudTd>
             <MudTd DataLabel="Pris (sek)">@Math.Round(@context.Price, 2) SEK</MudTd>
             <MudTd DataLabel="Prisnivå">@context.PriceLevel.ToString()</MudTd>
             <MudTd DataLabel="Värmereglering">@context.RelativePriceLevel</MudTd>
-
+            <MudTd DataLabel="Förbrukning">@context.Consumption KwH</MudTd>
         </RowTemplate>
     </MudTable>
 </MudContainer>
