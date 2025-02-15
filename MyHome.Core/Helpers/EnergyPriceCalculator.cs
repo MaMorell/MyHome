@@ -22,23 +22,40 @@ public class EnergyPriceCalculator
 
     public static IEnumerable<EnergyPrice> CreateEneryPrices(ICollection<Price> priceDtos)
     {
-        ValidatePrices(priceDtos);
+        var pricesOrderedByTime = priceDtos.OrderBy(p => p.StartsAt).ToList();
 
-        var average = priceDtos.Average(p => p.Total) ?? 0;
-        var veryHighThreshold = 1.6m * average;
-        var highThreshold = 1.3m * average;
-        var lowThreshold = 0.7m * average;
-        var veryLowThreshold = 0.4m * average;
-
-        return priceDtos
-            .OrderBy(p => p.StartsAt)
-            .Select(p => new EnergyPrice
+        var energyPrices = new List<EnergyPrice>();
+        var i = 0;
+        while (true)
+        {
+            var pricesFromIndex = pricesOrderedByTime.Skip(i).ToList();
+            if (pricesFromIndex.Count < 8)
             {
-                Time = DateTime.Parse(p.StartsAt),
-                Price = p.Total ?? 0,
-                PriceLevel = ConvertToPriceLevel(p.Level),
-                RelativePriceLevel = GetDayPriceLevel(veryHighThreshold, highThreshold, lowThreshold, veryLowThreshold, p.Total, p.Level),
-            }).ToList(); ;
+                break;
+            }
+
+            pricesFromIndex = pricesFromIndex.Take(8).ToList();
+            var priceOnIndex = pricesFromIndex.First();
+
+            var average = pricesFromIndex.Average(p => p.Total) ?? 0;
+            var veryHighThreshold = 1.4m * average;
+            var highThreshold = 1.2m * average;
+            var lowThreshold = 0.8m * average;
+            var veryLowThreshold = 0.6m * average;
+
+            var energyPrice = new EnergyPrice
+            {
+                Time = DateTime.Parse(priceOnIndex.StartsAt),
+                Price = priceOnIndex.Total ?? 0,
+                PriceLevel = ConvertToPriceLevel(priceOnIndex.Level),
+                RelativePriceLevel = GetDayPriceLevel(veryHighThreshold, highThreshold, lowThreshold, veryLowThreshold, priceOnIndex.Total, priceOnIndex.Level),
+            };
+            energyPrices.Add(energyPrice);
+
+            i++;
+        }
+
+        return energyPrices;
     }
 
     public static Models.EnergySupplier.Enums.PriceLevel ConvertToPriceLevel(PriceLevel? level)
@@ -82,28 +99,5 @@ public class EnergyPriceCalculator
         }
 
         return RelativePriceLevel.Normal;
-    }
-
-    private static void ValidatePrices(ICollection<Price> prices)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(nameof(prices));
-
-        if (prices.Count > 25 || prices.Count < 23) // Due to day light savings some days will have 25 or 23 hours
-        {
-            throw new ArgumentException($"Too many or too few prices in the {nameof(prices)} parameter: {prices.Count}. List of prices: {GetDatesAsString(prices)}");
-        }
-
-        for (int i = 0; i < 24; i++)
-        {
-            if (!prices.Any(p => DateTime.Parse(p.StartsAt).Hour == i))
-            {
-                throw new ArgumentException($"Missing hour {i} in list of prices. List of prices: {GetDatesAsString(prices)}");
-            }
-        }
-
-        static string GetDatesAsString(ICollection<Price> prices)
-        {
-            return string.Join(',', prices.Select(p => p.StartsAt));
-        }
     }
 }

@@ -8,6 +8,11 @@ namespace MyHome.Core.Repositories.EnergySupplier;
 
 public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergyRepository
 {
+    public Task<ReadOnlyCollection<Price>> GetAllAvailableEnergyPrices()
+    {
+        return GetEnergyPrices(PriceType.All);
+    }
+
     public Task<ReadOnlyCollection<Price>> GetEnergyPricesForTomorrow() =>
         GetEnergyPrices(PriceType.Tomorrow);
 
@@ -132,21 +137,43 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergyReposito
 
     private static ReadOnlyCollection<Price>? GetPricesFromQueryResponse(TibberApiQueryResponse result, PriceType priceType)
     {
+        var pricesToday = result.Data.Viewer.Home?.CurrentSubscription?.PriceInfo?.Today;
+        var pricesTomorrow = result.Data.Viewer.Home?.CurrentSubscription?.PriceInfo?.Tomorrow;
+
         var prices = priceType switch
         {
-            PriceType.Today => result.Data.Viewer.Home?.CurrentSubscription?.PriceInfo?.Today,
-            PriceType.Tomorrow => result.Data.Viewer.Home?.CurrentSubscription?.PriceInfo?.Tomorrow,
+            PriceType.Today => pricesToday?.ToList(),
+            PriceType.Tomorrow => pricesTomorrow?.ToList(),
+            PriceType.All => CombinePrices(pricesToday, pricesTomorrow),
             _ => throw new ArgumentOutOfRangeException(nameof(priceType), priceType, null)
         };
 
-        return prices != null ? new ReadOnlyCollection<Price>(prices.ToList()) : null;
+        return prices != null 
+            ? new ReadOnlyCollection<Price>(prices) 
+            : null;
+    }
+
+    private static List<Price> CombinePrices(params IEnumerable<IEnumerable<Price>?> prices)
+    {
+        var allPrices = new List<Price>();
+        foreach (var price in prices)
+        {
+            if (price != null)
+            {
+                allPrices.AddRange(price);
+            }
+        }
+
+        return allPrices;
     }
 
     private static string GetTibberApiErrorMessage(object data) => $"Get data from Tibber failed. Some data in the response is missing:\n{JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true })}";
 
     private enum PriceType
     {
+        Unspecified,
         Today,
-        Tomorrow
+        Tomorrow,
+        All
     }
 }

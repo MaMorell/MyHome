@@ -5,6 +5,7 @@ namespace MyHome.Core.Interfaces;
 
 public interface IEnergyRepository
 {
+    Task<ReadOnlyCollection<Price>> GetAllAvailableEnergyPrices();
     Task<ICollection<ConsumptionEntry>> GetConsumptionForToday();
     Task<ReadOnlyCollection<Price>> GetEnergyPricesForToday();
     Task<ReadOnlyCollection<Price>> GetEnergyPricesForTomorrow();

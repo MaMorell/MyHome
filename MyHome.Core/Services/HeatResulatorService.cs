@@ -23,10 +23,10 @@ public class HeatResulatorService(
 
     public async Task RegulateHeat(CancellationToken cancellationToken = default)
     {
-        var prices = await _energyRepository.GetEnergyPricesForToday();
+        var prices = await _energyRepository.GetAllAvailableEnergyPrices();
         if (prices.Count == 0)
         {
-            _logger.LogWarning("No energy prices available for today");
+            _logger.LogWarning("No energy prices available");
             return;
         }
 
