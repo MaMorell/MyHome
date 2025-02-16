@@ -19,7 +19,7 @@ function Update-WebAppsettings {
         [string]$ApiServiceBaseUrl
     )
     
-    $configPath = "C:\GIT\other\MyHome\MyHome.Web\appsettings.json"
+    $configPath = "$PSScriptRoot\..\MyHome.Web\appsettings.json"
 
     if (-not (Test-Path $configPath)) {
         Write-Error "Configuration file not found at: $configPath"
@@ -46,7 +46,7 @@ function Update-ApiAppsettings {
         [string]$TuyaApiSecret
     )
     
-    $configPath = "C:\GIT\other\MyHome\MyHome.ApiService\appsettings.json"
+    $configPath = "$PSScriptRoot\..\MyHome.ApiService\appsettings.json"
 
     if (-not (Test-Path $configPath)) {
         Write-Error "Configuration file not found at: $configPath"
@@ -74,11 +74,11 @@ if ((Test-Path $PublishPath) -eq $false) {
 
 Update-WebAppsettings 'http://192.168.10.244:5001/'
 Update-ApiAppsettings $MyUplinkClientSecret $TibberApiAccessToken 'InstrumentationKey=01f9ce82-2749-434d-9a43-cdd996c12dae;IngestionEndpoint=https://swedencentral-0.in.applicationinsights.azure.com/;ApplicationId=49260d0a-163f-48a9-b79a-7a1b2e373bf0' $TuyaAccessId $TuyaApiSecret
-Push-Location "C:\GIT\other\MyHome\MyHome.ApiService\"
+Push-Location "$PSScriptRoot\..\MyHome.ApiService\"
 dotnet publish --configuration Release --output "$PublishPath\MyHomeApi" --runtime $RunTime
 Pop-Location
 
-Push-Location "C:\GIT\other\MyHome\MyHome.Web\"
+Push-Location "$PSScriptRoot\..\MyHome.Web\"
 dotnet publish --configuration Release --output "$PublishPath\MyHomeWebUi" --runtime $RunTime
 Pop-Location
 
