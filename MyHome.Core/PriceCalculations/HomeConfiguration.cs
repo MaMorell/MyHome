@@ -11,11 +11,11 @@ public static class HomeConfiguration
     public static class HeatOffsets
     {
         public const int Baseline = 0;
-        public const int Enhanced = 2;
-        public const int Moderate = 1;
-        public const int Economic = -1;
-        public const int MaxSavings = -2;
-        public const int ExtremeSavings = -5;
+        public const int Enhanced = 3;
+        public const int Moderate = 2;
+        public const int Economic = -2;
+        public const int MaxSavings = -4;
+        public const int ExtremeSavings = -6;
     }
 
     public static class ComfortModes
@@ -87,7 +87,7 @@ public static class HomeConfiguration
             energyPrice.PriceLevel == PriceLevel.VeryCheap;
 
         var priceLimit = DateTime.Now.IsNightTime()
-            ? 1.2m
+            ? 1.5m
             : 1.0m;
         var priceIsCheap = energyPrice.Price < priceLimit;
 
