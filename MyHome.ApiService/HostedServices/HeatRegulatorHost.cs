@@ -1,4 +1,5 @@
 ﻿using Cronos;
+using MyHome.ApiService.Extensions;
 using MyHome.Core.Services;
 
 namespace MyHome.ApiService.HostedServices;
@@ -27,16 +28,9 @@ public sealed class HeatRegulatorHost : BackgroundService
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                var utcNow = DateTime.UtcNow;
-                var next = _cron.GetNextOccurrence(utcNow)
-                    ?? throw new InvalidOperationException("Failed to calculate next occurrence time");
-
-                var delay = next - utcNow;
-                _logger.LogInformation("Next run: {NextTime} (in {Delay})",
-                    next.ToLocalTime().ToString("HH:mm"),
-                    delay.ToString(@"mm\:ss"));
-
+                var delay = _cron.GetTimeUntilNextOccurrence();
                 await Task.Delay(delay, stoppingToken);
+
                 await DoWorkAsync(stoppingToken);
             }
         }

@@ -38,4 +38,21 @@ public static class DateTimeExtensions
 
         return time.IsBetween(nightStart, nightEnd);
     }
+
+    public static bool IsWithinWorkingHours(this DateTime date)
+    {
+        var now = DateTime.Now;
+
+        if (now.IsWeekend())
+        {
+            return false;
+        }
+
+        var workingHoursStart = TimeSpan.FromHours(7);
+        var workingHoursEnd = TimeSpan.FromHours(19);
+
+        return 
+            now.TimeOfDay >= workingHoursStart && 
+            now.TimeOfDay < workingHoursEnd;
+    }
 }

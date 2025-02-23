@@ -19,12 +19,10 @@ public sealed class EnergyConsumptionObserver(
     private readonly IRepository<EnergyMeasurement> _energyMeasurementRepository = energyMeasurementRepository;
 
     private const int HourlyConsumptionLimitKWH = 3;
-    private readonly TimeSpan _workingHoursStart = TimeSpan.FromHours(7);
-    private readonly TimeSpan _workingHoursEnd = TimeSpan.FromHours(19);
 
     public void OnCompleted() => _logger.LogInformation("{Observer} completed", nameof(EnergyConsumptionObserver));
 
-    public void OnError(Exception error) => _logger.LogError(error.Message);
+    public void OnError(Exception error) => _logger.LogError(error, "{Observer} failed", nameof(EnergyConsumptionObserver));
 
     public void OnNext(RealTimeMeasurement value)
     {
@@ -42,18 +40,6 @@ public sealed class EnergyConsumptionObserver(
             .SafeFireAndForget(e => _logger.LogError("Adjust heat failed: {ErrorMessage}", e.Message));
     }
 
-    private bool IsWithinWorkingHours()
-    {
-        var now = DateTime.Now;
-
-        if (now.IsWeekend())
-        {
-            return false;
-        }
-
-        return now.TimeOfDay >= _workingHoursStart && now.TimeOfDay < _workingHoursEnd;
-    }
-
     private async Task HandleConsumptionLastHour(decimal accumulatedConsumptionLastHour, decimal power)
     {
         await _energyMeasurementRepository.UpsertAsync(new EnergyMeasurement
@@ -64,7 +50,7 @@ public sealed class EnergyConsumptionObserver(
             UpdatedAt = DateTime.Now
         });
 
-        if (!IsWithinWorkingHours())
+        if (!DateTime.Now.IsWithinWorkingHours())
         {
             return;
         }
