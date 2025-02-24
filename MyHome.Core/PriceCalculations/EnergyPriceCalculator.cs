@@ -10,15 +10,15 @@ public class EnergyPriceCalculator
     private const decimal ExtremelyHighPrice = 3m;
     private const int HoursForCalculaingRelativePriceLevel = 8;
 
-    public static EnergyPrice CreateEneryPrices(ICollection<Price> prices, int hour)
+    public static EnergyPrice CreateEneryPrices(ICollection<Price> prices, DateTime date)
     {
-        if (hour < 0 || hour > 24)
-        {
-            throw new ArgumentException($"{nameof(hour)} must be between 0 and 24");
-        }
+        var eneryPrices = CreateEneryPrices(prices);
 
-        return CreateEneryPrices(prices).FirstOrDefault(h => h.Time.Hour == hour)
-            ?? throw new InvalidOperationException($"Hour {hour} not found");
+        // Compare the date part and hour only
+        return eneryPrices.FirstOrDefault(h =>
+            h.Time.Date == date.Date &&
+            h.Time.Hour == date.Hour)
+            ?? throw new InvalidOperationException($"Hour {date.Hour} not found for date {date.Date:yyyy-MM-dd}");
     }
 
     public static IEnumerable<EnergyPrice> CreateEneryPrices(ICollection<Price> priceDtos)

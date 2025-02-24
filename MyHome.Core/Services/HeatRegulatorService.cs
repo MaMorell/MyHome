@@ -29,7 +29,7 @@ public class HeatRegulatorService(
             return;
         }
 
-        var price = EnergyPriceCalculator.CreateEneryPrices(prices, DateTime.Now.Hour);
+        var price = EnergyPriceCalculator.CreateEneryPrices(prices, DateTime.Now);
 
         var heatSettings = HeatSettings.CreateFromPriceLevel(price);
 

@@ -82,7 +82,8 @@ public static class HomeConfiguration
 
     public static OpMode GetOpMode(EnergyPrice energyPrice)
     {
-        var priceLevelIsCheap =
+        var priceLevelIsLow =
+            energyPrice.PriceLevel == PriceLevel.Normal ||
             energyPrice.PriceLevel == PriceLevel.Cheap ||
             energyPrice.PriceLevel == PriceLevel.VeryCheap;
 
@@ -91,14 +92,9 @@ public static class HomeConfiguration
             : 1.0m;
         var priceIsCheap = energyPrice.Price < priceLimit;
 
-        if (priceLevelIsCheap && priceIsCheap)
-        {
-            return OpMode.Auto;
-        }
-        else
-        {
-            return OpMode.Manual;
-        }
+        return priceLevelIsLow && priceIsCheap 
+            ? OpMode.Auto 
+            : OpMode.Manual;
     }
 
     public static int GetRadiatorTemperature(RelativePriceLevel priceLevel) => priceLevel switch

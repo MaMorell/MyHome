@@ -30,10 +30,20 @@ public static class Extensions
             // Turn on resilience by default
             http.AddStandardResilienceHandler(o =>
             {
+                o.TotalRequestTimeout = new HttpTimeoutStrategyOptions
+                {
+                    Timeout = TimeSpan.FromSeconds(90L),
+                    Name = "Custom-TotalRequestTimeout"
+                };
                 o.AttemptTimeout = new HttpTimeoutStrategyOptions
                 {
-                    Timeout = TimeSpan.FromSeconds(15L),
+                    Timeout = TimeSpan.FromSeconds(30L),
                     Name = "Custom-AttemptTimeout"
+                };
+                o.CircuitBreaker = new HttpCircuitBreakerStrategyOptions
+                {
+                    SamplingDuration = TimeSpan.FromSeconds(60L),
+                    Name = "Custom-CircuitBreaker"
                 };
             });
 
