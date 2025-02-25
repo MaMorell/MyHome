@@ -97,7 +97,7 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient)
 
         var auditEvent = new AuditEvent(AuditAction.Update, AuditTarget.HeatPump)
         {
-            NewValue = value,
+            NewValue = value.ToString(),
             TargetName = GetAuditTargetName(point)
         };
 

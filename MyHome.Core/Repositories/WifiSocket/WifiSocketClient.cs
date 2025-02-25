@@ -61,7 +61,7 @@ public class WifiSocketClient(
     {
         var auditEvent = new AuditEvent(AuditAction.Update, AuditTarget.WifiSocket)
         {
-            NewValue = value,
+            NewValue = value.ToString(),
             TargetName = Name.ToString()
         };
 
