@@ -36,6 +36,7 @@ public static class WebApplicationBuilderExtensions
         IConfiguration configuration)
     {
         services.AddScoped<EnergySupplierService>();
+        services.AddScoped<EnergyConsumptionListener>();
         services.AddScoped<IEnergyRepository, EnergyRepository>();
         services.AddSingleton<IObserver<RealTimeMeasurement>, EnergyConsumptionObserver>();
         services.AddSingleton<IRepository<EnergyMeasurement>, InMemoryRepository<EnergyMeasurement>>();

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MyHome.ApiService.Constants;
 using MyHome.ApiService.Extensions;
 using MyHome.ApiService.HostedServices;
+using MyHome.ApiService.HostedServices.Services;
 using MyHome.Core.Models;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Repositories;
@@ -25,7 +26,7 @@ builder.Services.AddMemoryCache();
 builder.Services.RegisterLocalDependencies(builder.Configuration);
 
 builder.Services.AddHostedService<HeatRegulatorHost>();
-builder.Services.AddHostedService<EnergyConsumptionHost>();
+builder.Services.AddHostedService<EnergyConumptionHost>();
 
 var app = builder.Build();
 
