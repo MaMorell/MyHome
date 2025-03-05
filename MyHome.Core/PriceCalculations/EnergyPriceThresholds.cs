@@ -20,10 +20,10 @@ public class EnergyPriceThresholds(
     public static EnergyPriceThresholds CreateFromAverage(decimal average, decimal? price, PriceLevel? priceLevel)
     {
         return new EnergyPriceThresholds(
-            veryHighThreshold: 1.4m * average,
-            highThreshold: 1.2m * average,
-            lowThreshold: 0.8m * average,
-            veryLowThreshold: 0.6m * average,
+            veryHighThreshold: 1.6m * average,
+            highThreshold: 1.3m * average,
+            lowThreshold: 0.7m * average,
+            veryLowThreshold: 0.4m * average,
             price: price,
             priceLevel: priceLevel
         );

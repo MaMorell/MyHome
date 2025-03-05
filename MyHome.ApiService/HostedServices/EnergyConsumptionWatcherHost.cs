@@ -4,15 +4,15 @@ using MyHome.ApiService.HostedServices.Services;
 
 namespace MyHome.ApiService.HostedServices;
 
-public sealed class EnergyConumptionHost : BackgroundService
+public sealed class EnergyConsumptionWatcherHost : BackgroundService
 {
     private readonly CronExpression _cron = CronExpression.Parse("0/15 * * * *"); // Every 15 minutes
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<EnergyConumptionHost> _logger;
+    private readonly ILogger<EnergyConsumptionWatcherHost> _logger;
 
-    public EnergyConumptionHost(
+    public EnergyConsumptionWatcherHost(
         IServiceScopeFactory scopeFactory,
-        ILogger<EnergyConumptionHost> logger)
+        ILogger<EnergyConsumptionWatcherHost> logger)
     {
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -42,7 +42,7 @@ public sealed class EnergyConumptionHost : BackgroundService
 
     private async Task DoWorkAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("{Service} is working.", nameof(EnergyConumptionHost));
+        _logger.LogInformation("{Service} is working.", nameof(EnergyConsumptionWatcherHost));
 
         try
         {
@@ -57,7 +57,7 @@ public sealed class EnergyConumptionHost : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Service} failed.", nameof(EnergyConumptionHost));
+            _logger.LogError(ex, "{Service} failed.", nameof(EnergyConsumptionWatcherHost));
         }
     }
 }

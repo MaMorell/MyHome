@@ -26,7 +26,7 @@ builder.Services.AddMemoryCache();
 builder.Services.RegisterLocalDependencies(builder.Configuration);
 
 builder.Services.AddHostedService<HeatRegulatorHost>();
-builder.Services.AddHostedService<EnergyConumptionHost>();
+builder.Services.AddHostedService<EnergyConsumptionWatcherHost>();
 
 var app = builder.Build();
 

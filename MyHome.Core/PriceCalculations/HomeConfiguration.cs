@@ -11,11 +11,11 @@ public static class HomeConfiguration
     public static class HeatOffsets
     {
         public const int Baseline = 0;
-        public const int Enhanced = 3;
-        public const int Moderate = 2;
+        public const int Enhanced = 2;
+        public const int Moderate = 1;
         public const int Economic = -2;
-        public const int MaxSavings = -4;
-        public const int ExtremeSavings = -6;
+        public const int MaxSavings = -3;
+        public const int ExtremeSavings = -5;
     }
 
     public static class ComfortModes
@@ -40,9 +40,9 @@ public static class HomeConfiguration
 
     public static class RadiatorTemperatures
     {
-        public const int Baseline = 8;
-        public const int Enhanced = 12;
-        public const int Moderate = 10;
+        public const int Baseline = 7;
+        public const int Enhanced = 9;
+        public const int Moderate = 8;
         public const int Economic = 6;
         public const int MaxSavings = 5;
         public const int ExtremeSavings = 5;
