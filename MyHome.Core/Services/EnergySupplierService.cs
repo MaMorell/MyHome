@@ -3,7 +3,7 @@ using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.PriceCalculations;
 
-namespace MyHome.Data.Services;
+namespace MyHome.Core.Services;
 
 public class EnergySupplierService(IEnergyRepository energyRepository, EnergyPriceCalculator energyPriceCalculator)
 {

@@ -5,7 +5,7 @@ using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Entities;
 using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.PriceCalculations;
-using MyHome.Data.Services;
+using MyHome.Core.Services;
 using Tibber.Sdk;
 
 namespace MyHome.ApiService.HostedServices.Services;
@@ -13,13 +13,11 @@ namespace MyHome.ApiService.HostedServices.Services;
 public sealed class EnergyConsumptionObserver(
     ILogger<EnergyConsumptionObserver> logger,
     IServiceScopeFactory serviceScopeFactory,
-    IRepository<EnergyMeasurement> energyMeasurementRepository,
-    DeviceSettingsCalculator deviceSettingsCalculator) : IObserver<RealTimeMeasurement>
+    IRepository<EnergyMeasurement> energyMeasurementRepository) : IObserver<RealTimeMeasurement>
 {
     private readonly ILogger<EnergyConsumptionObserver> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
     private readonly IRepository<EnergyMeasurement> _energyMeasurementRepository = energyMeasurementRepository;
-    private readonly DeviceSettingsCalculator _deviceSettingsCalculator = deviceSettingsCalculator;
 
     private const int HourlyConsumptionLimitKWH = 3;
 
@@ -63,8 +61,6 @@ public sealed class EnergyConsumptionObserver(
             return;
         }
 
-        using var scope = _serviceScopeFactory.CreateScope();
-        var heatRegulatorService = scope.ServiceProvider.GetRequiredService<HeatRegulatorService>();
 
         _logger.LogInformation(
             "Accumulated Consumption Last Hour {Consumption} is above the threshold {Threshold} kWh. " +
@@ -72,7 +68,11 @@ public sealed class EnergyConsumptionObserver(
             accumulatedConsumptionLastHour,
             HourlyConsumptionLimitKWH);
 
-        var deviceSettings = await _deviceSettingsCalculator.CreateFromMode(DeviceSettingsMode.MaxSavings);
+        using var scope = _serviceScopeFactory.CreateScope();
+        var settingsFactory = scope.ServiceProvider.GetRequiredService<DeviceSettingsFactory>();
+        var heatRegulatorService = scope.ServiceProvider.GetRequiredService<HeatRegulatorService>();
+
+        var deviceSettings = await settingsFactory.CreateFromMode(DeviceSettingsMode.MaxSavings);
         await heatRegulatorService.SetHeat(deviceSettings, CancellationToken.None);
     }
 }

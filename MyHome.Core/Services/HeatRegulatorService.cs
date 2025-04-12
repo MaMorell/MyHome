@@ -2,27 +2,24 @@
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.PriceCalculations;
-using MyHome.Data.Integrations.FloorHeating;
-using MyHome.Data.Integrations.HeatPump;
-using MyHome.Data.Integrations.WifiSocket;
 
-namespace MyHome.Data.Services;
+namespace MyHome.Core.Services;
 
 public class HeatRegulatorService(
     IEnergyRepository energyRepository,
     EnergyPriceCalculator energyPriceCalculator,
-    NibeClient heatpumpReposiory,
-    WifiSocketsService wifiSocketsService,
-    FloorHeaterRepository floorHeaterRepository,
-    DeviceSettingsCalculator deviceSettingsCalculator,
+    IHeatPumpClient heatpumpReposiory,
+    IWifiSocketsService wifiSocketsService,
+    IFloorHeaterClient floorHeaterRepository,
+    DeviceSettingsFactory deviceSettingsCalculator,
     ILogger<HeatRegulatorService> logger)
 {
     private readonly IEnergyRepository _energyRepository = energyRepository ?? throw new ArgumentNullException(nameof(energyRepository));
     private readonly EnergyPriceCalculator _energyPriceCalculator = energyPriceCalculator;
-    private readonly NibeClient _heatpumpReposiory = heatpumpReposiory ?? throw new ArgumentNullException(nameof(heatpumpReposiory));
-    private readonly WifiSocketsService _wifiSocketsService = wifiSocketsService;
-    private readonly FloorHeaterRepository _floorHeaterRepository = floorHeaterRepository;
-    private readonly DeviceSettingsCalculator _deviceSettingsCalculator = deviceSettingsCalculator;
+    private readonly IHeatPumpClient _heatpumpReposiory = heatpumpReposiory ?? throw new ArgumentNullException(nameof(heatpumpReposiory));
+    private readonly IWifiSocketsService _wifiSocketsService = wifiSocketsService;
+    private readonly IFloorHeaterClient _floorHeaterRepository = floorHeaterRepository;
+    private readonly DeviceSettingsFactory _deviceSettingsCalculator = deviceSettingsCalculator;
     private readonly ILogger<HeatRegulatorService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public async Task RegulateHeat(CancellationToken cancellationToken = default)

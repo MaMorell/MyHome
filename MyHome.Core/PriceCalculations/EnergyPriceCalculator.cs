@@ -1,8 +1,8 @@
-﻿using MyHome.Core.Interfaces;
-using MyHome.Core.Models.EnergySupplier;
+﻿using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Models.PriceCalculations;
+using MyHome.Core.Services;
 
 namespace MyHome.Core.PriceCalculations;
 
@@ -10,11 +10,11 @@ public class EnergyPriceCalculator
 {
     private const decimal ExtremelyHighPrice = 3m;
     private const int HoursForCalculaingRelativePriceLevel = 8;
-    private readonly IRepository<PriceThearsholdsProfile> _priceThearsholdsRepository;
+    private readonly PriceThearsholdsService _priceThearsholdsService;
 
-    public EnergyPriceCalculator(IRepository<PriceThearsholdsProfile> priceThearsholdsRepository)
+    public EnergyPriceCalculator(PriceThearsholdsService priceThearsholdsService)
     {
-        _priceThearsholdsRepository = priceThearsholdsRepository;
+        _priceThearsholdsService = priceThearsholdsService;
     }
 
     public async Task<EnergyConsumptionEntry> CreateEneryPrices(ICollection<EnergyPrice> prices, DateTime date)
@@ -30,7 +30,7 @@ public class EnergyPriceCalculator
 
     public async Task<IEnumerable<EnergyConsumptionEntry>> CreateEneryPrices(ICollection<EnergyPrice> prices)
     {
-        var priceThearsholds = (await _priceThearsholdsRepository.GetAllAsync()).First();
+        var priceThearsholds = await _priceThearsholdsService.GetThearsholdsProfile();
 
         var pricesOrderedByTime = prices.OrderBy(p => p.StartsAt).ToList();
 

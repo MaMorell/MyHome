@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
+using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Integrations.WifiSocket;
 
 namespace MyHome.Data.Integrations.WifiSocket;
 
 public class WifiSocketsService(
     IEnumerable<WifiSocketClient> clients,
-    ILogger<WifiSocketsService> logger)
+    ILogger<WifiSocketsService> logger) : IWifiSocketsService
 {
     private readonly IEnumerable<WifiSocketClient> _wifiSocketClients = clients ?? throw new ArgumentNullException(nameof(clients));
     private readonly ILogger<WifiSocketsService> _logger = logger;

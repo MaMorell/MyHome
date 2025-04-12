@@ -5,8 +5,8 @@ using MyHome.ApiService.HostedServices;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Entities;
+using MyHome.Core.Services;
 using MyHome.Data.Integrations.WifiSocket;
-using MyHome.Data.Services;
 using MyHome.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);

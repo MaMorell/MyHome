@@ -5,18 +5,17 @@ using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Models.Integrations.HeatPump;
-using System.Diagnostics;
 using EnergyPriceLevel = MyHome.Core.Models.EnergySupplier.Enums.EnergyPriceLevel;
 
 namespace MyHome.Core.PriceCalculations;
 
-public class DeviceSettingsCalculator
+public class DeviceSettingsFactory
 {
-    private readonly IRepository<DeviceSettingsProfile> _homeSettingsRepository;
+    private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository;
 
-    public DeviceSettingsCalculator(IRepository<DeviceSettingsProfile> repository)
+    public DeviceSettingsFactory(IRepository<DeviceSettingsProfile> repository)
     {
-        _homeSettingsRepository = repository;
+        _deviceSettingsRepository = repository;
     }
 
     public async Task<DeviceSettings> CreateFromPrice(EnergyConsumptionEntry price)
@@ -186,7 +185,7 @@ public class DeviceSettingsCalculator
     private async Task<DeviceSettingsProfile> GetDeviceSettingsProfileAsync()
     {
         var settingsId = Guid.Parse(DeviceSettingsConstants.SettingsId);
-        var settings = await _homeSettingsRepository.GetByIdAsync(settingsId)
+        var settings = await _deviceSettingsRepository.GetByIdAsync(settingsId)
             ?? throw new EntityNotFoundException(settingsId);
 
         return settings;

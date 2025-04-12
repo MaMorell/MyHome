@@ -1,4 +1,5 @@
-﻿using MyHome.Core.Models.Audit;
+﻿using MyHome.Core.Interfaces;
+using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Integrations.HeatPump;
 using MyHome.Core.Options;
 using MyHome.Data.Http;
@@ -6,14 +7,9 @@ using MyHome.Data.Integrations.HeatPump.Dtos;
 
 namespace MyHome.Data.Integrations.HeatPump;
 
-public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient)
+public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) : IHeatPumpClient
 {
     private readonly AuditedHttpClient<MyUplinkOptions> _httpClient = externalHttpClient;
-
-    public Task<NibePoint> GetHeatOffset(CancellationToken cancellationToken)
-    {
-        return GetPoint(NibeParameterIds.HeatingOffsetPoint, cancellationToken);
-    }
 
     public async Task<ComfortMode> GetComfortMode(CancellationToken cancellationToken)
     {
@@ -77,6 +73,11 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient)
         }
 
         await PatchPoint(value, NibeParameterIds.OpMode, cancellationToken);
+    }
+
+    private Task<NibePoint> GetHeatOffset(CancellationToken cancellationToken)
+    {
+        return GetPoint(NibeParameterIds.HeatingOffsetPoint, cancellationToken);
     }
 
     private async Task<NibePoint> GetPoint(int pointId, CancellationToken cancellationToken)

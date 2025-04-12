@@ -1,6 +1,8 @@
 ﻿using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Entities;
 using MyHome.Core.Models.Exceptions;
+using System.IO;
+using System;
 
 namespace MyHome.Data.Repositories;
 
@@ -46,7 +48,12 @@ public class InMemoryRepository<T> : IRepository<T> where T : IEntity
 
     public Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        if (!_data.Remove(id))
+        {
+            throw new NotFoundException<T>(id);
+        }
+
+        return Task.CompletedTask;
     }
 
     public Task UpsertAsync(T entity)

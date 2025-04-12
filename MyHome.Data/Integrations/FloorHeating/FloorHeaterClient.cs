@@ -1,19 +1,20 @@
 ﻿using com.clusterrr.TuyaNet;
 using Microsoft.Extensions.Options;
+using MyHome.Core.Interfaces;
 using MyHome.Core.Options;
 using System.Text.Json;
 using static com.clusterrr.TuyaNet.TuyaApi;
 
 namespace MyHome.Data.Integrations.FloorHeating;
 
-public class FloorHeaterRepository
+public class FloorHeaterClient : IFloorHeaterClient
 {
     private const string CODE_TEMP_SET = "temp_set";
 
     private readonly TuyaApi _tuyaApi;
     private readonly string _deviceId;
 
-    public FloorHeaterRepository(IOptions<FloorHeaterOptions> options)
+    public FloorHeaterClient(IOptions<FloorHeaterOptions> options)
     {
         _tuyaApi = new TuyaApi(
             region: Region.CentralEurope,

@@ -1,16 +1,18 @@
-﻿using MyHome.ApiService.HostedServices.Services;
+﻿using Microsoft.Extensions.Options;
+using MyHome.ApiService.HostedServices.Services;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Entities;
 using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Options;
 using MyHome.Core.PriceCalculations;
+using MyHome.Core.Services;
 using MyHome.Data.Http;
 using MyHome.Data.Integrations.EnergySupplier;
 using MyHome.Data.Integrations.FloorHeating;
 using MyHome.Data.Integrations.HeatPump;
+using MyHome.Data.Integrations.WifiSocket;
 using MyHome.Data.Repositories;
-using MyHome.Data.Services;
 using System.Net.Http.Headers;
 using Tibber.Sdk;
 
@@ -18,53 +20,40 @@ namespace MyHome.ApiService.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static IServiceCollection RegisterLocalDependencies(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection RegisterLocalDependencies(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IRepository<AuditEvent>, InMemoryRepository<AuditEvent>>();
-        services.AddSingleton<IRepository<DeviceSettingsProfile>, InMemoryRepository<DeviceSettingsProfile>>();
-        services.AddSingleton<IRepository<PriceThearsholdsProfile>, InMemoryRepository<PriceThearsholdsProfile>>();
-
-        services.AddSingleton<EnergyPriceCalculator>();
-        services.AddSingleton<DeviceSettingsCalculator>();
-
-
-        services
-            .AddWifiSocketServices(configuration)
-            .AddEnergySupplierServices(configuration)
-            .AddHeatPumpServices(configuration)
-            .AddFloorHeatServices(configuration);
-
-        return services;
-    }
-
-    private static IServiceCollection AddEnergySupplierServices(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services.AddScoped<EnergySupplierService>();
-        services.AddScoped<EnergyConsumptionListener>();
-        services.AddScoped<IEnergyRepository, EnergyRepository>();
-        services.AddSingleton<IObserver<RealTimeMeasurement>, EnergyConsumptionObserver>();
         services.AddSingleton<IRepository<EnergyMeasurement>, InMemoryRepository<EnergyMeasurement>>();
+
+        services.AddScoped<IRepository<DeviceSettingsProfile>, FileRepository<DeviceSettingsProfile>>();
+        services.AddScoped<IRepository<PriceThearsholdsProfile>, FileRepository<PriceThearsholdsProfile>>();
+        services.AddScoped<IEnergyRepository, EnergyRepository>();
+
+        services.AddScoped<EnergySupplierService>();
+        services.AddScoped<PriceThearsholdsService>();
+        services.AddScoped<HeatRegulatorService>();
+        services.AddScoped<IWifiSocketsService, WifiSocketsService>();
+
+        services.AddScoped<DeviceSettingsFactory>();
+        services.AddScoped<EnergyPriceCalculator>();
+
+        services.AddSingleton<IObserver<RealTimeMeasurement>, EnergyConsumptionObserver>();
+        services.AddScoped<EnergyConsumptionListener>();
 
         services.AddTibberClient(configuration);
 
-        return services;
-    }
-
-    private static IServiceCollection AddFloorHeatServices(this IServiceCollection services, IConfiguration configuration)
-    {
         services.Configure<FloorHeaterOptions>(configuration.GetSection(FloorHeaterOptions.ConfigurationSection));
-        services.AddScoped<FloorHeaterRepository>();
+        services.AddScoped<IFloorHeaterClient, FloorHeaterClient>();
+
+        services.AddScoped<IHeatPumpClient, NibeClient>();
+        services.AddMyUplinkClient(configuration);
+
+        services.AddWifiSocketClients(configuration);
 
         return services;
     }
 
-    private static IServiceCollection AddTibberClient(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    private static IServiceCollection AddTibberClient(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped(serviceProvider =>
         {
@@ -79,19 +68,7 @@ public static class WebApplicationBuilderExtensions
         return services;
     }
 
-    private static IServiceCollection AddHeatPumpServices(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services.AddScoped<HeatRegulatorService>();
-        services.AddScoped<NibeClient>();
-        services.AddMyUplinkClient(configuration);
-        return services;
-    }
-
-    private static IServiceCollection AddMyUplinkClient(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    private static IServiceCollection AddMyUplinkClient(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddTransient<OAuthHandler<MyUplinkOptions>>();
 
@@ -105,6 +82,38 @@ public static class WebApplicationBuilderExtensions
         }).AddHttpMessageHandler<OAuthHandler<MyUplinkOptions>>();
 
         services.AddScoped<AuditedHttpClient<MyUplinkOptions>>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddWifiSocketClients(this IServiceCollection services, IConfiguration configuration)
+    {
+        var radiatorConfigs = configuration
+            .GetSection("WifiSockets")
+            .Get<List<WifiSocketOptions>>() ?? [];
+
+        foreach (var config in radiatorConfigs)
+        {
+            services.AddHttpClient(config.Name, client =>
+            {
+                client.BaseAddress = new Uri(config.BaseAddress);
+            });
+        }
+
+        foreach (var config in radiatorConfigs)
+        {
+            services.AddScoped(sp =>
+            {
+                var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+                var auditRepository = sp.GetRequiredService<IRepository<AuditEvent>>();
+                var options = Options.Create(config);
+                var httpClientLogger = sp.GetRequiredService<ILogger<AuditedHttpClient<WifiSocketOptions>>>();
+                var auditedHttpClient = new AuditedHttpClient<WifiSocketOptions>(httpClientFactory, auditRepository, options, httpClientLogger);
+
+                var wifiSocketLogger = sp.GetRequiredService<ILogger<WifiSocketClient>>();
+                return new WifiSocketClient(auditedHttpClient, options, wifiSocketLogger);
+            });
+        }
 
         return services;
     }
