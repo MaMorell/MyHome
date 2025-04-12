@@ -1,4 +1,4 @@
-﻿using MyHome.Core.Models.WifiSocket;
+﻿using MyHome.Core.Models.Integrations.WifiSocket;
 
 namespace MyHome.Web.ExternalClients;
 

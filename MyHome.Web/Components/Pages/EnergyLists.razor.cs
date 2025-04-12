@@ -8,7 +8,7 @@ public partial class EnergyLists
     [Inject]
     private EnergySupplierClient EnergySupplierClient { get; set; } = default!;
 
-    private IEnumerable<EnergyPrice> prices = [];
+    private IEnumerable<EnergyConsumptionEntry> prices = [];
     private bool _loading;
 
     protected override async Task OnInitializedAsync()

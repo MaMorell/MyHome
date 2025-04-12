@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
-using MyHome.Core.Http;
-using MyHome.Core.Models;
+using MyHome.Core.Interfaces;
+using MyHome.Core.Models.Audit;
 using MyHome.Core.Options;
-using MyHome.Core.Repositories;
-using MyHome.Core.Repositories.WifiSocket;
+using MyHome.Data.Http;
+using MyHome.Data.Integrations.WifiSocket;
 
 namespace MyHome.ApiService.Extensions;
 

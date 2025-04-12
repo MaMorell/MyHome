@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using MyHome.Core.Models.WifiSocket;
+using MyHome.Core.Models.Integrations.WifiSocket;
 using MyHome.Web.ExternalClients;
 
 namespace MyHome.Web.Components;

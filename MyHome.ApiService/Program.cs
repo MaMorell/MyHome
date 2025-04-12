@@ -2,12 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using MyHome.ApiService.Constants;
 using MyHome.ApiService.Extensions;
 using MyHome.ApiService.HostedServices;
-using MyHome.ApiService.HostedServices.Services;
-using MyHome.Core.Models;
-using MyHome.Core.Models.EnergySupplier;
-using MyHome.Core.Repositories;
-using MyHome.Core.Repositories.WifiSocket;
-using MyHome.Core.Services;
+using MyHome.Core.Interfaces;
+using MyHome.Core.Models.Audit;
+using MyHome.Core.Models.Entities;
+using MyHome.Data.Integrations.WifiSocket;
+using MyHome.Data.Services;
 using MyHome.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,5 +1,7 @@
-﻿namespace MyHome.Core.Models.Exceptions;
+﻿using MyHome.Core.Models.Entities;
 
-public class NotFoundException(Guid id) : Exception($"Entity with ID {id} not found.")
+namespace MyHome.Core.Models.Exceptions;
+
+public class NotFoundException<T>(Guid id) : Exception($"Entity of type '{nameof(T)}' with ID '{id}' not found.") where T : IEntity
 {
 }

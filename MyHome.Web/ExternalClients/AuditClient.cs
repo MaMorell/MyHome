@@ -1,4 +1,4 @@
-﻿using MyHome.Core.Models;
+﻿using MyHome.Core.Models.Audit;
 
 namespace MyHome.Web.ExternalClients;
 

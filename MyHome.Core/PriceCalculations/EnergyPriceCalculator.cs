@@ -1,7 +1,8 @@
-﻿using MyHome.Core.Models.EnergySupplier;
+﻿using MyHome.Core.Interfaces;
+using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
-using Tibber.Sdk;
-using PriceLevel = Tibber.Sdk.PriceLevel;
+using MyHome.Core.Models.Entities.Profiles;
+using MyHome.Core.Models.PriceCalculations;
 
 namespace MyHome.Core.PriceCalculations;
 
@@ -9,10 +10,16 @@ public class EnergyPriceCalculator
 {
     private const decimal ExtremelyHighPrice = 3m;
     private const int HoursForCalculaingRelativePriceLevel = 8;
+    private readonly IRepository<PriceThearsholdsProfile> _priceThearsholdsRepository;
 
-    public static EnergyPrice CreateEneryPrices(ICollection<Price> prices, DateTime date)
+    public EnergyPriceCalculator(IRepository<PriceThearsholdsProfile> priceThearsholdsRepository)
     {
-        var eneryPrices = CreateEneryPrices(prices);
+        _priceThearsholdsRepository = priceThearsholdsRepository;
+    }
+
+    public async Task<EnergyConsumptionEntry> CreateEneryPrices(ICollection<EnergyPrice> prices, DateTime date)
+    {
+        var eneryPrices = await CreateEneryPrices(prices);
 
         // Compare the date part and hour only
         return eneryPrices.FirstOrDefault(h =>
@@ -21,23 +28,31 @@ public class EnergyPriceCalculator
             ?? throw new InvalidOperationException($"Hour {date.Hour} not found for date {date.Date:yyyy-MM-dd}");
     }
 
-    public static IEnumerable<EnergyPrice> CreateEneryPrices(ICollection<Price> priceDtos)
+    public async Task<IEnumerable<EnergyConsumptionEntry>> CreateEneryPrices(ICollection<EnergyPrice> prices)
     {
-        var pricesOrderedByTime = priceDtos.OrderBy(p => p.StartsAt).ToList();
+        var priceThearsholds = (await _priceThearsholdsRepository.GetAllAsync()).First();
 
-        var energyPrices = new List<EnergyPrice>();
-        for (int i = 0; i < priceDtos.Count; i++)
+        var pricesOrderedByTime = prices.OrderBy(p => p.StartsAt).ToList();
+
+        var energyPrices = new List<EnergyConsumptionEntry>();
+        for (int i = 0; i < prices.Count; i++)
         {
             var pricesFromIndex = pricesOrderedByTime.Skip(i).ToList();
-            var relativePriceLevel = DetermineRelativePriceLevel(pricesFromIndex);
+            var relativePriceLevel = DetermineRelativePriceLevel(pricesFromIndex, priceThearsholds);
 
-            var currentPrice = priceDtos.ElementAt(i);
-
-            energyPrices.Add(new EnergyPrice
+            if (relativePriceLevel == RelativePriceLevel.Unknown)
             {
-                Time = DateTime.Parse(currentPrice.StartsAt),
+                continue;
+            }
+
+            EnergyPrice currentPrice = prices.ElementAt(i);
+
+            energyPrices.Add(new EnergyConsumptionEntry
+            {
+                From = currentPrice.StartsAt,
+                To = currentPrice.StartsAt.AddHours(1),
                 Price = currentPrice.Total ?? 0,
-                PriceLevel = ConvertToPriceLevel(currentPrice.Level),
+                PriceLevel = currentPrice.Level ?? EnergyPriceLevel.Normal,
                 RelativePriceLevel = relativePriceLevel,
             });
         }
@@ -45,7 +60,7 @@ public class EnergyPriceCalculator
         return energyPrices;
     }
 
-    private static RelativePriceLevel DetermineRelativePriceLevel(List<Price> prices)
+    private static RelativePriceLevel DetermineRelativePriceLevel(List<EnergyPrice> prices, PriceThearsholdsProfile priceThearsholds)
     {
         if (prices.Count < HoursForCalculaingRelativePriceLevel)
         {
@@ -55,10 +70,12 @@ public class EnergyPriceCalculator
         prices = [.. prices.Take(HoursForCalculaingRelativePriceLevel)];
 
         var average = prices.Average(p => p.Total) ?? 0;
+
         var parameters = EnergyPriceThresholds.CreateFromAverage(
-            average: prices.Average(p => p.Total) ?? 0,
-            price: prices.First().Total,
-            priceLevel: prices.First().Level
+            average,
+            prices.First().Total,
+            prices.First().Level,
+            priceThearsholds
         );
 
         return CalculateRelativePriceLevel(parameters);
@@ -71,33 +88,27 @@ public class EnergyPriceCalculator
             throw new ArgumentException($"Price or PriceLevel is null. Price: {thresholds.Price}. PriceLevel: {thresholds.PriceLevel}");
         }
 
-        if (thresholds.Price >= thresholds.VeryHighThreshold && thresholds.PriceLevel == PriceLevel.VeryExpensive && thresholds.Price > ExtremelyHighPrice)
+        if (thresholds.Price >= thresholds.VeryHighThreshold && thresholds.PriceLevel == EnergyPriceLevel.VeryExpensive && thresholds.Price > ExtremelyHighPrice)
         {
             return RelativePriceLevel.Extreme;
         }
-        else if (thresholds.Price >= thresholds.VeryHighThreshold && thresholds.PriceLevel == PriceLevel.VeryExpensive)
+        else if (thresholds.Price >= thresholds.VeryHighThreshold && thresholds.PriceLevel == EnergyPriceLevel.VeryExpensive)
         {
             return RelativePriceLevel.VeryHigh;
         }
-        else if (thresholds.Price >= thresholds.HighThreshold && (thresholds.PriceLevel == PriceLevel.Expensive || thresholds.PriceLevel == PriceLevel.VeryExpensive))
+        else if (thresholds.Price >= thresholds.HighThreshold && (thresholds.PriceLevel == EnergyPriceLevel.Expensive || thresholds.PriceLevel == EnergyPriceLevel.VeryExpensive))
         {
             return RelativePriceLevel.High;
         }
-        else if (thresholds.Price <= thresholds.VeryLowThreshold && thresholds.PriceLevel == PriceLevel.VeryCheap)
+        else if (thresholds.Price <= thresholds.VeryLowThreshold && thresholds.PriceLevel == EnergyPriceLevel.VeryCheap)
         {
             return RelativePriceLevel.VeryLow;
         }
-        else if (thresholds.Price <= thresholds.LowThreshold && (thresholds.PriceLevel == PriceLevel.Cheap || thresholds.PriceLevel == PriceLevel.VeryCheap))
+        else if (thresholds.Price <= thresholds.LowThreshold && (thresholds.PriceLevel == EnergyPriceLevel.Cheap || thresholds.PriceLevel == EnergyPriceLevel.VeryCheap))
         {
             return RelativePriceLevel.Low;
         }
 
         return RelativePriceLevel.Normal;
-    }
-
-    public static Models.EnergySupplier.Enums.PriceLevel ConvertToPriceLevel(PriceLevel? level)
-    {
-        var levelString = level?.ToString() ?? PriceLevel.Normal.ToString();
-        return Enum.Parse<Models.EnergySupplier.Enums.PriceLevel>(levelString);
     }
 }

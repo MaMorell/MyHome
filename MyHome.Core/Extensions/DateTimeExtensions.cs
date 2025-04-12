@@ -51,8 +51,8 @@ public static class DateTimeExtensions
         var workingHoursStart = TimeSpan.FromHours(7);
         var workingHoursEnd = TimeSpan.FromHours(19);
 
-        return 
-            now.TimeOfDay >= workingHoursStart && 
+        return
+            now.TimeOfDay >= workingHoursStart &&
             now.TimeOfDay < workingHoursEnd;
     }
 }

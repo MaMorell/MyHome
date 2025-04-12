@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyHome.Core\MyHome.Core.csproj" />
+    <ProjectReference Include="..\MyHome.Data\MyHome.Data.csproj" />
     <ProjectReference Include="..\MyHome.ServiceDefaults\MyHome.ServiceDefaults.csproj" />
   </ItemGroup>
 

@@ -1,14 +1,12 @@
-﻿using System.Collections.ObjectModel;
-using Tibber.Sdk;
+﻿using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Models.EnergySupplier.Enums;
 
 namespace MyHome.Core.Interfaces;
 
 public interface IEnergyRepository
 {
-    Task<ReadOnlyCollection<Price>> GetAllAvailableEnergyPrices();
-    Task<ICollection<ConsumptionEntry>> GetConsumptionForToday();
-    Task<ReadOnlyCollection<Price>> GetEnergyPricesForToday();
-    Task<ReadOnlyCollection<Price>> GetEnergyPricesForTomorrow();
-    Task<ICollection<ConsumptionEntry>> GetTopConsumption(int limit = 3);
-    Task<ICollection<ConsumptionEntry>> GetTopConsumptionDuringWeekdays(int limit = 3);
+    Task<ICollection<EnergyPrice>> GetEnergyPrices(PriceType priceType);
+    Task<ICollection<EnergyConsumptionEntry>> GetConsumptionForToday();
+    Task<ICollection<EnergyConsumptionEntry>> GetTopConsumption(int limit = 3);
+    Task<ICollection<EnergyConsumptionEntry>> GetTopConsumptionDuringWeekdays(int limit = 3);
 }

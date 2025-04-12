@@ -1,6 +1,6 @@
 ﻿using Cronos;
 using MyHome.ApiService.Extensions;
-using MyHome.Core.Services;
+using MyHome.Data.Services;
 
 namespace MyHome.ApiService.HostedServices;
 

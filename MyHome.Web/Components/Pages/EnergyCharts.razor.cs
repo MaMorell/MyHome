@@ -65,13 +65,13 @@ public partial class EnergyCharts
         }
     }
 
-    private static List<TimeSeriesChartSeries.TimeValue> GetConsumptionChartData(IEnumerable<EnergyPrice> prices) =>
+    private static List<TimeSeriesChartSeries.TimeValue> GetConsumptionChartData(IEnumerable<EnergyConsumptionEntry> prices) =>
         prices
-            .Where(p => p.Consumption.HasValue)
-            .Select(p => new TimeSeriesChartSeries.TimeValue(p.Time, p.Consumption.HasValue ? (double)p.Consumption : 0))
+            .Where(p => p.Consumption != default)
+            .Select(p => new TimeSeriesChartSeries.TimeValue(p.Time, (double)p.Consumption))
             .ToList();
 
-    private async Task<IEnumerable<EnergyPrice>> GetPrices()
+    private async Task<IEnumerable<EnergyConsumptionEntry>> GetPrices()
     {
         var pricesTask = EnergySupplierClient.GetEnergyPricesAsync();
         var waitTask = Task.Delay(500);

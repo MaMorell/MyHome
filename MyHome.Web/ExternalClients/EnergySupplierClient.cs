@@ -1,12 +1,13 @@
 using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Models.Entities;
 
 namespace MyHome.Web.ExternalClients;
 
 public class EnergySupplierClient(HttpClient httpClient)
 {
-    public async Task<IEnumerable<EnergyPrice>> GetEnergyPricesAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<EnergyConsumptionEntry>> GetEnergyPricesAsync(CancellationToken cancellationToken = default)
     {
-        var result = await httpClient.GetFromJsonAsync<IEnumerable<EnergyPrice>>("energysupplier/energyprice", cancellationToken);
+        var result = await httpClient.GetFromJsonAsync<IEnumerable<EnergyConsumptionEntry>>("energysupplier/energyprice", cancellationToken);
         return result ?? [];
     }
 
@@ -16,13 +17,13 @@ public class EnergySupplierClient(HttpClient httpClient)
         return result ?? new EnergyMeasurement();
     }
 
-    public async Task<IEnumerable<EnergyConsumption>> GetHighestMonthlyConsumptionAsync(
+    public async Task<IEnumerable<EnergyConsumptionEntry>> GetHighestMonthlyConsumptionAsync(
         int limit = 5,
         bool onlyDuringWeekdays = true,
         CancellationToken cancellationToken = default)
     {
         var query = $"energysupplier/consumption/currentmonth/top?limit={limit}&onlyDuringWeekdays={onlyDuringWeekdays}";
-        var result = await httpClient.GetFromJsonAsync<IEnumerable<EnergyConsumption>>(query, cancellationToken);
+        var result = await httpClient.GetFromJsonAsync<IEnumerable<EnergyConsumptionEntry>>(query, cancellationToken);
         return result ?? [];
     }
 }

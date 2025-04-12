@@ -1,14 +1,16 @@
 ﻿using MyHome.ApiService.HostedServices.Services;
-using MyHome.Core.Http;
 using MyHome.Core.Interfaces;
-using MyHome.Core.Models;
-using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Models.Audit;
+using MyHome.Core.Models.Entities;
+using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Options;
-using MyHome.Core.Repositories;
-using MyHome.Core.Repositories.EnergySupplier;
-using MyHome.Core.Repositories.FloorHeating;
-using MyHome.Core.Repositories.HeatPump;
-using MyHome.Core.Services;
+using MyHome.Core.PriceCalculations;
+using MyHome.Data.Http;
+using MyHome.Data.Integrations.EnergySupplier;
+using MyHome.Data.Integrations.FloorHeating;
+using MyHome.Data.Integrations.HeatPump;
+using MyHome.Data.Repositories;
+using MyHome.Data.Services;
 using System.Net.Http.Headers;
 using Tibber.Sdk;
 
@@ -21,6 +23,12 @@ public static class WebApplicationBuilderExtensions
         IConfiguration configuration)
     {
         services.AddSingleton<IRepository<AuditEvent>, InMemoryRepository<AuditEvent>>();
+        services.AddSingleton<IRepository<DeviceSettingsProfile>, InMemoryRepository<DeviceSettingsProfile>>();
+        services.AddSingleton<IRepository<PriceThearsholdsProfile>, InMemoryRepository<PriceThearsholdsProfile>>();
+
+        services.AddSingleton<EnergyPriceCalculator>();
+        services.AddSingleton<DeviceSettingsCalculator>();
+
 
         services
             .AddWifiSocketServices(configuration)
