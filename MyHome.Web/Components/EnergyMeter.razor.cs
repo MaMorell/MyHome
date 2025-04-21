@@ -12,7 +12,7 @@ public partial class EnergyMeter
     private decimal RealTimePowerUsage { get; set; }
     private decimal AccumulatedConsumptionLastHour { get; set; }
     private DateTime DataUpdatedAt { get; set; }
-    public IEnumerable<EnergyConsumptionEntry> TopConsumption { get; set; }
+    public IEnumerable<EnergyConsumptionEntry>? TopConsumption { get; set; }
 
     protected override async Task OnInitializedAsync() => await RefreshData();
 

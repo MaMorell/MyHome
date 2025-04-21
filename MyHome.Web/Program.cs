@@ -1,5 +1,6 @@
 using MudBlazor.Services;
 using MyHome.ServiceDefaults;
+using MyHome.Web;
 using MyHome.Web.Components;
 using MyHome.Web.ExternalClients;
 
@@ -14,10 +15,19 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddOutputCache();
 
+var apiServiceConfig = builder.Configuration.GetRequiredSection(ApiServiceOptions.Name);
 builder.Services
-    .AddApiClient<EnergySupplierClient>(builder.Configuration)
-    .AddApiClient<AuditClient>(builder.Configuration)
-    .AddApiClient<WifiSocketClient>(builder.Configuration);
+    .Configure<ApiServiceOptions>(apiServiceConfig)
+    .AddOptionsWithValidateOnStart<ApiServiceOptions>()
+    .ValidateDataAnnotations();
+
+builder.Services.AddScoped<ApiServiceClient>();
+
+builder.Services
+    .AddScoped<EnergySupplierClient>()
+    .AddScoped<AuditClient>()
+    .AddScoped<ProfilesClient>()
+    .AddScoped<WifiSocketClient>();
 
 builder.Services.AddMudServices();
 

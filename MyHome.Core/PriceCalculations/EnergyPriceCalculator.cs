@@ -21,10 +21,9 @@ public class EnergyPriceCalculator
     {
         var eneryPrices = await CreateEneryPrices(prices);
 
-        // Compare the date part and hour only
-        return eneryPrices.FirstOrDefault(h =>
-            h.Time.Date == date.Date &&
-            h.Time.Hour == date.Hour)
+        return eneryPrices.FirstOrDefault(p =>
+            p.StartsAt.Date == date.Date &&
+            p.StartsAt.Hour == date.Hour)
             ?? throw new InvalidOperationException($"Hour {date.Hour} not found for date {date.Date:yyyy-MM-dd}");
     }
 
@@ -49,8 +48,7 @@ public class EnergyPriceCalculator
 
             energyPrices.Add(new EnergyConsumptionEntry
             {
-                From = currentPrice.StartsAt,
-                To = currentPrice.StartsAt.AddHours(1),
+                StartsAt = currentPrice.StartsAt,
                 Price = currentPrice.Total ?? 0,
                 PriceLevel = currentPrice.Level ?? EnergyPriceLevel.Normal,
                 RelativePriceLevel = relativePriceLevel,

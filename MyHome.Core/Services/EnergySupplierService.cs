@@ -14,9 +14,9 @@ public class EnergySupplierService(IEnergyRepository energyRepository, EnergyPri
     {
         var prices = await _energyRepository.GetEnergyPrices(PriceType.All);
 
-        IEnumerable<EnergyConsumptionEntry> result = await _energyPriceCalculator.CreateEneryPrices(prices);
+        var result = await _energyPriceCalculator.CreateEneryPrices(prices);
 
-        await AddConsumptionToPrices(result);
+        result = await AddConsumptionToPrices(result);
 
         return result;
     }
@@ -28,7 +28,7 @@ public class EnergySupplierService(IEnergyRepository energyRepository, EnergyPri
             : await _energyRepository.GetTopConsumption(limit);
     }
 
-    private async Task AddConsumptionToPrices(IEnumerable<EnergyConsumptionEntry> prices)
+    private async Task<IEnumerable<EnergyConsumptionEntry>> AddConsumptionToPrices(IEnumerable<EnergyConsumptionEntry> prices)
     {
         var todaysConsumption = await _energyRepository.GetConsumptionForToday();
 
@@ -36,7 +36,7 @@ public class EnergySupplierService(IEnergyRepository energyRepository, EnergyPri
         {
             var consumption = todaysConsumption.FirstOrDefault(c =>
             {
-                return c.From == price.Time;
+                return c.StartsAt == price.StartsAt;
             });
             if (consumption is null)
             {
@@ -46,5 +46,7 @@ public class EnergySupplierService(IEnergyRepository energyRepository, EnergyPri
             price.Consumption = consumption?.Consumption ?? 0;
             price.Cost = consumption?.Cost ?? 0;
         }
+
+        return prices;
     }
 }

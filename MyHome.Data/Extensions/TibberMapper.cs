@@ -18,7 +18,7 @@ public static class TibberMapper
         return new EnergyPrice
         {
             Total = price.Total,
-            StartsAt = DateTime.Parse(price.StartsAt),
+            StartsAt = DateTimeOffset.Parse(price.StartsAt),
             Level = price.Level.ToPriceLevel()
         };
     }
@@ -40,8 +40,7 @@ public static class TibberMapper
     {
         return new EnergyConsumptionEntry
         {
-            From = entry.From.GetValueOrDefault().Date,
-            To = entry.To.GetValueOrDefault().Date,
+            StartsAt = entry.From.GetValueOrDefault(),
             Price = entry.UnitPrice.GetValueOrDefault(),
             Consumption = entry.Consumption.GetValueOrDefault(),
             Cost = entry.Cost.GetValueOrDefault()

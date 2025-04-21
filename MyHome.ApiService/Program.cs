@@ -1,15 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using MyHome.ApiService.Constants;
 using MyHome.ApiService.Extensions;
-using MyHome.ApiService.HostedServices;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Entities;
+using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Services;
-using MyHome.Data.Integrations.WifiSocket;
 using MyHome.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
@@ -23,14 +23,15 @@ builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
 
 builder.Services.RegisterLocalDependencies(builder.Configuration);
-
-builder.Services.AddHostedService<HeatRegulatorHost>();
-builder.Services.AddHostedService<EnergyConsumptionWatcherHost>();
+//builder.Services.AddHostedService<HeatRegulatorHost>();
+//builder.Services.AddHostedService<EnergyConsumptionWatcherHost>();
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -58,7 +59,7 @@ app.MapGet("/energysupplier/consumption/currentmonth/top", async (
 })
 .WithName("GetTopMonthlyConsumption");
 
-app.MapGet("/wifisocket/{name}/status", async ([FromServices] WifiSocketsService service, string name) =>
+app.MapGet("/wifisocket/{name}/status", async ([FromServices] IWifiSocketsService service, string name) =>
 {
     return await service.GetStatus(name);
 })
@@ -75,6 +76,18 @@ app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> reposit
     return result.OrderByDescending(r => r.Timestamp).Take(count);
 })
 .WithName("GetAuditEvents");
+
+app.MapGet("/profiles/pricethearsholds", async ([FromServices] PriceThearsholdsService service) =>
+{
+    return await service.GetThearsholdsProfile();
+})
+.WithName("GetThearsholdsProfile");
+
+app.MapPut("/profiles/pricethearsholds", async ([FromServices] IRepository<PriceThearsholdsProfile> repository, [FromBody] PriceThearsholdsProfile profile) =>
+{
+    await repository.UpsertAsync(profile);
+})
+.WithName("UpdateThearsholdsProfile");
 
 app.MapDefaultEndpoints();
 

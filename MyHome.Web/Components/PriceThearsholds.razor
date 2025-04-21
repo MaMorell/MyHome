@@ -1,0 +1,82 @@
+﻿@using MudBlazor
+@using MyHome.Core.Models.Entities.Profiles
+@using MyHome.Web.ExternalClients
+
+<MudBlazor.MudContainer MaxWidth="MaxWidth.Small">
+    @if (Profile != null)
+    {
+        <MudCard Elevation="4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h5" Color="Color.Primary">Inställningar för Prisgränser</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack Spacing="3">
+                    <MudText Typo="Typo.subtitle2">Ange tröskelvärden för prisnivåer.</MudText> @* Add a brief description *@
+                    <MudGrid Justify="Justify.Center">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="Profile.VeryLow" Label="Väldigt lågt" Variant="Variant.Outlined" Step=".1M" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="Profile.Low" Label="Lågt" Variant="Variant.Outlined" Step=".1M" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="Profile.High" Label="Högt" Variant="Variant.Outlined" Step=".1M" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="Profile.VeryHigh" Label="Väldigt högt" Variant="Variant.Outlined" Step=".1M" />
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions Class="d-flex justify-end pa-4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveProfile">Spara</MudButton> @* Add an OnClick handler *@
+            </MudCardActions>
+        </MudCard>
+    }
+    else
+    {
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" /> @* Show a loading indicator while fetching data *@
+    }
+</MudBlazor.MudContainer>
+
+@code {
+    [Inject]
+    private ProfilesClient ProfilesClient { get; set; } = default!;
+
+    [Inject]
+    private ISnackbar Snackbar { get; set; } = default!; // Inject ISnackbar for user feedback
+
+    public PriceThearsholdsProfile? Profile { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Profile = await ProfilesClient.GetPriceThearsholds();
+        }
+        catch (Exception ex)
+        {
+            // Handle error, e.g., show a snackbar message
+            Snackbar.Add($"Error loading profile: {ex.Message}", Severity.Error);
+            Profile = null; // Ensure Profile is null on error
+        }
+    }
+
+    private async Task SaveProfile()
+    {
+        if (Profile == null) return;
+
+        try
+        {
+            // Assuming you have a method in your client to update the profile
+            await ProfilesClient.UpdatePriceThearsholds(Profile);
+            Snackbar.Add("Settings saved successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving settings: {ex.Message}", Severity.Error);
+        }
+    }
+}
