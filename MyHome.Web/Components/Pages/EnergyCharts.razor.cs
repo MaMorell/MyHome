@@ -40,8 +40,6 @@ public partial class EnergyCharts
     {
         var prices = await GetPrices();
 
-        var foo = prices.Select(p => p.StartsAt.LocalDateTime).ToList();
-
         var priceChart = new TimeSeriesChartSeries
         {
             Index = 0,
@@ -66,6 +64,8 @@ public partial class EnergyCharts
             IsVisible = true,
             Type = TimeSeriesDiplayType.Line,
         };
+
+        _series.Clear();
 
         _series.Add(priceChart);
         _series.Add(priceLevelChart);

@@ -13,25 +13,27 @@
             </MudCardHeader>
             <MudCardContent>
                 <MudStack Spacing="3">
-                    <MudText Typo="Typo.subtitle2">Ange tröskelvärden för prisnivåer.</MudText> @* Add a brief description *@
-                    <MudGrid Justify="Justify.Center">
-                        <MudItem xs="12" sm="6" md="3">
-                            <MudNumericField @bind-Value="Profile.VeryLow" Label="Väldigt lågt" Variant="Variant.Outlined" Step=".1M" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="3">
-                            <MudNumericField @bind-Value="Profile.Low" Label="Lågt" Variant="Variant.Outlined" Step=".1M" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="3">
-                            <MudNumericField @bind-Value="Profile.High" Label="Högt" Variant="Variant.Outlined" Step=".1M" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="3">
-                            <MudNumericField @bind-Value="Profile.VeryHigh" Label="Väldigt högt" Variant="Variant.Outlined" Step=".1M" />
-                        </MudItem>
-                    </MudGrid>
+                    <MudItem>
+                        <MudText>Väldigt lågt: @Profile.VeryLow</MudText>
+                        <MudSlider T="decimal" @bind-Value="Profile.VeryLow" Step="0.1m" Min="0" Max="@Profile.Low" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText>Lågt: @Profile.Low</MudText>
+                        <MudSlider T="decimal" @bind-Value="Profile.Low" Step="0.1m" Min="@Profile.VeryLow" Max="@Profile.High" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText>Högt: @Profile.High</MudText>
+                        <MudSlider T="decimal" @bind-Value="Profile.High" Step="0.1m" Min="@Profile.Low" Max="@Profile.VeryHigh" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText>Väldigt högt: @Profile.VeryHigh</MudText>
+                        <MudSlider T="decimal" @bind-Value="Profile.VeryHigh" Step="0.1m" Min="@Profile.High" Max="3.5m" />
+                    </MudItem>
                 </MudStack>
             </MudCardContent>
             <MudCardActions Class="d-flex justify-end pa-4">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveProfile">Spara</MudButton> @* Add an OnClick handler *@
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="DefaultProfile" class="mr-5">Återställ</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Tertiary" OnClick="SaveProfile">Spara</MudButton>
             </MudCardActions>
         </MudCard>
     }
@@ -46,7 +48,10 @@
     private ProfilesClient ProfilesClient { get; set; } = default!;
 
     [Inject]
-    private ISnackbar Snackbar { get; set; } = default!; // Inject ISnackbar for user feedback
+    private ISnackbar Snackbar { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnDataReloadRequested { get; set; }
 
     public PriceThearsholdsProfile? Profile { get; set; }
 
@@ -68,11 +73,22 @@
     {
         if (Profile == null) return;
 
+        await SaveProfile(Profile);
+    }
+
+    private void DefaultProfile(MouseEventArgs args)
+    {
+        Profile = new PriceThearsholdsProfile();
+    }
+
+    private async Task SaveProfile(PriceThearsholdsProfile profile)
+    {
         try
         {
-            // Assuming you have a method in your client to update the profile
-            await ProfilesClient.UpdatePriceThearsholds(Profile);
+            await ProfilesClient.UpdatePriceThearsholds(profile);
             Snackbar.Add("Settings saved successfully!", Severity.Success);
+
+            await OnDataReloadRequested.InvokeAsync();
         }
         catch (Exception ex)
         {
