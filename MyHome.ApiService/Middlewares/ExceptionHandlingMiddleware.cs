@@ -1,4 +1,3 @@
-using Google.Protobuf;
 using Microsoft.AspNetCore.Mvc;
 using MyHome.Core.Models.Exceptions;
 

@@ -1,4 +1,5 @@
 ﻿using MyHome.Core.Models.Integrations.HeatPump;
+using MyHome.Core.Models.Interfaces;
 
 namespace MyHome.Core.Models.Entities.Profiles;
 
@@ -22,7 +23,7 @@ public enum DeviceSettingsMode
     ExtremeSavings = 5
 }
 
-public class HeatOffsetProfile
+public class HeatOffsetProfile : IDeviceProfile<int>
 {
     public int Baseline { get; set; } = 0;
     public int Enhanced { get; set; } = 2;
@@ -32,27 +33,7 @@ public class HeatOffsetProfile
     public int ExtremeSavings { get; set; } = -5;
 }
 
-public class ComfortModeProfile
-{
-    public ComfortMode Baseline { get; set; } = ComfortMode.Economy;
-    public ComfortMode Enhanced { get; set; } = ComfortMode.Normal;
-    public ComfortMode Moderate { get; set; } = ComfortMode.Normal;
-    public ComfortMode Economic { get; set; } = ComfortMode.Economy;
-    public ComfortMode MaxSavings { get; set; } = ComfortMode.Economy;
-    public ComfortMode ExtremeSavings { get; set; } = ComfortMode.Economy;
-}
-
-public class OpModeProfile
-{
-    public OpMode Baseline { get; set; } = OpMode.Auto;
-    public OpMode Enhanced { get; set; } = OpMode.Auto;
-    public OpMode Moderate { get; set; } = OpMode.Auto;
-    public OpMode Economic { get; set; } = OpMode.Manual;
-    public OpMode MaxSavings { get; set; } = OpMode.Manual;
-    public OpMode ExtremeSavings { get; set; } = OpMode.Manual;
-}
-
-public class RadiatorTemperatureProfile
+public class RadiatorTemperatureProfile : IDeviceProfile<int>
 {
     public int Baseline { get; set; } = 7;
     public int Enhanced { get; set; } = 9;
@@ -62,7 +43,7 @@ public class RadiatorTemperatureProfile
     public int ExtremeSavings { get; set; } = 5;
 }
 
-public class FloorHeaterTemperatureProfile
+public class FloorHeaterTemperatureProfile : IDeviceProfile<int>
 {
     public int Baseline { get; set; } = 22;
     public int Enhanced { get; set; } = 25;
@@ -70,4 +51,25 @@ public class FloorHeaterTemperatureProfile
     public int Economic { get; set; } = 15;
     public int MaxSavings { get; set; } = 10;
     public int ExtremeSavings { get; set; } = 5;
+}
+
+
+public class ComfortModeProfile : IDeviceProfile<ComfortMode>
+{
+    public ComfortMode Baseline { get; set; } = ComfortMode.Economy;
+    public ComfortMode Enhanced { get; set; } = ComfortMode.Normal;
+    public ComfortMode Moderate { get; set; } = ComfortMode.Normal;
+    public ComfortMode Economic { get; set; } = ComfortMode.Economy;
+    public ComfortMode MaxSavings { get; set; } = ComfortMode.Economy;
+    public ComfortMode ExtremeSavings { get; set; } = ComfortMode.Economy;
+}
+
+public class OpModeProfile : IDeviceProfile<OpMode>
+{
+    public OpMode Baseline { get; set; } = OpMode.Auto;
+    public OpMode Enhanced { get; set; } = OpMode.Auto;
+    public OpMode Moderate { get; set; } = OpMode.Auto;
+    public OpMode Economic { get; set; } = OpMode.Manual;
+    public OpMode MaxSavings { get; set; } = OpMode.Manual;
+    public OpMode ExtremeSavings { get; set; } = OpMode.Manual;
 }

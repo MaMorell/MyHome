@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using MudBlazor.Components.Chart.Models;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Web.ExternalClients;
 
@@ -46,7 +45,7 @@ public partial class EnergyCharts
             Name = "Elpris (SEK/kWh)",
             Data = prices.Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.Price)).ToList(),
             IsVisible = true,
-            Type = TimeSeriesDiplayType.Line
+            LineDisplayType = LineDisplayType.Line
         };
         var priceLevelChart = new TimeSeriesChartSeries
         {
@@ -54,7 +53,7 @@ public partial class EnergyCharts
             Name = "Prisnivå (0 = låg, 5 = hög)",
             Data = prices.Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.RelativePriceLevel)).ToList(),
             IsVisible = true,
-            Type = TimeSeriesDiplayType.Line
+            LineDisplayType = LineDisplayType.Line
         };
         var consumptionChart = new TimeSeriesChartSeries
         {
@@ -62,7 +61,7 @@ public partial class EnergyCharts
             Name = "Elförbrukning (kWh)",
             Data = GetConsumptionChartData(prices),
             IsVisible = true,
-            Type = TimeSeriesDiplayType.Line,
+            LineDisplayType = LineDisplayType.Line
         };
 
         _series.Clear();

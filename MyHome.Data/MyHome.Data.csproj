@@ -8,7 +8,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="TuyaNet" Version="1.0.3" />
-		<PackageReference Include="Tibber.Sdk" Version="0.5.1-beta" />
+		<PackageReference Include="Tibber.Sdk" Version="0.5.2-beta" />
 	</ItemGroup>
 
 	<ItemGroup>

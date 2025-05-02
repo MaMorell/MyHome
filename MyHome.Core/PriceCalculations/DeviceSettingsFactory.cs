@@ -3,6 +3,7 @@ using MyHome.Core.Extensions;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
+using MyHome.Core.Models.Entities.Constants;
 using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Models.Integrations.HeatPump;
 using EnergyPriceLevel = MyHome.Core.Models.EnergySupplier.Enums.EnergyPriceLevel;
@@ -184,9 +185,8 @@ public class DeviceSettingsFactory
 
     private async Task<DeviceSettingsProfile> GetDeviceSettingsProfileAsync()
     {
-        var settingsId = Guid.Parse(DeviceSettingsConstants.SettingsId);
-        var settings = await _deviceSettingsRepository.GetByIdAsync(settingsId)
-            ?? throw new EntityNotFoundException(settingsId);
+        var settings = await _deviceSettingsRepository.GetByIdAsync(EntityIdConstants.DeviceSettingsId)
+            ?? throw new EntityNotFoundException(EntityIdConstants.DeviceSettingsId);
 
         return settings;
     }

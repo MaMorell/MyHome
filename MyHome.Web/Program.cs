@@ -26,7 +26,8 @@ builder.Services.AddScoped<ApiServiceClient>();
 builder.Services
     .AddScoped<EnergySupplierClient>()
     .AddScoped<AuditClient>()
-    .AddScoped<ProfilesClient>()
+    .AddScoped<PriceThearsholdsClient>()
+    .AddScoped<DeviceSettingsProfileClient>()
     .AddScoped<WifiSocketClient>();
 
 builder.Services.AddMudServices();

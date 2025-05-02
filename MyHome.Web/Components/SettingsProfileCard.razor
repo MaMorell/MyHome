@@ -1,0 +1,60 @@
+﻿@using MudBlazor
+@using MyHome.Core.Models.Entities.Profiles
+@using MyHome.Core.Models.Interfaces
+
+<MudCard Elevation="4" Class="mb-6">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5" Color="Color.Primary">@Title</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (Profile != null)
+        {
+            <MudStack Spacing="3">
+                <MudItem>
+                    <MudText>Extremt dyrt: <b>@Profile.ExtremeSavings</b></MudText>
+                    <MudSlider T="int" @bind-Value="Profile.ExtremeSavings" Step="1" Min="@MinValue" Max="@Profile.MaxSavings" />
+                </MudItem>
+                <MudItem>
+                    <MudText>Väldigt dyrt: <b>@Profile.MaxSavings</b></MudText>
+                    <MudSlider T="int" @bind-Value="Profile.MaxSavings" Step="1" Min="@Profile.ExtremeSavings" Max="@Profile.Economic" />
+                </MudItem>
+                <MudItem>
+                    <MudText>Dyrt: <b>@Profile.Economic</b></MudText>
+                    <MudSlider T="int" @bind-Value="Profile.Economic" Step="1" Min="@Profile.MaxSavings" Max="@Profile.Moderate" />
+                </MudItem>
+                <MudItem>
+                    <MudText>Normalt: <b>@Profile.Baseline</b></MudText>
+                    <MudSlider T="int" @bind-Value="Profile.Baseline" Step="1" Min="@Profile.Economic" Max="@Profile.Moderate" />
+                </MudItem>
+                <MudItem>
+                    <MudText>Billigt: <b>@Profile.Moderate</b></MudText>
+                    <MudSlider T="int" @bind-Value="Profile.Moderate" Step="1" Min="@Profile.Baseline" Max="@Profile.Enhanced" />
+                </MudItem>
+                <MudItem>
+                    <MudText>Extremt billigt: <b>@Profile.Enhanced</b></MudText>
+                    <MudSlider T="int" @bind-Value="Profile.Enhanced" Step="1" Min="@Profile.Moderate" Max="@MaxValue" />
+                </MudItem>
+            </MudStack>
+        }
+        else
+        {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" /> @* Show a loading indicator while fetching data *@
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public int MinValue { get; set; }
+
+    [Parameter]
+    public int MaxValue { get; set; }
+
+    [Parameter]
+    public IDeviceProfile<int>? Profile { get; set; }
+}

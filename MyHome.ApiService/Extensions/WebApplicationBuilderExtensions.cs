@@ -30,7 +30,6 @@ public static class WebApplicationBuilderExtensions
         services.AddScoped<IEnergyRepository, EnergyRepository>();
 
         services.AddScoped<EnergySupplierService>();
-        services.AddScoped<PriceThearsholdsService>();
         services.AddScoped<HeatRegulatorService>();
         services.AddScoped<IWifiSocketsService, WifiSocketsService>();
 

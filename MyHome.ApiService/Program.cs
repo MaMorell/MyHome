@@ -28,7 +28,6 @@ builder.Services.RegisterLocalDependencies(builder.Configuration);
 
 var app = builder.Build();
 
-
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -77,17 +76,47 @@ app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> reposit
 })
 .WithName("GetAuditEvents");
 
-app.MapGet("/profiles/pricethearsholds", async ([FromServices] PriceThearsholdsService service) =>
+app.MapGet("/profiles/price-thearsholds/{id}", async ([FromServices] IRepository<PriceThearsholdsProfile> repository, Guid id) =>
 {
-    return await service.GetThearsholdsProfile();
+    return await repository.GetByIdAsync(id);
 })
 .WithName("GetThearsholdsProfile");
 
-app.MapPut("/profiles/pricethearsholds", async ([FromServices] IRepository<PriceThearsholdsProfile> repository, [FromBody] PriceThearsholdsProfile profile) =>
+app.MapPut("/profiles/price-thearsholds/{id}", async (
+    [FromServices] IRepository<PriceThearsholdsProfile> repository,
+    Guid id,
+    [FromBody] PriceThearsholdsProfile profile) =>
 {
+    if (id != profile.Id)
+    {
+        return Results.BadRequest("ID in URL must match ID in body");
+    }
+
     await repository.UpsertAsync(profile);
+    return Results.NoContent();
 })
 .WithName("UpdateThearsholdsProfile");
+
+app.MapGet("/profiles/device-settings/{id}", async ([FromServices] IRepository<DeviceSettingsProfile> repository, Guid id) =>
+{
+    return await repository.GetByIdAsync(id);
+})
+.WithName("GetDeviceSettings");
+
+app.MapPut("/profiles/device-settings/{id}", async (
+    [FromServices] IRepository<DeviceSettingsProfile> repository,
+    Guid id,
+    [FromBody] DeviceSettingsProfile profile) =>
+{
+    if (id != profile.Id)
+    {
+        return Results.BadRequest("ID in URL must match ID in body");
+    }
+
+    await repository.UpsertAsync(profile);
+    return Results.NoContent();
+})
+.WithName("UpdateDeviceSettings");
 
 app.MapDefaultEndpoints();
 

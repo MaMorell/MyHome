@@ -1,0 +1,88 @@
+﻿@using MudBlazor
+@using MyHome.Core.Models.Entities.Profiles
+@using MyHome.Core.Models.Integrations.HeatPump
+@using MyHome.Core.Models.Interfaces
+
+@typeparam T where T : struct, Enum
+
+<MudCard Elevation="4" Class="mb-6">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5" Color="Color.Primary">@Title</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (Profile != null)
+        {
+            <MudStack Spacing="3">
+                <MudItem>
+                    <MudText>Extremt dyrt:</MudText>
+                    <MudSelect T="T" @bind-Value="Profile.ExtremeSavings" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var mode in Enum.GetValues<T>())
+                        {
+                            <MudSelectItem Value="@mode">@mode</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem>
+                    <MudText>Väldigt dyrt:</MudText>
+                    <MudSelect T="T" @bind-Value="Profile.MaxSavings" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var mode in Enum.GetValues<T>())
+                        {
+                            <MudSelectItem Value="@mode">@mode</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem>
+                    <MudText>Dyrt:</MudText>
+                    <MudSelect T="T" @bind-Value="Profile.Economic" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var mode in Enum.GetValues<T>())
+                        {
+                            <MudSelectItem Value="@mode">@mode</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem>
+                    <MudText>Normalt:</MudText>
+                    <MudSelect T="T" @bind-Value="Profile.Baseline" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var mode in Enum.GetValues<T>())
+                        {
+                            <MudSelectItem Value="@mode">@mode</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem>
+                    <MudText>Billigt:</MudText>
+                    <MudSelect T="T" @bind-Value="Profile.Moderate" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var mode in Enum.GetValues<T>())
+                        {
+                            <MudSelectItem Value="@mode">@mode</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem>
+                    <MudText>Extremt billigt:</MudText>
+                    <MudSelect T="T" @bind-Value="Profile.Enhanced" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var mode in Enum.GetValues<T>())
+                        {
+                            <MudSelectItem Value="@mode">@mode</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudStack>
+        }
+        else
+        {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+        }
+    </MudCardContent>
+</MudCard>
+
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public IDeviceProfile<T>? Profile { get; set; }
+}

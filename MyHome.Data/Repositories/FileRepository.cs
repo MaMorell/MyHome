@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace MyHome.Data.Repositories;
 
-public class FileRepository<T> : IRepository<T> where T : IEntity
+public class FileRepository<T> : IRepository<T> where T : IEntity, new()
 {
     private readonly string _filePath;
 
@@ -16,7 +16,7 @@ public class FileRepository<T> : IRepository<T> where T : IEntity
 
         Directory.CreateDirectory(appDataFolder); 
 
-        _filePath = Path.Combine(appDataFolder, typeof(T).Name);
+        _filePath = Path.Combine(appDataFolder, $"{typeof(T).Name}.json");
 
         if (!File.Exists(_filePath))
         {
@@ -49,9 +49,13 @@ public class FileRepository<T> : IRepository<T> where T : IEntity
     public async Task<T> GetByIdAsync(Guid id)
     {
         var allItems = await GetAllAsync();
-        
-        return allItems.FirstOrDefault(item => item.Id == id) 
-            ?? throw new NotFoundException<T>(id);
+
+        var result = allItems.FirstOrDefault(item => item.Id == id);
+
+        result ??= new T();
+        result.Id = id;
+
+        return result;
     }
 
     public async Task AddAsync(T entity)
