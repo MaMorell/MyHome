@@ -14,20 +14,26 @@
             <MudCardContent>
                 <MudStack Spacing="3">
                     <MudItem>
-                        <MudText>Väldigt lågt: @Profile.VeryLow</MudText>
+                        <MudText>Väldigt lågt: <b>@Profile.VeryLowPercentage</b> under medel</MudText>
                         <MudSlider T="decimal" @bind-Value="Profile.VeryLow" Step="0.1m" Min="0" Max="@Profile.Low" />
                     </MudItem>
                     <MudItem>
-                        <MudText>Lågt: @Profile.Low</MudText>
+                        <MudText>Lågt: <b>@Profile.LowPercentage</b> under medel</MudText>
                         <MudSlider T="decimal" @bind-Value="Profile.Low" Step="0.1m" Min="@Profile.VeryLow" Max="@Profile.High" />
                     </MudItem>
                     <MudItem>
-                        <MudText>Högt: @Profile.High</MudText>
+                        <MudText>Högt: <b>@Profile.HighPercentage</b> över medel</MudText>
                         <MudSlider T="decimal" @bind-Value="Profile.High" Step="0.1m" Min="@Profile.Low" Max="@Profile.VeryHigh" />
                     </MudItem>
                     <MudItem>
-                        <MudText>Väldigt högt: @Profile.VeryHigh</MudText>
+                        <MudText>Väldigt högt: <b>@Profile.VeryHighPercentage</b> över medel</MudText>
                         <MudSlider T="decimal" @bind-Value="Profile.VeryHigh" Step="0.1m" Min="@Profile.High" Max="3.5m" />
+                    </MudItem>
+                    <MudItem>
+                        <MudNumericField @bind-Value=@Profile.ExtremelyHighPrice Label="Gräns för extremt högt pris" Step="0.1m" Min="1" Max="10"></MudNumericField>
+                    </MudItem>
+                    <MudItem>
+                        <MudNumericField @bind-Value=@Profile.HoursForCalculaingRelativePriceLevel Label="Timmar för beräkning av prisnivå" Step="1" Min="4" Max="24"></MudNumericField>
                     </MudItem>
                 </MudStack>
             </MudCardContent>
@@ -63,9 +69,8 @@
         }
         catch (Exception ex)
         {
-            // Handle error, e.g., show a snackbar message
             Snackbar.Add($"Error loading profile: {ex.Message}", Severity.Error);
-            Profile = null; // Ensure Profile is null on error
+            Profile = null;
         }
     }
 

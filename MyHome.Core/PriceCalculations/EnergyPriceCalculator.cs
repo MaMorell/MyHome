@@ -9,8 +9,6 @@ namespace MyHome.Core.PriceCalculations;
 
 public class EnergyPriceCalculator
 {
-    private const decimal ExtremelyHighPrice = 3m;
-    private const int HoursForCalculaingRelativePriceLevel = 8;
     private readonly IRepository<PriceThearsholdsProfile> _priceThearsholdsService;
 
     public EnergyPriceCalculator(IRepository<PriceThearsholdsProfile> priceThearsholdsService)
@@ -45,7 +43,7 @@ public class EnergyPriceCalculator
                 continue;
             }
 
-            EnergyPrice currentPrice = prices.ElementAt(i);
+            var currentPrice = prices.ElementAt(i);
 
             energyPrices.Add(new EnergyConsumptionEntry
             {
@@ -61,12 +59,12 @@ public class EnergyPriceCalculator
 
     private static RelativePriceLevel DetermineRelativePriceLevel(List<EnergyPrice> prices, PriceThearsholdsProfile priceThearsholds)
     {
-        if (prices.Count < HoursForCalculaingRelativePriceLevel)
+        if (prices.Count < priceThearsholds.HoursForCalculaingRelativePriceLevel)
         {
             return RelativePriceLevel.Unknown;
         }
 
-        prices = [.. prices.Take(HoursForCalculaingRelativePriceLevel)];
+        prices = [.. prices.Take(priceThearsholds.HoursForCalculaingRelativePriceLevel)];
 
         var average = prices.Average(p => p.Total) ?? 0;
 
@@ -77,17 +75,17 @@ public class EnergyPriceCalculator
             priceThearsholds
         );
 
-        return CalculateRelativePriceLevel(parameters);
+        return CalculateRelativePriceLevel(parameters, priceThearsholds);
     }
 
-    private static RelativePriceLevel CalculateRelativePriceLevel(EnergyPriceThresholds thresholds)
+    private static RelativePriceLevel CalculateRelativePriceLevel(EnergyPriceThresholds thresholds, PriceThearsholdsProfile priceThearsholds)
     {
         if (thresholds.Price is null || thresholds.PriceLevel is null)
         {
             throw new ArgumentException($"Price or PriceLevel is null. Price: {thresholds.Price}. PriceLevel: {thresholds.PriceLevel}");
         }
 
-        if (thresholds.Price >= thresholds.VeryHighThreshold && thresholds.PriceLevel == EnergyPriceLevel.VeryExpensive && thresholds.Price > ExtremelyHighPrice)
+        if (thresholds.Price >= thresholds.VeryHighThreshold && thresholds.PriceLevel == EnergyPriceLevel.VeryExpensive && thresholds.Price > priceThearsholds.ExtremelyHighPrice)
         {
             return RelativePriceLevel.Extreme;
         }

@@ -21,13 +21,13 @@ public class DeviceSettingsFactory
 
     public async Task<DeviceSettings> CreateFromPrice(EnergyConsumptionEntry price)
     {
-        var calculationTemplate = await GetDeviceSettingsProfileAsync();
+        var deviceSettings = await GetDeviceSettingsProfileAsync();
 
-        var opMode = GetOpMode(price);
-        var heatOffset = GetHeatOffset(price.RelativePriceLevel, calculationTemplate.HeatOffsets);
-        var targetTemprature = GetRadiatorTemperature(price.RelativePriceLevel, calculationTemplate.RadiatorTemperatures);
-        var comfortMode = GetComfortMode(price.RelativePriceLevel, calculationTemplate.ComfortModes);
-        var floorTemperature = GetFloorHeaterTemperature(price.RelativePriceLevel, calculationTemplate.FloorHeaterTemperatures);
+        var opMode = GetOpMode(price.RelativePriceLevel, deviceSettings.OpModes, price);
+        var heatOffset = GetHeatOffset(price.RelativePriceLevel, deviceSettings.HeatOffsets);
+        var targetTemprature = GetRadiatorTemperature(price.RelativePriceLevel, deviceSettings.RadiatorTemperatures);
+        var comfortMode = GetComfortMode(price.RelativePriceLevel, deviceSettings.ComfortModes);
+        var floorTemperature = GetFloorHeaterTemperature(price.RelativePriceLevel, deviceSettings.FloorHeaterTemperatures);
 
         return new DeviceSettings(heatOffset, targetTemprature, comfortMode, opMode, floorTemperature);
     }
@@ -83,49 +83,56 @@ public class DeviceSettingsFactory
         };
     }
 
-    private static int GetHeatOffset(RelativePriceLevel priceLevel, HeatOffsetProfile heatOffsets)
+    private static int GetHeatOffset(RelativePriceLevel priceLevel, HeatOffsetProfile profile)
     {
         return priceLevel switch
         {
-            RelativePriceLevel.Normal => heatOffsets.Baseline,
-            RelativePriceLevel.VeryLow => heatOffsets.Enhanced,
-            RelativePriceLevel.Low => heatOffsets.Moderate,
-            RelativePriceLevel.High => heatOffsets.Economic,
-            RelativePriceLevel.VeryHigh => heatOffsets.MaxSavings,
-            RelativePriceLevel.Extreme => heatOffsets.ExtremeSavings,
-            _ => heatOffsets.Baseline,
+            RelativePriceLevel.Normal => profile.Baseline,
+            RelativePriceLevel.VeryLow => profile.Enhanced,
+            RelativePriceLevel.Low => profile.Moderate,
+            RelativePriceLevel.High => profile.Economic,
+            RelativePriceLevel.VeryHigh => profile.MaxSavings,
+            RelativePriceLevel.Extreme => profile.ExtremeSavings,
+            _ => profile.Baseline,
         };
     }
 
-    private static ComfortMode GetComfortMode(RelativePriceLevel priceLevel, ComfortModeProfile comfortModes)
+    private static ComfortMode GetComfortMode(RelativePriceLevel priceLevel, ComfortModeProfile profile)
     {
         return priceLevel switch
         {
-            RelativePriceLevel.Normal => comfortModes.Baseline,
-            RelativePriceLevel.VeryLow => comfortModes.Enhanced,
-            RelativePriceLevel.Low => comfortModes.Moderate,
-            RelativePriceLevel.High => comfortModes.Economic,
-            RelativePriceLevel.VeryHigh => comfortModes.MaxSavings,
-            RelativePriceLevel.Extreme => comfortModes.ExtremeSavings,
-            _ => comfortModes.Baseline,
+            RelativePriceLevel.Normal => profile.Baseline,
+            RelativePriceLevel.VeryLow => profile.Enhanced,
+            RelativePriceLevel.Low => profile.Moderate,
+            RelativePriceLevel.High => profile.Economic,
+            RelativePriceLevel.VeryHigh => profile.MaxSavings,
+            RelativePriceLevel.Extreme => profile.ExtremeSavings,
+            _ => profile.Baseline,
         };
     }
 
-    private static OpMode GetOpMode(EnergyConsumptionEntry energyPrice)
+    private static OpMode GetOpMode(RelativePriceLevel priceLevel, OpModeProfile profile, EnergyConsumptionEntry energyPrice)
     {
-        var priceLevelIsLow =
-            energyPrice.PriceLevel == EnergyPriceLevel.Normal ||
-            energyPrice.PriceLevel == EnergyPriceLevel.Cheap ||
-            energyPrice.PriceLevel == EnergyPriceLevel.VeryCheap;
+        var maxPriceAutoMode = DateTime.Now.IsNightTime()
+            ? profile.MaxPriceAutoModeNightTime
+            : profile.MaxPriceAutoMode;
+        var isPriceUnderAutoModeLimit = energyPrice.Price < maxPriceAutoMode;
 
-        var priceLimit = DateTime.Now.IsNightTime()
-            ? 1.5m
-            : 1.0m;
-        var priceIsCheap = energyPrice.Price < priceLimit;
+        if (!isPriceUnderAutoModeLimit)
+        {
+            return OpMode.Manual;
+        }
 
-        return priceLevelIsLow && priceIsCheap
-            ? OpMode.Auto
-            : OpMode.Manual;
+        return priceLevel switch
+        {
+            RelativePriceLevel.Normal => profile.Baseline,
+            RelativePriceLevel.VeryLow => profile.Enhanced,
+            RelativePriceLevel.Low => profile.Moderate,
+            RelativePriceLevel.High => profile.Economic,
+            RelativePriceLevel.VeryHigh => profile.MaxSavings,
+            RelativePriceLevel.Extreme => profile.ExtremeSavings,
+            _ => profile.Baseline,
+        };
     }
 
     private static int GetRadiatorTemperature(RelativePriceLevel priceLevel, RadiatorTemperatureProfile radiatorTemperatures)
