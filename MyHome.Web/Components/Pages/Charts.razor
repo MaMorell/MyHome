@@ -1,0 +1,50 @@
+﻿@using MudBlazor
+@using MyHome.Core.Models.EnergySupplier
+@using MyHome.Core.Models.Entities.Profiles
+@using MyHome.Web.ExternalClients
+@using MyHome.Web.Components
+
+@page "/charts"
+
+<MudContainer MaxWidth="MaxWidth.Large" class="mt-16">
+    <MudPaper Elevation="0" Class="mb-8">
+        <MudText Typo="Typo.h3" Color="Color.Primary" Class="mb-2">Elprisöversikt</MudText>
+        <MudText Typo="Typo.subtitle1">Översikt över elpriser och prisnivåer över tid</MudText>
+    </MudPaper>
+
+    <MudPaper Class="mb-8">
+        <EnergyConsumptionCharts EnergyConsumptions="_energyConsumptions" />
+    </MudPaper>
+
+    <MudPaper Class="mb-8">
+        <PriceThearsholdsCard OnProfileUpdated="SetEnergyConsumptions" />
+    </MudPaper>
+
+</MudContainer>
+
+@code {
+    [Inject]
+    private EnergySupplierClient EnergySupplierClient { get; set; } = default!;
+
+    [Inject]
+    private ISnackbar Snackbar { get; set; } = default!;
+
+    private IEnumerable<EnergyConsumptionEntry>? _energyConsumptions;
+
+    protected override Task OnInitializedAsync()
+    {
+        return SetEnergyConsumptions();
+    }
+
+    private async Task SetEnergyConsumptions()
+    {
+        try
+        {
+            _energyConsumptions = await EnergySupplierClient.GetEnergyPricesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading energy consumptions: {ex.Message}", Severity.Error);
+        }
+    }
+}

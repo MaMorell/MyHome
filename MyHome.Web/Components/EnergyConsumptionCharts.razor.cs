@@ -1,15 +1,14 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using MyHome.Core.Models.EnergySupplier;
-using MyHome.Web.ExternalClients;
 
-namespace MyHome.Web.Components.Pages;
-public partial class EnergyCharts
+namespace MyHome.Web.Components;
+
+public partial class EnergyConsumptionCharts
 {
-    [Inject]
-    private EnergySupplierClient EnergySupplierClient { get; set; } = default!;
+    [Parameter]
+    public IEnumerable<EnergyConsumptionEntry>? EnergyConsumptions { get; set; }
 
-    private bool _loading;
     private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
 
     private readonly ChartOptions _options = new()
@@ -19,31 +18,21 @@ public partial class EnergyCharts
     };
     private readonly List<TimeSeriesChartSeries> _series = [];
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnParametersSet()
     {
-        try
-        {
-            _loading = true;
-
-            await InitializeCharts();
-
-            StateHasChanged();
-        }
-        finally
-        {
-            _loading = false;
-        }
+        InitializeCharts();
     }
 
-    private async Task InitializeCharts()
+    private void InitializeCharts()
     {
-        var prices = await GetPrices();
+        if (EnergyConsumptions is null)
+            return;
 
         var priceChart = new TimeSeriesChartSeries
         {
             Index = 0,
             Name = "Elpris (SEK/kWh)",
-            Data = prices.Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.Price)).ToList(),
+            Data = EnergyConsumptions.Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.Price)).ToList(),
             IsVisible = true,
             LineDisplayType = LineDisplayType.Line
         };
@@ -51,7 +40,7 @@ public partial class EnergyCharts
         {
             Index = 1,
             Name = "Prisnivå (0 = låg, 5 = hög)",
-            Data = prices.Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.RelativePriceLevel)).ToList(),
+            Data = EnergyConsumptions.Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.RelativePriceLevel)).ToList(),
             IsVisible = true,
             LineDisplayType = LineDisplayType.Line
         };
@@ -59,7 +48,7 @@ public partial class EnergyCharts
         {
             Index = 2,
             Name = "Elförbrukning (kWh)",
-            Data = GetConsumptionChartData(prices),
+            Data = GetConsumptionChartData(EnergyConsumptions),
             IsVisible = true,
             LineDisplayType = LineDisplayType.Line
         };
@@ -76,14 +65,4 @@ public partial class EnergyCharts
             .Where(p => p.Consumption != default)
             .Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.Consumption))
             .ToList();
-
-    private async Task<IEnumerable<EnergyConsumptionEntry>> GetPrices()
-    {
-        var pricesTask = EnergySupplierClient.GetEnergyPricesAsync();
-        var waitTask = Task.Delay(500);
-
-        await Task.WhenAll(pricesTask, waitTask);
-
-        return await pricesTask;
-    }
 }

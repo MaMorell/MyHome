@@ -1,0 +1,101 @@
+﻿@using MudBlazor
+@using MyHome.Core.Models.Entities.Profiles
+@using MyHome.Web.ExternalClients
+
+<MudCard Elevation="4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5" Color="Color.Primary"><MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />Inställningar för Prisgränser</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (Profile != null)
+        {
+            <MudStack Spacing="3">
+                <MudItem>
+                    <MudText>Väldigt lågt: <b>@Profile.VeryLowPercentage</b> under medel</MudText>
+                    <MudSlider T="decimal" @bind-Value="Profile.VeryLow" Step="0.1m" Min="0" Max="@Profile.Low" />
+                </MudItem>
+                <MudItem>
+                    <MudText>Lågt: <b>@Profile.LowPercentage</b> under medel</MudText>
+                    <MudSlider T="decimal" @bind-Value="Profile.Low" Step="0.1m" Min="@Profile.VeryLow" Max="@Profile.High" />
+                </MudItem>
+                <MudItem>
+                    <MudText>Högt: <b>@Profile.HighPercentage</b> över medel</MudText>
+                    <MudSlider T="decimal" @bind-Value="Profile.High" Step="0.1m" Min="@Profile.Low" Max="@Profile.VeryHigh" />
+                </MudItem>
+                <MudItem>
+                    <MudText>Väldigt högt: <b>@Profile.VeryHighPercentage</b> över medel</MudText>
+                    <MudSlider T="decimal" @bind-Value="Profile.VeryHigh" Step="0.1m" Min="@Profile.High" Max="3.5m" />
+                </MudItem>
+                <MudItem>
+                    <MudNumericField @bind-Value=@Profile.ExtremelyHighPrice Label="Gräns för extremt högt pris" Step="0.1m" Min="1" Max="10"></MudNumericField>
+                </MudItem>
+                <MudItem>
+                    <MudNumericField @bind-Value=@Profile.HoursForCalculaingRelativePriceLevel Label="Timmar för beräkning av prisnivå" Step="1" Min="4" Max="24"></MudNumericField>
+                </MudItem>
+            </MudStack>
+        }
+        else
+        {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+        }
+    </MudCardContent>
+    <MudCardActions Class="d-flex justify-end pa-4">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="DefaultProfile" class="mr-5">Återställ</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Tertiary" OnClick="SaveProfile">Spara</MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Inject]
+    private PriceThearsholdsClient ProfilesClient { get; set; } = default!;
+
+    [Inject]
+    private ISnackbar Snackbar { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnProfileUpdated { get; set; }
+
+    public PriceThearsholdsProfile? Profile { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Profile = await ProfilesClient.GetPriceThearsholds();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading profile: {ex.Message}", Severity.Error);
+            Profile = null;
+        }
+    }
+
+    private async Task SaveProfile()
+    {
+        if (Profile == null) return;
+
+        await SaveProfile(Profile);
+    }
+
+    private void DefaultProfile(MouseEventArgs args)
+    {
+        Profile = new PriceThearsholdsProfile();
+    }
+
+    private async Task SaveProfile(PriceThearsholdsProfile profile)
+    {
+        try
+        {
+            await ProfilesClient.UpdatePriceThearsholds(profile);
+            Snackbar.Add("Settings saved successfully!", Severity.Success);
+
+            await OnProfileUpdated.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving settings: {ex.Message}", Severity.Error);
+        }
+    }
+}
