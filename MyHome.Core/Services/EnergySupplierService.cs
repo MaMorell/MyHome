@@ -5,9 +5,9 @@ using MyHome.Core.PriceCalculations;
 
 namespace MyHome.Core.Services;
 
-public class EnergySupplierService(IEnergyRepository energyRepository, EnergyPriceCalculator energyPriceCalculator)
+public class EnergySupplierService(IEnergySupplierRepository energyRepository, EnergyPriceCalculator energyPriceCalculator)
 {
-    private readonly IEnergyRepository _energyRepository = energyRepository;
+    private readonly IEnergySupplierRepository _energyRepository = energyRepository;
     private readonly EnergyPriceCalculator _energyPriceCalculator = energyPriceCalculator;
 
     public async Task<IEnumerable<EnergyConsumptionEntry>> GetFutureEnergyPricesAsync()

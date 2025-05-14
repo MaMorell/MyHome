@@ -6,7 +6,7 @@ using MyHome.Core.PriceCalculations;
 namespace MyHome.Core.Services;
 
 public class HeatRegulatorService(
-    IEnergyRepository energyRepository,
+    IEnergySupplierRepository energyRepository,
     EnergyPriceCalculator energyPriceCalculator,
     IHeatPumpClient heatpumpReposiory,
     IWifiSocketsService wifiSocketsService,
@@ -14,7 +14,7 @@ public class HeatRegulatorService(
     DeviceSettingsFactory deviceSettingsCalculator,
     ILogger<HeatRegulatorService> logger)
 {
-    private readonly IEnergyRepository _energyRepository = energyRepository ?? throw new ArgumentNullException(nameof(energyRepository));
+    private readonly IEnergySupplierRepository _energyRepository = energyRepository ?? throw new ArgumentNullException(nameof(energyRepository));
     private readonly EnergyPriceCalculator _energyPriceCalculator = energyPriceCalculator;
     private readonly IHeatPumpClient _heatpumpReposiory = heatpumpReposiory ?? throw new ArgumentNullException(nameof(heatpumpReposiory));
     private readonly IWifiSocketsService _wifiSocketsService = wifiSocketsService;

@@ -9,7 +9,7 @@ using Tibber.Sdk;
 
 namespace MyHome.Data.Integrations.EnergySupplier;
 
-public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergyRepository
+public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergySupplierRepository
 {
     public async Task<ICollection<EnergyPrice>> GetEnergyPrices(PriceType priceType)
     {

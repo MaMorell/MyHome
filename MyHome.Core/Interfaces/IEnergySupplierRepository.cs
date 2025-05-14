@@ -3,7 +3,7 @@ using MyHome.Core.Models.EnergySupplier.Enums;
 
 namespace MyHome.Core.Interfaces;
 
-public interface IEnergyRepository
+public interface IEnergySupplierRepository
 {
     Task<ICollection<EnergyPrice>> GetEnergyPrices(PriceType priceType);
     Task<ICollection<EnergyConsumptionEntry>> GetConsumptionForToday();
