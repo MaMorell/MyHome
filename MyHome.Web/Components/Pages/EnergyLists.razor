@@ -13,7 +13,7 @@
         <MudText Typo="Typo.subtitle1">Översikt över elpriser och prisnivåer över tid</MudText>
     </MudPaper>
 
-    <MudTable Class="mb-8" Items="prices" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+    <MudTable Class="mb-8" Items="_prices" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
         <HeaderContent>
             <MudTh>Datum</MudTh>
             <MudTh>Pris (sek)</MudTh>
@@ -22,11 +22,23 @@
             <MudTh>Förbrukning</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Datum">@context.PriceDetails.StartsAt.ToString()</MudTd>
-            <MudTd DataLabel="Pris (sek)">@Math.Round(@context.Cost, 2) SEK</MudTd>
-            <MudTd DataLabel="Prisnivå">@context.PriceDetails.LevelExternal.ToString()</MudTd>
-            <MudTd DataLabel="Värmereglering">@context.PriceDetails.LevelExternal</MudTd>
-            <MudTd DataLabel="Förbrukning">@context.Consumption KwH</MudTd>
+            <MudTd DataLabel="Datum">@context.StartsAt.ToString("yyyy-MM-dd HH:mm")</MudTd>
+            <MudTd DataLabel="Pris (sek)">@Math.Round(@context.PriceTotal, 2) SEK</MudTd>
+            <MudTd DataLabel="Prisnivå - Extern" Style="@($"color:{context.LevelExternalColor};")">
+                @context.LevelExternal
+            </MudTd>
+            <MudTd DataLabel="Prisnivå - Intern" Style="@($"color:{context.LevelInternalColor};")">
+                @if (@context.LevelInternal != Core.Models.EnergySupplier.Enums.EnergyPriceLevel.Unknown)
+                {
+                    @context.LevelInternal
+                }
+            </MudTd>
+            <MudTd DataLabel="Förbrukning">
+                @if (context.Consumption > 0)
+                {
+                    <div>@context.Consumption kWh</div>
+                }
+            </MudTd>
         </RowTemplate>
     </MudTable>
 </MudContainer>
