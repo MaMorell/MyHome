@@ -1,24 +1,23 @@
 ﻿using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
+using MyHome.Core.Models.PriceCalculations;
 using MyHome.Core.PriceCalculations;
 
 namespace MyHome.Core.Services;
 
-public class EnergySupplierService(IEnergySupplierRepository energyRepository, EnergyPriceCalculator energyPriceCalculator)
+public class EnergySupplierService(IEnergySupplierRepository energyRepository, PriceLevelGenerator energyPriceCalculator)
 {
     private readonly IEnergySupplierRepository _energyRepository = energyRepository;
-    private readonly EnergyPriceCalculator _energyPriceCalculator = energyPriceCalculator;
+    private readonly PriceLevelGenerator _energyPriceCalculator = energyPriceCalculator;
 
     public async Task<IEnumerable<EnergyConsumptionEntry>> GetFutureEnergyPricesAsync()
     {
-        var prices = await _energyRepository.GetEnergyPrices(PriceType.All);
+        var prices = await _energyPriceCalculator.CreateAsync(EnergyPriceRange.TodayAndTomorrow);
+        var todaysConsumption = await _energyRepository.GetConsumptionForToday();
 
-        var result = await _energyPriceCalculator.CreateEneryPrices(prices);
-
-        result = await AddConsumptionToPrices(result);
-
-        return result;
+        var foo = CreateEnergyConsumptionEntries(prices, todaysConsumption).ToList();
+        return foo;
     }
 
     public async Task<ICollection<EnergyConsumptionEntry>> GetTopConumptionAsync(int limit, bool onlyDuringWeekdays)
@@ -28,25 +27,18 @@ public class EnergySupplierService(IEnergySupplierRepository energyRepository, E
             : await _energyRepository.GetTopConsumption(limit);
     }
 
-    private async Task<IEnumerable<EnergyConsumptionEntry>> AddConsumptionToPrices(IEnumerable<EnergyConsumptionEntry> prices)
+    private IEnumerable<EnergyConsumptionEntry> CreateEnergyConsumptionEntries(IEnumerable<EnergyPriceDetails> prices, IEnumerable<EnergyConsumptionEntry> todaysConsumption)
     {
-        var todaysConsumption = await _energyRepository.GetConsumptionForToday();
-
-        foreach (var price in prices)
+        foreach (var priceDetails in prices)
         {
-            var consumption = todaysConsumption.FirstOrDefault(c =>
-            {
-                return c.StartsAt == price.StartsAt;
-            });
-            if (consumption is null)
-            {
-                continue;
-            }
+            var consumption = todaysConsumption.FirstOrDefault(c => c.PriceDetails?.StartsAt == priceDetails.StartsAt);
 
-            price.Consumption = consumption?.Consumption ?? 0;
-            price.Cost = consumption?.Cost ?? 0;
+            yield return new EnergyConsumptionEntry()
+            {
+                PriceDetails = priceDetails,
+                Consumption = consumption?.Consumption ?? 0,
+                Cost = consumption?.Cost ?? 0
+            };
         }
-
-        return prices;
     }
 }

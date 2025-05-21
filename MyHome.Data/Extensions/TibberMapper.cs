@@ -1,5 +1,6 @@
 ﻿using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
+using MyHome.Core.Models.PriceCalculations;
 using Tibber.Sdk;
 
 namespace MyHome.Data.Extensions;
@@ -40,8 +41,11 @@ public static class TibberMapper
     {
         return new EnergyConsumptionEntry
         {
-            StartsAt = entry.From.GetValueOrDefault(),
-            Price = entry.UnitPrice.GetValueOrDefault(),
+            PriceDetails = new EnergyPriceDetails()
+            {
+                StartsAt = entry.From.GetValueOrDefault(),
+                PriceTotal = entry.UnitPrice.GetValueOrDefault()
+            },
             Consumption = entry.Consumption.GetValueOrDefault(),
             Cost = entry.Cost.GetValueOrDefault()
         };

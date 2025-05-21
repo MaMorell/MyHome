@@ -7,18 +7,20 @@ using MyHome.Core.Models.PriceCalculations;
 
 namespace MyHome.Core.PriceCalculations;
 
-public class EnergyPriceCalculator
+public class PriceLevelGenerator
 {
-    private readonly IRepository<PriceThearsholdsProfile> _priceThearsholdsService;
+    private readonly IRepository<PriceThearsholdsProfile> _priceThearsholdsRepository;
+    private readonly IEnergySupplierRepository _energySupplierRepository;
 
-    public EnergyPriceCalculator(IRepository<PriceThearsholdsProfile> priceThearsholdsService)
+    public PriceLevelGenerator(IRepository<PriceThearsholdsProfile> priceThearsholdsRepository, IEnergySupplierRepository energySupplierRepository)
     {
-        _priceThearsholdsService = priceThearsholdsService;
+        _priceThearsholdsRepository = priceThearsholdsRepository;
+        _energySupplierRepository = energySupplierRepository;
     }
 
-    public async Task<EnergyConsumptionEntry> CreateEneryPrices(ICollection<EnergyPrice> prices, DateTime date)
+    public async Task<EnergyPriceDetails> CreateForSpecificDateAsync(DateTime date)
     {
-        var eneryPrices = await CreateEneryPrices(prices);
+        var eneryPrices = await CreateAsync(EnergyPriceRange.TodayAndTomorrow);
 
         return eneryPrices.FirstOrDefault(p =>
             p.StartsAt.Date == date.Date &&
@@ -26,86 +28,70 @@ public class EnergyPriceCalculator
             ?? throw new InvalidOperationException($"Hour {date.Hour} not found for date {date.Date:yyyy-MM-dd}");
     }
 
-    public async Task<IEnumerable<EnergyConsumptionEntry>> CreateEneryPrices(ICollection<EnergyPrice> prices)
+    public async Task<IEnumerable<EnergyPriceDetails>> CreateAsync(EnergyPriceRange priceRange)
     {
-        var priceThearsholds = await _priceThearsholdsService.GetByIdAsync(EntityIdConstants.PriceThearsholdsId);
+        var profile = await _priceThearsholdsRepository.GetByIdAsync(EntityIdConstants.PriceThearsholdsId);
+
+        var prices = await _energySupplierRepository.GetEnergyPrices(priceRange);
 
         var pricesOrderedByTime = prices.OrderBy(p => p.StartsAt).ToList();
 
-        var energyPrices = new List<EnergyConsumptionEntry>();
+        var energyPrices = new List<EnergyPriceDetails>();
         for (int i = 0; i < prices.Count; i++)
         {
             var pricesFromIndex = pricesOrderedByTime.Skip(i).ToList();
-            var relativePriceLevel = DetermineRelativePriceLevel(pricesFromIndex, priceThearsholds);
-
-            if (relativePriceLevel == RelativePriceLevel.Unknown)
-            {
-                continue;
-            }
-
+            var priceLevelInternal = CalculateInternalPriceLevel(pricesFromIndex, profile);
             var currentPrice = prices.ElementAt(i);
 
-            energyPrices.Add(new EnergyConsumptionEntry
+            energyPrices.Add(new EnergyPriceDetails
             {
                 StartsAt = currentPrice.StartsAt,
-                Price = currentPrice.Total ?? 0,
-                PriceLevel = currentPrice.Level ?? EnergyPriceLevel.Normal,
-                RelativePriceLevel = relativePriceLevel,
+                PriceTotal = currentPrice.Total ?? 0,
+                LevelExternal = currentPrice.Level ?? EnergyPriceLevel.Normal,
+                LevelInternal = priceLevelInternal,
             });
         }
 
         return energyPrices;
     }
 
-    private static RelativePriceLevel DetermineRelativePriceLevel(List<EnergyPrice> prices, PriceThearsholdsProfile priceThearsholds)
+    private static EnergyPriceLevel CalculateInternalPriceLevel(List<EnergyPrice> prices, PriceThearsholdsProfile profile)
     {
-        if (prices.Count < priceThearsholds.HoursForCalculaingRelativePriceLevel)
+        if (prices.Count < profile.InternalPriceLevelRange)
         {
-            return RelativePriceLevel.Unknown;
+            return EnergyPriceLevel.Unknown;
         }
 
-        prices = [.. prices.Take(priceThearsholds.HoursForCalculaingRelativePriceLevel)];
+        var pricesFromRange = prices.Take(profile.InternalPriceLevelRange).ToList();
 
-        var average = prices.Average(p => p.Total) ?? 0;
+        var priceThresholds = PriceThresholds.Create(pricesFromRange, profile);
 
-        var parameters = EnergyPriceThresholds.CreateFromAverage(
-            average,
-            prices.First().Total,
-            prices.First().Level,
-            priceThearsholds
-        );
-
-        return CalculateRelativePriceLevel(parameters, priceThearsholds);
+        return ComputeInternalPriceLevel(priceThresholds, prices.First().Level, prices.First().Total);
     }
 
-    private static RelativePriceLevel CalculateRelativePriceLevel(EnergyPriceThresholds thresholds, PriceThearsholdsProfile priceThearsholds)
+    private static EnergyPriceLevel ComputeInternalPriceLevel(PriceThresholds thresholds, EnergyPriceLevel? priceLevelExternal, decimal? price)
     {
-        if (thresholds.Price is null || thresholds.PriceLevel is null)
+        if (price >= thresholds.ExtremeThreshold && priceLevelExternal == EnergyPriceLevel.VeryExpensive)
         {
-            throw new ArgumentException($"Price or PriceLevel is null. Price: {thresholds.Price}. PriceLevel: {thresholds.PriceLevel}");
+            return EnergyPriceLevel.Extreme;
+        }
+        else if (price >= thresholds.VeryHighThreshold && priceLevelExternal == EnergyPriceLevel.VeryExpensive)
+        {
+            return EnergyPriceLevel.VeryExpensive;
+        }
+        else if (price >= thresholds.HighThreshold && (priceLevelExternal == EnergyPriceLevel.Expensive || priceLevelExternal == EnergyPriceLevel.VeryExpensive))
+        {
+            return EnergyPriceLevel.Expensive;
+        }
+        else if (price <= thresholds.VeryLowThreshold && priceLevelExternal == EnergyPriceLevel.VeryCheap)
+        {
+            return EnergyPriceLevel.VeryCheap;
+        }
+        else if (price <= thresholds.LowThreshold && (priceLevelExternal == EnergyPriceLevel.Cheap || priceLevelExternal == EnergyPriceLevel.VeryCheap))
+        {
+            return EnergyPriceLevel.Cheap;
         }
 
-        if (thresholds.Price >= thresholds.VeryHighThreshold && thresholds.PriceLevel == EnergyPriceLevel.VeryExpensive && thresholds.Price > priceThearsholds.ExtremelyHighPrice)
-        {
-            return RelativePriceLevel.Extreme;
-        }
-        else if (thresholds.Price >= thresholds.VeryHighThreshold && thresholds.PriceLevel == EnergyPriceLevel.VeryExpensive)
-        {
-            return RelativePriceLevel.VeryHigh;
-        }
-        else if (thresholds.Price >= thresholds.HighThreshold && (thresholds.PriceLevel == EnergyPriceLevel.Expensive || thresholds.PriceLevel == EnergyPriceLevel.VeryExpensive))
-        {
-            return RelativePriceLevel.High;
-        }
-        else if (thresholds.Price <= thresholds.VeryLowThreshold && thresholds.PriceLevel == EnergyPriceLevel.VeryCheap)
-        {
-            return RelativePriceLevel.VeryLow;
-        }
-        else if (thresholds.Price <= thresholds.LowThreshold && (thresholds.PriceLevel == EnergyPriceLevel.Cheap || thresholds.PriceLevel == EnergyPriceLevel.VeryCheap))
-        {
-            return RelativePriceLevel.Low;
-        }
-
-        return RelativePriceLevel.Normal;
+        return EnergyPriceLevel.Normal;
     }
 }

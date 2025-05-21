@@ -53,7 +53,6 @@ public class FloorHeaterTemperatureProfile : IDeviceProfile<int>
     public int ExtremeSavings { get; set; } = 5;
 }
 
-
 public class ComfortModeProfile : IDeviceProfile<ComfortMode>
 {
     public ComfortMode Baseline { get; set; } = ComfortMode.Economy;

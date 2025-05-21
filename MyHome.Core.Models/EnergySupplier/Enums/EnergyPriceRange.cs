@@ -1,8 +1,8 @@
 ﻿namespace MyHome.Core.Models.EnergySupplier.Enums;
-public enum PriceType
+public enum EnergyPriceRange
 {
     Unspecified,
     Today,
     Tomorrow,
-    All
+    TodayAndTomorrow
 }

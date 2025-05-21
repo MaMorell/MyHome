@@ -1,32 +1,40 @@
-﻿using MyHome.Core.Models.EnergySupplier.Enums;
+﻿using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.Entities.Profiles;
 
 namespace MyHome.Core.Models.PriceCalculations;
 
-public class EnergyPriceThresholds(
-    decimal veryHighThreshold,
-    decimal highThreshold,
-    decimal lowThreshold,
-    decimal veryLowThreshold,
-    decimal? price,
-    EnergyPriceLevel? priceLevel)
+public class PriceThresholds
 {
-    public decimal VeryHighThreshold { get; } = veryHighThreshold;
-    public decimal HighThreshold { get; } = highThreshold;
-    public decimal LowThreshold { get; } = lowThreshold;
-    public decimal VeryLowThreshold { get; } = veryLowThreshold;
-    public decimal? Price { get; } = price;
-    public EnergyPriceLevel? PriceLevel { get; } = priceLevel;
-
-    public static EnergyPriceThresholds CreateFromAverage(decimal average, decimal? price, EnergyPriceLevel? priceLevel, PriceThearsholdsProfile profile)
+    private PriceThresholds(
+        decimal veryHighThreshold,
+        decimal highThreshold,
+        decimal lowThreshold,
+        decimal veryLowThreshold,
+        decimal extremeThreshold)
     {
-        return new EnergyPriceThresholds(
-            veryHighThreshold: profile.VeryHigh * average,
-            highThreshold: profile.High * average,
-            lowThreshold: profile.Low * average,
-            veryLowThreshold: profile.VeryLow * average,
-            price: price,
-            priceLevel: priceLevel
+        VeryHighThreshold = veryHighThreshold;
+        HighThreshold = highThreshold;
+        LowThreshold = lowThreshold;
+        VeryLowThreshold = veryLowThreshold;
+        ExtremeThreshold = extremeThreshold;
+    }
+
+    public decimal ExtremeThreshold { get; }
+    public decimal VeryHighThreshold { get; }
+    public decimal HighThreshold { get; }
+    public decimal LowThreshold { get; }
+    public decimal VeryLowThreshold { get; }
+
+    public static PriceThresholds Create(IEnumerable<EnergyPrice> prices, PriceThearsholdsProfile profile)
+    {
+        var average = prices.Average(p => p.Total) ?? 0;
+
+        return new PriceThresholds(
+            profile.VeryExpensive * average,
+            profile.Expensive * average,
+            profile.Cheap * average,
+            profile.VeryCheap * average,
+            profile.Extreme
         );
     }
 }

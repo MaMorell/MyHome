@@ -11,7 +11,7 @@ namespace MyHome.Data.Integrations.EnergySupplier;
 
 public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergySupplierRepository
 {
-    public async Task<ICollection<EnergyPrice>> GetEnergyPrices(PriceType priceType)
+    public async Task<ICollection<EnergyPrice>> GetEnergyPrices(EnergyPriceRange priceType)
     {
         var homeId = await GetHomeId();
         var query = BuildEnergyPricesQuery(homeId);
@@ -129,16 +129,16 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergySupplier
         return customQueryBuilder.Build();
     }
 
-    private static ReadOnlyCollection<Price>? GetPricesFromQueryResponse(TibberApiQueryResponse result, PriceType priceType)
+    private static ReadOnlyCollection<Price>? GetPricesFromQueryResponse(TibberApiQueryResponse result, EnergyPriceRange priceType)
     {
         var pricesToday = result.Data.Viewer.Home?.CurrentSubscription?.PriceInfo?.Today;
         var pricesTomorrow = result.Data.Viewer.Home?.CurrentSubscription?.PriceInfo?.Tomorrow;
 
         var prices = priceType switch
         {
-            PriceType.Today => pricesToday?.ToList(),
-            PriceType.Tomorrow => pricesTomorrow?.ToList(),
-            PriceType.All => CombinePrices(pricesToday, pricesTomorrow),
+            EnergyPriceRange.Today => pricesToday?.ToList(),
+            EnergyPriceRange.Tomorrow => pricesTomorrow?.ToList(),
+            EnergyPriceRange.TodayAndTomorrow => CombinePrices(pricesToday, pricesTomorrow),
             _ => throw new ArgumentOutOfRangeException(nameof(priceType), priceType, null)
         };
 

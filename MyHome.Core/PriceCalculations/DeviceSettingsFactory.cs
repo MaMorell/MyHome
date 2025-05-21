@@ -1,11 +1,10 @@
 ﻿using MyHome.Core.Exceptions;
 using MyHome.Core.Extensions;
 using MyHome.Core.Interfaces;
-using MyHome.Core.Models.EnergySupplier;
-using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.Entities.Constants;
 using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Models.Integrations.HeatPump;
+using MyHome.Core.Models.PriceCalculations;
 using EnergyPriceLevel = MyHome.Core.Models.EnergySupplier.Enums.EnergyPriceLevel;
 
 namespace MyHome.Core.PriceCalculations;
@@ -19,15 +18,15 @@ public class DeviceSettingsFactory
         _deviceSettingsRepository = repository;
     }
 
-    public async Task<DeviceSettings> CreateFromPrice(EnergyConsumptionEntry price)
+    public async Task<DeviceSettings> CreateFromPrice(EnergyPriceDetails price)
     {
         var deviceSettings = await GetDeviceSettingsProfileAsync();
 
-        var opMode = GetOpMode(price.RelativePriceLevel, deviceSettings.OpModes, price);
-        var heatOffset = GetHeatOffset(price.RelativePriceLevel, deviceSettings.HeatOffsets);
-        var targetTemprature = GetRadiatorTemperature(price.RelativePriceLevel, deviceSettings.RadiatorTemperatures);
-        var comfortMode = GetComfortMode(price.RelativePriceLevel, deviceSettings.ComfortModes);
-        var floorTemperature = GetFloorHeaterTemperature(price.RelativePriceLevel, deviceSettings.FloorHeaterTemperatures);
+        var opMode = GetOpMode(price.LevelInternal, deviceSettings.OpModes, price);
+        var heatOffset = GetHeatOffset(price.LevelInternal, deviceSettings.HeatOffsets);
+        var targetTemprature = GetRadiatorTemperature(price.LevelInternal, deviceSettings.RadiatorTemperatures);
+        var comfortMode = GetComfortMode(price.LevelInternal, deviceSettings.ComfortModes);
+        var floorTemperature = GetFloorHeaterTemperature(price.LevelInternal, deviceSettings.FloorHeaterTemperatures);
 
         return new DeviceSettings(heatOffset, targetTemprature, comfortMode, opMode, floorTemperature);
     }
@@ -83,40 +82,40 @@ public class DeviceSettingsFactory
         };
     }
 
-    private static int GetHeatOffset(RelativePriceLevel priceLevel, HeatOffsetProfile profile)
+    private static int GetHeatOffset(EnergyPriceLevel priceLevel, HeatOffsetProfile profile)
     {
         return priceLevel switch
         {
-            RelativePriceLevel.Normal => profile.Baseline,
-            RelativePriceLevel.VeryLow => profile.Enhanced,
-            RelativePriceLevel.Low => profile.Moderate,
-            RelativePriceLevel.High => profile.Economic,
-            RelativePriceLevel.VeryHigh => profile.MaxSavings,
-            RelativePriceLevel.Extreme => profile.ExtremeSavings,
+            EnergyPriceLevel.Normal => profile.Baseline,
+            EnergyPriceLevel.VeryCheap => profile.Enhanced,
+            EnergyPriceLevel.Cheap => profile.Moderate,
+            EnergyPriceLevel.Expensive => profile.Economic,
+            EnergyPriceLevel.VeryExpensive => profile.MaxSavings,
+            EnergyPriceLevel.Extreme => profile.ExtremeSavings,
             _ => profile.Baseline,
         };
     }
 
-    private static ComfortMode GetComfortMode(RelativePriceLevel priceLevel, ComfortModeProfile profile)
+    private static ComfortMode GetComfortMode(EnergyPriceLevel priceLevel, ComfortModeProfile profile)
     {
         return priceLevel switch
         {
-            RelativePriceLevel.Normal => profile.Baseline,
-            RelativePriceLevel.VeryLow => profile.Enhanced,
-            RelativePriceLevel.Low => profile.Moderate,
-            RelativePriceLevel.High => profile.Economic,
-            RelativePriceLevel.VeryHigh => profile.MaxSavings,
-            RelativePriceLevel.Extreme => profile.ExtremeSavings,
+            EnergyPriceLevel.Normal => profile.Baseline,
+            EnergyPriceLevel.VeryCheap => profile.Enhanced,
+            EnergyPriceLevel.Cheap => profile.Moderate,
+            EnergyPriceLevel.Expensive => profile.Economic,
+            EnergyPriceLevel.VeryExpensive => profile.MaxSavings,
+            EnergyPriceLevel.Extreme => profile.ExtremeSavings,
             _ => profile.Baseline,
         };
     }
 
-    private static OpMode GetOpMode(RelativePriceLevel priceLevel, OpModeProfile profile, EnergyConsumptionEntry energyPrice)
+    private static OpMode GetOpMode(EnergyPriceLevel priceLevel, OpModeProfile profile, EnergyPriceDetails energyPrice)
     {
         var maxPriceAutoMode = DateTime.Now.IsNightTime()
             ? profile.MaxPriceAutoModeNightTime
             : profile.MaxPriceAutoMode;
-        var isPriceUnderAutoModeLimit = energyPrice.Price < maxPriceAutoMode;
+        var isPriceUnderAutoModeLimit = energyPrice.PriceTotal < maxPriceAutoMode;
 
         if (!isPriceUnderAutoModeLimit)
         {
@@ -125,40 +124,40 @@ public class DeviceSettingsFactory
 
         return priceLevel switch
         {
-            RelativePriceLevel.Normal => profile.Baseline,
-            RelativePriceLevel.VeryLow => profile.Enhanced,
-            RelativePriceLevel.Low => profile.Moderate,
-            RelativePriceLevel.High => profile.Economic,
-            RelativePriceLevel.VeryHigh => profile.MaxSavings,
-            RelativePriceLevel.Extreme => profile.ExtremeSavings,
+            EnergyPriceLevel.Normal => profile.Baseline,
+            EnergyPriceLevel.VeryCheap => profile.Enhanced,
+            EnergyPriceLevel.Cheap => profile.Moderate,
+            EnergyPriceLevel.Expensive => profile.Economic,
+            EnergyPriceLevel.VeryExpensive => profile.MaxSavings,
+            EnergyPriceLevel.Extreme => profile.ExtremeSavings,
             _ => profile.Baseline,
         };
     }
 
-    private static int GetRadiatorTemperature(RelativePriceLevel priceLevel, RadiatorTemperatureProfile radiatorTemperatures)
+    private static int GetRadiatorTemperature(EnergyPriceLevel priceLevel, RadiatorTemperatureProfile radiatorTemperatures)
     {
         return priceLevel switch
         {
-            RelativePriceLevel.Normal => radiatorTemperatures.Baseline,
-            RelativePriceLevel.VeryLow => radiatorTemperatures.Enhanced,
-            RelativePriceLevel.Low => radiatorTemperatures.Moderate,
-            RelativePriceLevel.High => radiatorTemperatures.Economic,
-            RelativePriceLevel.VeryHigh => radiatorTemperatures.MaxSavings,
-            RelativePriceLevel.Extreme => radiatorTemperatures.ExtremeSavings,
+            EnergyPriceLevel.Normal => radiatorTemperatures.Baseline,
+            EnergyPriceLevel.VeryCheap => radiatorTemperatures.Enhanced,
+            EnergyPriceLevel.Cheap => radiatorTemperatures.Moderate,
+            EnergyPriceLevel.Expensive => radiatorTemperatures.Economic,
+            EnergyPriceLevel.VeryExpensive => radiatorTemperatures.MaxSavings,
+            EnergyPriceLevel.Extreme => radiatorTemperatures.ExtremeSavings,
             _ => radiatorTemperatures.Baseline,
         };
     }
 
-    private static int GetFloorHeaterTemperature(RelativePriceLevel priceLevel, FloorHeaterTemperatureProfile floorHeaterTemperatures)
+    private static int GetFloorHeaterTemperature(EnergyPriceLevel priceLevel, FloorHeaterTemperatureProfile floorHeaterTemperatures)
     {
         var result = priceLevel switch
         {
-            RelativePriceLevel.Normal => floorHeaterTemperatures.Baseline,
-            RelativePriceLevel.VeryLow => floorHeaterTemperatures.Enhanced,
-            RelativePriceLevel.Low => floorHeaterTemperatures.Moderate,
-            RelativePriceLevel.High => floorHeaterTemperatures.Economic,
-            RelativePriceLevel.VeryHigh => floorHeaterTemperatures.MaxSavings,
-            RelativePriceLevel.Extreme => floorHeaterTemperatures.ExtremeSavings,
+            EnergyPriceLevel.Normal => floorHeaterTemperatures.Baseline,
+            EnergyPriceLevel.VeryCheap => floorHeaterTemperatures.Enhanced,
+            EnergyPriceLevel.Cheap => floorHeaterTemperatures.Moderate,
+            EnergyPriceLevel.Expensive => floorHeaterTemperatures.Economic,
+            EnergyPriceLevel.VeryExpensive => floorHeaterTemperatures.MaxSavings,
+            EnergyPriceLevel.Extreme => floorHeaterTemperatures.ExtremeSavings,
             _ => floorHeaterTemperatures.Baseline,
         };
 

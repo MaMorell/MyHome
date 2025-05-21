@@ -3,16 +3,16 @@
 public class PriceThearsholdsProfile : IEntity
 {
     public Guid Id { get; set; }
-    public decimal VeryHigh { get; set; } = 1.6m;
-    public decimal High { get; set; } = 1.3m;
-    public decimal Low { get; set; } = 0.7m;
-    public decimal VeryLow { get; set; } = 0.4m;
+    public decimal VeryExpensive { get; set; } = 1.6m;
+    public decimal Expensive { get; set; } = 1.3m;
+    public decimal Cheap { get; set; } = 0.7m;
+    public decimal VeryCheap { get; set; } = 0.4m;
+    public decimal Extreme { get; set; } = 3.0m;
+    public int InternalPriceLevelRange { get; set; } = 8;
 
-    public string VeryHighPercentage => $"{(VeryHigh - 1) * 100:N0}%";
-    public string HighPercentage => $"{(High - 1) * 100:N0}%";
-    public string LowPercentage => $"{(1 - Low) * 100:N0}%";
-    public string VeryLowPercentage => $"{(1 - VeryLow) * 100:N0}%";
+    public string VeryHighPercentage => $"{(VeryExpensive - 1) * 100:N0}%";
+    public string HighPercentage => $"{(Expensive - 1) * 100:N0}%";
+    public string LowPercentage => $"{(1 - Cheap) * 100:N0}%";
+    public string VeryLowPercentage => $"{(1 - VeryCheap) * 100:N0}%";
 
-    public decimal ExtremelyHighPrice { get; set; } = 3.0m;
-    public int HoursForCalculaingRelativePriceLevel { get; set; } = 8;
 }

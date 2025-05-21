@@ -14,25 +14,25 @@
             <MudStack Spacing="3">
                 <MudItem>
                     <MudText>Väldigt lågt: <b>@Profile.VeryLowPercentage</b> under medel</MudText>
-                    <MudSlider T="decimal" @bind-Value="Profile.VeryLow" Step="0.1m" Min="0" Max="@Profile.Low" />
+                    <MudSlider T="decimal" @bind-Value="Profile.VeryCheap" Step="0.1m" Min="0" Max="@Profile.Cheap" />
                 </MudItem>
                 <MudItem>
                     <MudText>Lågt: <b>@Profile.LowPercentage</b> under medel</MudText>
-                    <MudSlider T="decimal" @bind-Value="Profile.Low" Step="0.1m" Min="@Profile.VeryLow" Max="@Profile.High" />
+                    <MudSlider T="decimal" @bind-Value="Profile.Cheap" Step="0.1m" Min="@Profile.VeryCheap" Max="@Profile.Expensive" />
                 </MudItem>
                 <MudItem>
                     <MudText>Högt: <b>@Profile.HighPercentage</b> över medel</MudText>
-                    <MudSlider T="decimal" @bind-Value="Profile.High" Step="0.1m" Min="@Profile.Low" Max="@Profile.VeryHigh" />
+                    <MudSlider T="decimal" @bind-Value="Profile.Expensive" Step="0.1m" Min="@Profile.Cheap" Max="@Profile.VeryExpensive" />
                 </MudItem>
                 <MudItem>
                     <MudText>Väldigt högt: <b>@Profile.VeryHighPercentage</b> över medel</MudText>
-                    <MudSlider T="decimal" @bind-Value="Profile.VeryHigh" Step="0.1m" Min="@Profile.High" Max="3.5m" />
+                    <MudSlider T="decimal" @bind-Value="Profile.VeryExpensive" Step="0.1m" Min="@Profile.Expensive" Max="3.5m" />
                 </MudItem>
                 <MudItem>
-                    <MudNumericField @bind-Value=@Profile.ExtremelyHighPrice Label="Gräns för extremt högt pris" Step="0.1m" Min="1" Max="10"></MudNumericField>
+                    <MudNumericField @bind-Value=@Profile.Extreme Label="Gräns för extremt högt pris" Step="0.1m" Min="1" Max="10"></MudNumericField>
                 </MudItem>
                 <MudItem>
-                    <MudNumericField @bind-Value=@Profile.HoursForCalculaingRelativePriceLevel Label="Timmar för beräkning av prisnivå" Step="1" Min="4" Max="24"></MudNumericField>
+                    <MudNumericField @bind-Value=@Profile.InternalPriceLevelRange Label="Timmar för beräkning av prisnivå" Step="1" Min="4" Max="24"></MudNumericField>
                 </MudItem>
             </MudStack>
         }

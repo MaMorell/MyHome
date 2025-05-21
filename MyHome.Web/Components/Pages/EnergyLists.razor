@@ -17,15 +17,15 @@
         <HeaderContent>
             <MudTh>Datum</MudTh>
             <MudTh>Pris (sek)</MudTh>
-            <MudTh>Prisnivå</MudTh>
-            <MudTh>Värmereglering</MudTh>
+            <MudTh>Prisnivå (extern)</MudTh>
+            <MudTh>Prisnivå (intern)</MudTh>
             <MudTh>Förbrukning</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Datum">@context.StartsAt.ToString()</MudTd>
-            <MudTd DataLabel="Pris (sek)">@Math.Round(@context.Price, 2) SEK</MudTd>
-            <MudTd DataLabel="Prisnivå">@context.PriceLevel.ToString()</MudTd>
-            <MudTd DataLabel="Värmereglering">@context.RelativePriceLevel</MudTd>
+            <MudTd DataLabel="Datum">@context.PriceDetails.StartsAt.ToString()</MudTd>
+            <MudTd DataLabel="Pris (sek)">@Math.Round(@context.Cost, 2) SEK</MudTd>
+            <MudTd DataLabel="Prisnivå">@context.PriceDetails.LevelExternal.ToString()</MudTd>
+            <MudTd DataLabel="Värmereglering">@context.PriceDetails.LevelExternal</MudTd>
             <MudTd DataLabel="Förbrukning">@context.Consumption KwH</MudTd>
         </RowTemplate>
     </MudTable>

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using MyHome.Core.Models.EnergySupplier;
+using MyHome.Core.Models.EnergySupplier.Enums;
 
 namespace MyHome.Web.Components;
 
@@ -32,7 +33,7 @@ public partial class EnergyConsumptionCharts
         {
             Index = 0,
             Name = "Elpris (SEK/kWh)",
-            Data = EnergyConsumptions.Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.Price)).ToList(),
+            Data = EnergyConsumptions.Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.PriceDetails.PriceTotal)).ToList(),
             IsVisible = true,
             LineDisplayType = LineDisplayType.Line
         };
@@ -40,7 +41,7 @@ public partial class EnergyConsumptionCharts
         {
             Index = 1,
             Name = "Prisnivå (0 = låg, 5 = hög)",
-            Data = EnergyConsumptions.Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.RelativePriceLevel)).ToList(),
+            Data = EnergyConsumptions.Where(e => e.PriceDetails.LevelInternal != EnergyPriceLevel.Unknown).Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)(p.PriceDetails.LevelInternal) / 2)).ToList(),
             IsVisible = true,
             LineDisplayType = LineDisplayType.Line
         };
@@ -63,6 +64,6 @@ public partial class EnergyConsumptionCharts
     private static List<TimeSeriesChartSeries.TimeValue> GetConsumptionChartData(IEnumerable<EnergyConsumptionEntry> prices) =>
         prices
             .Where(p => p.Consumption != default)
-            .Select(p => new TimeSeriesChartSeries.TimeValue(p.StartsAt.LocalDateTime, (double)p.Consumption))
+            .Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.Consumption))
             .ToList();
 }

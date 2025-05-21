@@ -34,7 +34,7 @@ public static class WebApplicationBuilderExtensions
         services.AddScoped<IWifiSocketsService, WifiSocketsService>();
 
         services.AddScoped<DeviceSettingsFactory>();
-        services.AddScoped<EnergyPriceCalculator>();
+        services.AddScoped<PriceLevelGenerator>();
 
         services.AddSingleton<IObserver<RealTimeMeasurement>, EnergyConsumptionObserver>();
         services.AddScoped<EnergyConsumptionListener>();
