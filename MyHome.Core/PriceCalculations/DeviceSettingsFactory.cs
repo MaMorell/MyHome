@@ -98,6 +98,11 @@ public class DeviceSettingsFactory
 
     private static ComfortMode GetComfortMode(EnergyPriceLevel priceLevel, ComfortModeProfile profile)
     {
+        if (DateTime.Now.IsWeekdayMidDay())
+        {
+            return ComfortMode.Economy;
+        }
+
         return priceLevel switch
         {
             EnergyPriceLevel.Normal => profile.Baseline,
