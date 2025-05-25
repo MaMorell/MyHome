@@ -15,23 +15,23 @@
     {
         <MudGrid>
             <MudItem xs="12" sm="6">
-                <SettingsProfileCard Profile="@Profile.HeatOffsets" Title="Värmepump - Värmejustering" MinValue="-10" MaxValue="10"></SettingsProfileCard>
+                <DeviceProfileCard Profile="@Profile.HeatOffsets" Title="Värmepump - Värmejustering" MinValue="-10" MaxValue="10"></DeviceProfileCard>
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <SettingsProfileCard Profile="@Profile.RadiatorTemperatures" Title="Garage/friggebod - Temperatur (°C)" MinValue="5" MaxValue="25"></SettingsProfileCard>
+                <DeviceProfileCard Profile="@Profile.RadiatorTemperatures" Title="Garage/friggebod - Temperatur (°C)" MinValue="5" MaxValue="25"></DeviceProfileCard>
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <DeviceSettingsProfile T="ComfortMode" Profile="@Profile.ComfortModes" Title="Värmepump - Vatten Komfortläge"></DeviceSettingsProfile>
+                <DeviceProfileEnumCard T="ComfortMode" Profile="@Profile.ComfortModes" Title="Värmepump - Vatten Komfortläge"></DeviceProfileEnumCard>
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <DeviceSettingsProfile T="OpMode" Profile="@Profile.OpModes" Title="Värmepump - Elpatron Driftläge"></DeviceSettingsProfile>
+                <DeviceProfileEnumCard T="OpMode" Profile="@Profile.OpModes" Title="Värmepump - Elpatron Driftläge"></DeviceProfileEnumCard>
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <SettingsProfileCard Profile="@Profile.FloorHeaterTemperatures" Title="Golvvärme - Temperatur (°C)" MinValue="5" MaxValue="25"></SettingsProfileCard>
+                <DeviceProfileCard Profile="@Profile.FloorHeaterTemperatures" Title="Golvvärme - Temperatur (°C)" MinValue="5" MaxValue="25"></DeviceProfileCard>
             </MudItem>
         </MudGrid>
         <MudCard Elevation="4" Class="mt-6">
@@ -43,7 +43,7 @@
     }
     else
     {
-        <MudProgressCircular Indeterminate="true" Color="Color.Primary" /> @* Show a loading indicator while fetching data *@
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
     }
 </MudBlazor.MudContainer>
 
