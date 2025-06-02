@@ -51,7 +51,7 @@ public sealed class EnergyConsumptionObserver(
             UpdatedAt = DateTime.Now
         });
 
-        if (!DateTime.Now.IsWithinWorkingHours())
+        if (!DateTime.Now.IsWeekdayDayTime())
         {
             return;
         }

@@ -27,7 +27,7 @@ public static class WebApplicationBuilderExtensions
 
         services.AddScoped<IRepository<DeviceSettingsProfile>, FileRepository<DeviceSettingsProfile>>();
         services.AddScoped<IRepository<PriceThearsholdsProfile>, FileRepository<PriceThearsholdsProfile>>();
-        services.AddScoped<IEnergySupplierRepository, EnergyRepository>();
+        services.AddScoped<IEnergySupplierRepository, TibberEnergySupplierRepository>();
 
         services.AddScoped<EnergySupplierService>();
         services.AddScoped<HeatRegulatorService>();

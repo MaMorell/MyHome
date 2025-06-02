@@ -4,12 +4,13 @@ using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Data.Extensions;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Tibber.Sdk;
 
 namespace MyHome.Data.Integrations.EnergySupplier;
 
-public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergySupplierRepository
+public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient) : IEnergySupplierRepository
 {
     public async Task<ICollection<EnergyPrice>> GetEnergyPrices(EnergyPriceRange priceType)
     {
@@ -23,58 +24,16 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergySupplier
         return result.ToEnergyPrices() ?? ReadOnlyCollection<EnergyPrice>.Empty;
     }
 
-    public async Task<ICollection<EnergyConsumptionEntry>> GetConsumptionForToday()
-    {
-        var entriesToFetch = DateTime.Now.Hour;
-
-        var result = await GetConsumption(tibberApiClient, entriesToFetch);
-
-        return result.ToEnergyConsumptionEntries();
-    }
-
-    public async Task<ICollection<EnergyConsumptionEntry>> GetTopConsumptionDuringWeekdays(int limit = 3)
-    {
-        var result = await GetConsumptionByHighestConsumption(tibberApiClient);
-
-        return result
-            .Where(x =>
-                x.From.HasValue &&
-                x.From.Value.Date.IsWeekday() &&
-                x.From.Value.DateTime.Hour >= 7 &&
-                x.From.Value.DateTime.Hour < 19)
-            .Take(limit)
-            .ToEnergyConsumptionEntries();
-
-    }
-
-    public async Task<ICollection<EnergyConsumptionEntry>> GetTopConsumption(int limit = 3)
-    {
-        var result = await GetConsumptionByHighestConsumption(tibberApiClient);
-
-        return result
-            .Take(limit)
-            .ToEnergyConsumptionEntries();
-    }
-
-    private async Task<IEnumerable<ConsumptionEntry>> GetConsumptionByHighestConsumption(TibberApiClient tibberApiClient)
-    {
-        var entriesToFetch = (DateTime.Now.Day - 1) * 24 + DateTime.Now.Hour;
-
-        var consumption = await GetConsumption(tibberApiClient, entriesToFetch);
-
-        return consumption
-            .Where(c => c.From.HasValue && c.From.Value.Hour >= 7 && c.From.Value.Hour <= 19)
-            .OrderByDescending(entry => entry.Consumption);
-    }
-
-    private async Task<ICollection<ConsumptionEntry>> GetConsumption(TibberApiClient tibberApiClient, int entriesToFetch)
+    public async Task<ICollection<EnergyConsumptionEntry>> GetConsumption(int lastHours)
     {
         var homeId = await GetHomeId();
-        var query = BuildEnergyConsumptionQuery(homeId, entriesToFetch, EnergyResolution.Hourly);
+        var query = BuildEnergyConsumptionQuery(homeId, lastHours, EnergyResolution.Hourly);
         var queryResponse = await tibberApiClient.Query(query);
 
-        return queryResponse.Data.Viewer.Home?.Consumption?.Nodes ??
+        var result = queryResponse.Data.Viewer.Home?.Consumption?.Nodes ??
             throw new TibberApiException(GetTibberApiErrorMessage(queryResponse.Data));
+
+        return result.ToEnergyConsumptionEntries();
     }
 
     private async Task<Guid> GetHomeId()
@@ -111,7 +70,7 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergySupplier
         return customQueryBuilder.Build();
     }
 
-    private static string BuildEnergyConsumptionQuery(Guid homeId, int entriesToFetch, EnergyResolution energyResolution)
+    private static string BuildEnergyConsumptionQuery(Guid homeId, int lastEntries, EnergyResolution energyResolution)
     {
         var customQueryBuilder = new TibberQueryBuilder()
             .WithAllScalarFields()
@@ -121,7 +80,7 @@ public class EnergyRepository(TibberApiClient tibberApiClient) : IEnergySupplier
                     .WithHome(
                         new HomeQueryBuilder()
                             .WithAllScalarFields()
-                            .WithConsumption(energyResolution, entriesToFetch),
+                            .WithConsumption(energyResolution, lastEntries),
                         homeId
                     )
             );

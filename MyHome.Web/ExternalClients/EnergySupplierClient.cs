@@ -22,7 +22,7 @@ public class EnergySupplierClient(ApiServiceClient client)
         bool onlyDuringWeekdays = true,
         CancellationToken cancellationToken = default)
     {
-        var query = $"energysupplier/consumption/currentmonth/top?limit={limit}&onlyDuringWeekdays={onlyDuringWeekdays}";
+        var query = $"energysupplier/consumption/top?limit={limit}&onlyDuringWeekdays={onlyDuringWeekdays}";
         var result = await client.GetFromJsonAsync<IEnumerable<EnergyConsumptionEntry>>(query, cancellationToken);
         return result ?? [];
     }

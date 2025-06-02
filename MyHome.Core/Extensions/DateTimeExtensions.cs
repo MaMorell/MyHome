@@ -19,15 +19,13 @@ public static class DateTimeExtensions
             now.DayOfWeek == DayOfWeek.Friday;
     }
 
-    public static bool IsWeekdayMidDay(this DateTime date)
+    public static bool IsDayTime(this DateTime date)
     {
         var time = TimeOnly.FromDateTime(date);
-        var weekDayMidDayStart = new TimeOnly(10, 0);
-        var weekDayMidDayEnd = new TimeOnly(15, 0);
+        var dayStart = new TimeOnly(7, 0);
+        var dayEnd = new TimeOnly(19, 0);
 
-        return
-            date.IsWeekday() &&
-            time.IsBetween(weekDayMidDayStart, weekDayMidDayEnd);
+        return time.IsBetween(dayStart, dayEnd);
     }
 
     public static bool IsNightTime(this DateTime date)
@@ -39,20 +37,15 @@ public static class DateTimeExtensions
         return time.IsBetween(nightStart, nightEnd);
     }
 
-    public static bool IsWithinWorkingHours(this DateTime date)
+    public static bool IsMidDay(this DateTime date)
     {
-        var now = DateTime.Now;
+        var time = TimeOnly.FromDateTime(date);
+        var nightStart = new TimeOnly(10, 0);
+        var nightEnd = new TimeOnly(15, 0);
 
-        if (now.IsWeekend())
-        {
-            return false;
-        }
-
-        var workingHoursStart = TimeSpan.FromHours(7);
-        var workingHoursEnd = TimeSpan.FromHours(19);
-
-        return
-            now.TimeOfDay >= workingHoursStart &&
-            now.TimeOfDay < workingHoursEnd;
+        return time.IsBetween(nightStart, nightEnd);
     }
+
+    public static bool IsWeekdayDayTime(this DateTime date) => date.IsWeekday() && date.IsDayTime();
+    public static bool IsWeekdayMidDay(this DateTime date) => date.IsWeekday() && date.IsMidDay();
 }

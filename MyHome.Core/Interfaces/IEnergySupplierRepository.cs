@@ -6,7 +6,5 @@ namespace MyHome.Core.Interfaces;
 public interface IEnergySupplierRepository
 {
     Task<ICollection<EnergyPrice>> GetEnergyPrices(EnergyPriceRange range);
-    Task<ICollection<EnergyConsumptionEntry>> GetConsumptionForToday();
-    Task<ICollection<EnergyConsumptionEntry>> GetTopConsumption(int limit = 3);
-    Task<ICollection<EnergyConsumptionEntry>> GetTopConsumptionDuringWeekdays(int limit = 3);
+    Task<ICollection<EnergyConsumptionEntry>> GetConsumption(int lastHours);
 }
