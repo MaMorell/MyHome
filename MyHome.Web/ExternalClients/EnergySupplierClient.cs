@@ -17,13 +17,22 @@ public class EnergySupplierClient(ApiServiceClient client)
         return result ?? new EnergyMeasurement();
     }
 
-    public async Task<IEnumerable<EnergyConsumptionEntry>> GetHighestMonthlyConsumptionAsync(
+    public async Task<IEnumerable<EnergyConsumptionEntry>> GetTopConsumptionAsync(
         int limit = 5,
         bool onlyDuringWeekdays = true,
         CancellationToken cancellationToken = default)
     {
         var query = $"energysupplier/consumption/top?limit={limit}&onlyDuringWeekdays={onlyDuringWeekdays}";
         var result = await client.GetFromJsonAsync<IEnumerable<EnergyConsumptionEntry>>(query, cancellationToken);
+        return result ?? [];
+    }
+
+    public async Task<IEnumerable<DailyEnergyConsumption>> GetDayConsumptionAsync(
+        int lastdays = 5,
+        CancellationToken cancellationToken = default)
+    {
+        var query = $"energysupplier/consumption/daily?lastdays={lastdays}";
+        var result = await client.GetFromJsonAsync<IEnumerable<DailyEnergyConsumption>>(query, cancellationToken);
         return result ?? [];
     }
 }
