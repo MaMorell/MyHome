@@ -12,10 +12,12 @@ namespace MyHome.Core.PriceCalculations;
 public class DeviceSettingsFactory
 {
     private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository;
+    private readonly IHeatPumpClient _heatPumpClient;
 
-    public DeviceSettingsFactory(IRepository<DeviceSettingsProfile> repository)
+    public DeviceSettingsFactory(IRepository<DeviceSettingsProfile> repository, IHeatPumpClient heatPumpClient)
     {
         _deviceSettingsRepository = repository;
+        _heatPumpClient = heatPumpClient;
     }
 
     public async Task<DeviceSettings> CreateFromPrice(EnergyPriceDetails price)
@@ -23,10 +25,10 @@ public class DeviceSettingsFactory
         var deviceSettings = await GetDeviceSettingsProfileAsync();
 
         var opMode = GetOpMode(price.LevelInternal, deviceSettings.OpModes, price);
-        var heatOffset = GetHeatOffset(price.LevelInternal, deviceSettings.HeatOffsets);
         var targetTemprature = GetRadiatorTemperature(price.LevelInternal, deviceSettings.RadiatorTemperatures);
         var comfortMode = GetComfortMode(price.LevelInternal, deviceSettings.ComfortModes);
         var floorTemperature = GetFloorHeaterTemperature(price.LevelInternal, deviceSettings.FloorHeaterTemperatures);
+        var heatOffset = await GetHeatOffset(price.LevelInternal, deviceSettings.HeatOffsets);
 
         return new DeviceSettings(heatOffset, targetTemprature, comfortMode, opMode, floorTemperature);
     }
@@ -82,8 +84,14 @@ public class DeviceSettingsFactory
         };
     }
 
-    private static int GetHeatOffset(EnergyPriceLevel priceLevel, HeatOffsetProfile profile)
+    private async Task<int> GetHeatOffset(EnergyPriceLevel priceLevel, HeatOffsetProfile profile)
     {
+        var exhaustAirTemp = await _heatPumpClient.GetExhaustAirTemp(CancellationToken.None);
+        if (exhaustAirTemp > 23 && priceLevel != EnergyPriceLevel.Extreme)
+        {
+            return profile.MaxSavings;
+        }
+
         return priceLevel switch
         {
             EnergyPriceLevel.Normal => profile.Baseline,

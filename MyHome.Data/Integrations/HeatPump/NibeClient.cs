@@ -13,7 +13,7 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
 
     public async Task<ComfortMode> GetComfortMode(CancellationToken cancellationToken)
     {
-        var comfortModePoint = await GetPoint(NibeParameterIds.ComfortModePoint, cancellationToken);
+        var comfortModePoint = await GetPoint(NibeParameterIds.ComfortMode, cancellationToken);
 
         return (int)comfortModePoint.Value switch
         {
@@ -37,6 +37,12 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
         };
     }
 
+    public async Task<double> GetExhaustAirTemp(CancellationToken cancellationToken)
+    {
+        var result = await GetPoint(NibeParameterIds.ExhaustAirTemp, cancellationToken);
+        return result.Value;
+    }
+
     public async Task UpdateHeat(int value, CancellationToken cancellationToken)
     {
         if (value < -10 || value > 10)
@@ -50,7 +56,7 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
             return;
         }
 
-        await PatchPoint(value, NibeParameterIds.HeatingOffsetPoint, cancellationToken);
+        await PatchPoint(value, NibeParameterIds.HeatingOffset, cancellationToken);
     }
 
     public async Task UpdateComfortMode(ComfortMode value, CancellationToken cancellationToken)
@@ -61,7 +67,7 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
             return;
         }
 
-        await PatchPoint(value, NibeParameterIds.ComfortModePoint, cancellationToken);
+        await PatchPoint(value, NibeParameterIds.ComfortMode, cancellationToken);
     }
 
     public async Task UpdateOpMode(OpMode value, CancellationToken cancellationToken)
@@ -77,7 +83,7 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
 
     private Task<NibePoint> GetHeatOffset(CancellationToken cancellationToken)
     {
-        return GetPoint(NibeParameterIds.HeatingOffsetPoint, cancellationToken);
+        return GetPoint(NibeParameterIds.HeatingOffset, cancellationToken);
     }
 
     private async Task<NibePoint> GetPoint(int pointId, CancellationToken cancellationToken)
@@ -109,8 +115,8 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
 
     private static string GetAuditTargetName(int point) => point switch
     {
-        NibeParameterIds.ComfortModePoint => "Nibe värmepump - Varmvatten",
-        NibeParameterIds.HeatingOffsetPoint => "Nibe värmepump - Värme",
+        NibeParameterIds.ComfortMode => "Nibe värmepump - Varmvatten",
+        NibeParameterIds.HeatingOffset => "Nibe värmepump - Värme",
         _ => "NIBE Värmepump",
     };
 
