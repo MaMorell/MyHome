@@ -18,8 +18,8 @@ public class PriceLevelGeneratorTests
     private readonly Mock<IRepository<PriceThearsholdsProfile>> _priceThearsholdsRepository;
     private readonly PriceLevelGenerator _sut;
     private readonly IFixture _fixture = new Fixture();
-    private List<EnergyPrice> _pricesToday;
-    private List<EnergyPrice> _pricesTomorrow;
+    private List<EnergyPrice> _pricesToday = [];
+    private List<EnergyPrice> _pricesTomorrow = [];
 
     public PriceLevelGeneratorTests()
     {
