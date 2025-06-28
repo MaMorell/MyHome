@@ -30,7 +30,7 @@ public static class WebApplicationBuilderExtensions
         services.AddScoped<IEnergySupplierRepository, TibberEnergySupplierRepository>();
 
         services.AddScoped<EnergySupplierService>();
-        services.AddScoped<HeatRegulatorService>();
+        services.AddScoped<HouseAutomationService>();
         services.AddScoped<IWifiSocketsService, WifiSocketsService>();
 
         services.AddScoped<DeviceSettingsFactory>();

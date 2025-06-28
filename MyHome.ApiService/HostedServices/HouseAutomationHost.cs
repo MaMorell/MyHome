@@ -4,15 +4,15 @@ using MyHome.Core.Services;
 
 namespace MyHome.ApiService.HostedServices;
 
-public sealed class HeatRegulatorHost : BackgroundService
+public sealed class HouseAutomationHost : BackgroundService
 {
     private readonly CronExpression _cron = CronExpression.Parse("0 * * * *"); // Every hour;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<HeatRegulatorHost> _logger;
+    private readonly ILogger<HouseAutomationHost> _logger;
 
-    public HeatRegulatorHost(
+    public HouseAutomationHost(
         IServiceScopeFactory scopeFactory,
-        ILogger<HeatRegulatorHost> logger)
+        ILogger<HouseAutomationHost> logger)
     {
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -20,7 +20,7 @@ public sealed class HeatRegulatorHost : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("{Service} is running.", nameof(HeatRegulatorHost));
+        _logger.LogInformation("{Service} is running.", nameof(HouseAutomationHost));
 
         try
         {
@@ -36,20 +36,20 @@ public sealed class HeatRegulatorHost : BackgroundService
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("{Service} is stopping.", nameof(HeatRegulatorHost));
+            _logger.LogInformation("{Service} is stopping.", nameof(HouseAutomationHost));
         }
     }
 
     private async Task DoWorkAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("{Service} is working.", nameof(HeatRegulatorHost));
+        _logger.LogInformation("{Service} is working.", nameof(HouseAutomationHost));
 
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            var heatResulatorService = scope.ServiceProvider.GetRequiredService<HeatRegulatorService>();
+            var houseAutomationService = scope.ServiceProvider.GetRequiredService<HouseAutomationService>();
 
-            await heatResulatorService.RegulateHeat(cancellationToken);
+            await houseAutomationService.RegulateHeat(cancellationToken);
         }
         catch (Exception ex)
         {

@@ -20,7 +20,7 @@ public sealed class EnergyConsumptionWatcherHost : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("{Service} is running.", nameof(HeatRegulatorHost));
+        _logger.LogInformation("{Service} is running.", nameof(EnergyConsumptionWatcherHost));
 
         try
         {
@@ -36,7 +36,7 @@ public sealed class EnergyConsumptionWatcherHost : BackgroundService
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("{Service} is stopping.", nameof(HeatRegulatorHost));
+            _logger.LogInformation("{Service} is stopping.", nameof(EnergyConsumptionWatcherHost));
         }
     }
 

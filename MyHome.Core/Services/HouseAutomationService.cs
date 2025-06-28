@@ -3,7 +3,7 @@ using MyHome.Core.PriceCalculations;
 
 namespace MyHome.Core.Services;
 
-public class HeatRegulatorService(
+public class HouseAutomationService(
     PriceLevelGenerator energyPriceCalculator,
     IHeatPumpClient heatpumpReposiory,
     IWifiSocketsService wifiSocketsService,
