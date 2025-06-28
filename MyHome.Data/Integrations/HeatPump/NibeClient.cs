@@ -43,6 +43,12 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
         return result.Value;
     }
 
+    public async Task<double> GetCurrentOutdoorTemp(CancellationToken cancellationToken)
+    {
+        var result = await GetPoint(NibeParameterIds.CurrentOutdoorTemp, cancellationToken);
+        return result.Value;
+    }
+
     public async Task UpdateHeat(int value, CancellationToken cancellationToken)
     {
         if (value < -10 || value > 10)
