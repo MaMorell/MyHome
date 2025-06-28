@@ -87,6 +87,17 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
         await PatchPoint(value, NibeParameterIds.OpMode, cancellationToken);
     }
 
+    public async Task UpdateIn­creasedVenti­lation(IncreasedVentilationValue value, CancellationToken cancellationToken)
+    {
+        var currentValue = await GetPoint(NibeParameterIds.IncreasedVentilation, cancellationToken);
+        if (currentValue.Value == (double)value)
+        {
+            return;
+        }
+
+        await PatchPoint(value, NibeParameterIds.IncreasedVentilation, cancellationToken);
+    }
+
     private Task<NibePoint> GetHeatOffset(CancellationToken cancellationToken)
     {
         return GetPoint(NibeParameterIds.HeatingOffset, cancellationToken);

@@ -1,6 +1,7 @@
 ﻿using MyHome.Core.Models.Integrations.HeatPump;
 
 namespace MyHome.Core.Interfaces;
+
 public interface IHeatPumpClient
 {
     Task<ComfortMode> GetComfortMode(CancellationToken cancellationToken);
@@ -9,5 +10,6 @@ public interface IHeatPumpClient
     Task<OpMode> GetOpMode(CancellationToken cancellationToken);
     Task UpdateComfortMode(ComfortMode value, CancellationToken cancellationToken);
     Task UpdateHeat(int value, CancellationToken cancellationToken);
+    Task UpdateIncreasedVentilation(IncreasedVentilationValue value, CancellationToken cancellationToken);
     Task UpdateOpMode(OpMode value, CancellationToken cancellationToken);
 }

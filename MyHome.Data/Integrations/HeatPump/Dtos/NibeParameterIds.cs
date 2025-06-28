@@ -7,4 +7,5 @@ public static class NibeParameterIds
     public const int OpMode = 47137;
     public const int ExhaustAirTemp = 40025;
     public const int CurrentOutdoorTemp = 40004;
+    public const int In­creasedVenti­lation = 50005;
 }

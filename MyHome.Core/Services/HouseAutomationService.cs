@@ -1,43 +1,62 @@
 ﻿using MyHome.Core.Interfaces;
+using MyHome.Core.Models.Integrations.HeatPump;
 using MyHome.Core.PriceCalculations;
 
 namespace MyHome.Core.Services;
 
 public class HouseAutomationService(
     PriceLevelGenerator energyPriceCalculator,
-    IHeatPumpClient heatpumpReposiory,
+    IHeatPumpClient heatpumpClient,
     IWifiSocketsService wifiSocketsService,
     IFloorHeaterClient floorHeaterRepository,
     DeviceSettingsFactory deviceSettingsCalculator)
 {
     private readonly PriceLevelGenerator _energyPriceCalculator = energyPriceCalculator;
-    private readonly IHeatPumpClient _heatpumpReposiory = heatpumpReposiory ?? throw new ArgumentNullException(nameof(heatpumpReposiory));
+    private readonly IHeatPumpClient _heatpumpClient = heatpumpClient ?? throw new ArgumentNullException(nameof(heatpumpClient));
     private readonly IWifiSocketsService _wifiSocketsService = wifiSocketsService;
     private readonly IFloorHeaterClient _floorHeaterRepository = floorHeaterRepository;
     private readonly DeviceSettingsFactory _deviceSettingsCalculator = deviceSettingsCalculator;
 
-    public async Task RegulateHeat(CancellationToken cancellationToken = default)
+    public async Task UpdateHouseSettings(CancellationToken cancellationToken = default)
     {
-        var prices = await _energyPriceCalculator.CreateForSpecificDateAsync(DateTime.Now);
-
-        var deviceSettings = await _deviceSettingsCalculator.CreateFromPrice(prices);
-
-        await SetHeat(deviceSettings, cancellationToken);
+        await AdjustHeatingForCurrentPrice(cancellationToken);
+        await AdjustVentilationForEvening(cancellationToken);
     }
 
-    public async Task SetHeat(DeviceSettings settings, CancellationToken cancellationToken)
+    private async Task AdjustVentilationForEvening(CancellationToken cancellationToken)
     {
-        var configureHeatPumpTask = ConfigureHeatPump(settings, cancellationToken);
-        var updateWifiSocketsTask = _wifiSocketsService.UpdateAllClients(settings.StorageTemprature, cancellationToken);
-        var opModeTask = _heatpumpReposiory.UpdateOpMode(settings.OpMode, cancellationToken);
-        var updateFloorTempratureTask = _floorHeaterRepository.UpdateSetTemperatureAsync(settings.FloorTemperature);
+        if (DateTime.Now.Hour == 19)
+        {
+            var outdoorTemp = await _heatpumpClient.GetCurrentOutdoorTemp(cancellationToken);
+            var exhaustAirTemp = await _heatpumpClient.GetExhaustAirTemp(cancellationToken);
+            var diff = exhaustAirTemp - outdoorTemp;
+            if (exhaustAirTemp > 22 && diff > 2)
+            {
+                await _heatpumpClient.UpdateIncreasedVentilation(IncreasedVentilationValue.On, cancellationToken);
+            }
+        }
+        else
+        {
+            await _heatpumpClient.UpdateIncreasedVentilation(IncreasedVentilationValue.Off, cancellationToken);
+        }
+    }
+
+    public async Task AdjustHeatingForCurrentPrice(CancellationToken cancellationToken)
+    {
+        var prices = await _energyPriceCalculator.CreateForSpecificDateAsync(DateTime.Now);
+        var deviceSettings = await _deviceSettingsCalculator.CreateFromPrice(prices);
+
+        var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
+        var updateWifiSocketsTask = _wifiSocketsService.UpdateAllClients(deviceSettings.StorageTemprature, cancellationToken);
+        var opModeTask = _heatpumpClient.UpdateOpMode(deviceSettings.OpMode, cancellationToken);
+        var updateFloorTempratureTask = _floorHeaterRepository.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature);
 
         await Task.WhenAll(updateWifiSocketsTask, configureHeatPumpTask, opModeTask, updateFloorTempratureTask);
     }
 
     private async Task ConfigureHeatPump(DeviceSettings settings, CancellationToken cancellationToken)
     {
-        await _heatpumpReposiory.UpdateHeat(settings.HeatOffset, cancellationToken);
-        await _heatpumpReposiory.UpdateComfortMode(settings.ComfortMode, cancellationToken);
+        await _heatpumpClient.UpdateHeat(settings.HeatOffset, cancellationToken);
+        await _heatpumpClient.UpdateComfortMode(settings.ComfortMode, cancellationToken);
     }
 }

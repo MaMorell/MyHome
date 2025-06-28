@@ -49,7 +49,7 @@ public sealed class HouseAutomationHost : BackgroundService
             using var scope = _scopeFactory.CreateScope();
             var houseAutomationService = scope.ServiceProvider.GetRequiredService<HouseAutomationService>();
 
-            await houseAutomationService.RegulateHeat(cancellationToken);
+            await houseAutomationService.UpdateHouseSettings(cancellationToken);
         }
         catch (Exception ex)
         {
