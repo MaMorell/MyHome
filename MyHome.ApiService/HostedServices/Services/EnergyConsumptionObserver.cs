@@ -73,6 +73,6 @@ public sealed class EnergyConsumptionObserver(
         var heatRegulatorService = scope.ServiceProvider.GetRequiredService<HouseAutomationService>();
 
         var deviceSettings = await settingsFactory.CreateFromMode(DeviceSettingsMode.MaxSavings);
-        await heatRegulatorService.SetHeat(deviceSettings, CancellationToken.None);
+        await heatRegulatorService.AdjustHeatingForCurrentPrice(deviceSettings, CancellationToken.None);
     }
 }

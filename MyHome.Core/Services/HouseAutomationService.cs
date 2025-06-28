@@ -19,7 +19,10 @@ public class HouseAutomationService(
 
     public async Task UpdateHouseSettings(CancellationToken cancellationToken = default)
     {
-        await AdjustHeatingForCurrentPrice(cancellationToken);
+        var prices = await _energyPriceCalculator.CreateForSpecificDateAsync(DateTime.Now);
+        var deviceSettings = await _deviceSettingsCalculator.CreateFromPrice(prices);
+        await AdjustHeatingForCurrentPrice(deviceSettings, cancellationToken);
+
         await AdjustVentilationForEvening(cancellationToken);
     }
 
@@ -41,11 +44,8 @@ public class HouseAutomationService(
         }
     }
 
-    public async Task AdjustHeatingForCurrentPrice(CancellationToken cancellationToken)
+    public async Task AdjustHeatingForCurrentPrice(DeviceSettings deviceSettings, CancellationToken cancellationToken)
     {
-        var prices = await _energyPriceCalculator.CreateForSpecificDateAsync(DateTime.Now);
-        var deviceSettings = await _deviceSettingsCalculator.CreateFromPrice(prices);
-
         var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
         var updateWifiSocketsTask = _wifiSocketsService.UpdateAllClients(deviceSettings.StorageTemprature, cancellationToken);
         var opModeTask = _heatpumpClient.UpdateOpMode(deviceSettings.OpMode, cancellationToken);
