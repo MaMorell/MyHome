@@ -3,6 +3,7 @@ using MyHome.ApiService.Extensions;
 using MyHome.ApiService.HostedServices;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
+using MyHome.Data;
 using MyHome.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,8 +20,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
 
 builder.Services.RegisterLocalDependencies(builder.Configuration);
-builder.Services.AddHostedService<HouseAutomationHost>();
-builder.Services.AddHostedService<EnergyConsumptionWatcherHost>();
+//builder.Services.AddHostedService<HouseAutomationHost>();
+//builder.Services.AddHostedService<EnergyConsumptionWatcherHost>();
+builder.Services.AddHostedService<SmartHubHost>();
 
 var app = builder.Build();
 
@@ -42,7 +44,7 @@ app.MapGet("/wifisocket/{name}/status", async ([FromServices] IWifiSocketsServic
     return await service.GetStatus(name);
 });
 
-app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> repository, [FromQuery] int count) =>
+app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> repository, [FromQuery] int limit) =>
 {
     var result = await repository.GetAllAsync();
     if (result is null)
@@ -50,7 +52,21 @@ app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> reposit
         return [];
     }
 
-    return result.OrderByDescending(r => r.Timestamp).Take(count);
+    return result.OrderByDescending(r => r.Timestamp).Take(limit);
+});
+
+app.MapGet("/sensordata/{deviceName}", async ([FromServices] IRepository<SensorData> repository, [FromRoute] string deviceName, [FromQuery] int limit) =>
+{
+    var result = await repository.GetAllAsync();
+    if (result is null)
+    {
+        return [];
+    }
+
+    return result
+        .Where(s => s.DeviceName == deviceName)
+        .OrderByDescending(r => r.Timestamp)
+        .Take(limit);
 });
 
 app.MapDefaultEndpoints();

@@ -7,6 +7,7 @@ using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Options;
 using MyHome.Core.PriceCalculations;
 using MyHome.Core.Services;
+using MyHome.Data;
 using MyHome.Data.Http;
 using MyHome.Data.Integrations.EnergySupplier;
 using MyHome.Data.Integrations.FloorHeating;
@@ -24,7 +25,7 @@ public static class WebApplicationBuilderExtensions
     {
         services.AddSingleton<IRepository<AuditEvent>, InMemoryRepository<AuditEvent>>();
         services.AddSingleton<IRepository<EnergyMeasurement>, InMemoryRepository<EnergyMeasurement>>();
-
+        services.AddSingleton<IRepository<SensorData>, InMemoryRepository<SensorData>>();
         services.AddScoped<IRepository<DeviceSettingsProfile>, FileRepository<DeviceSettingsProfile>>();
         services.AddScoped<IRepository<PriceThearsholdsProfile>, FileRepository<PriceThearsholdsProfile>>();
         services.AddScoped<IEnergySupplierRepository, TibberEnergySupplierRepository>();
@@ -32,6 +33,7 @@ public static class WebApplicationBuilderExtensions
         services.AddScoped<EnergySupplierService>();
         services.AddScoped<HouseAutomationService>();
         services.AddScoped<IWifiSocketsService, WifiSocketsService>();
+        services.AddSingleton<ISmartHubClient, MqttClient>();
 
         services.AddScoped<DeviceSettingsFactory>();
         services.AddScoped<PriceLevelGenerator>();
