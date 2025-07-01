@@ -28,6 +28,7 @@ builder.Services
     .AddScoped<AuditClient>()
     .AddScoped<PriceThearsholdsClient>()
     .AddScoped<DeviceSettingsProfileClient>()
+    .AddScoped<SensorDataClient>()
     .AddScoped<WifiSocketClient>();
 
 builder.Services.AddMudServices();

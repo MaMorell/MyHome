@@ -3,7 +3,7 @@ using MyHome.ApiService.Extensions;
 using MyHome.ApiService.HostedServices;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
-using MyHome.Data;
+using MyHome.Core.Models.Entities;
 using MyHome.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,7 +55,7 @@ app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> reposit
     return result.OrderByDescending(r => r.Timestamp).Take(limit);
 });
 
-app.MapGet("/sensordata/{deviceName}", async ([FromServices] IRepository<SensorData> repository, [FromRoute] string deviceName, [FromQuery] int limit) =>
+app.MapGet("/sensordata/{deviceName}", async ([FromServices] IRepository<SensorData> repository, [FromRoute] string deviceName, [FromQuery] int? limit) =>
 {
     var result = await repository.GetAllAsync();
     if (result is null)
@@ -66,7 +66,7 @@ app.MapGet("/sensordata/{deviceName}", async ([FromServices] IRepository<SensorD
     return result
         .Where(s => s.DeviceName == deviceName)
         .OrderByDescending(r => r.Timestamp)
-        .Take(limit);
+        .Take(limit ?? 1000);
 });
 
 app.MapDefaultEndpoints();

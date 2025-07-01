@@ -2,6 +2,7 @@
 using MQTTnet;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Entities;
+using MyHome.Core.Models.Entities.Constants;
 using System.Text;
 using System.Text.Json;
 
@@ -13,7 +14,7 @@ public class MqttClient : ISmartHubClient
     private readonly ILogger<MqttClient> _logger;
     private readonly IMqttClient _mqttClient;
     private readonly MqttClientOptions _mqttClientOptions;
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = false };
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
     public MqttClient(IRepository<SensorData> repository, ILogger<MqttClient> logger)
     {
@@ -54,7 +55,7 @@ public class MqttClient : ISmartHubClient
         var response = await _mqttClient.ConnectAsync(_mqttClientOptions, CancellationToken.None);
         _logger.LogInformation($"Connected to MQTT broker. Result code: {response.ResultCode}");
 
-        var topicFilterBuilder = new MqttTopicFilterBuilder().WithTopic("zigbee2mqtt/humidity-sensor-basement");
+        var topicFilterBuilder = new MqttTopicFilterBuilder().WithTopic($"zigbee2mqtt/{SensorNameConstants.HumiditySensorBasement}");
         await _mqttClient.SubscribeAsync(topicFilterBuilder.Build());
     }
 
@@ -72,7 +73,7 @@ public class MqttClient : ISmartHubClient
         _logger.LogDebug("Received message on topic: {topic}", topic);
         _logger.LogTrace("Payload: {payload}", payload);
 
-        if (!topic.StartsWith("zigbee2mqtt/humidity-sensor-basement"))
+        if (!topic.StartsWith($"zigbee2mqtt/{SensorNameConstants.HumiditySensorBasement}"))
         {
             _logger.LogWarning("Received message on unexpected topic: {topic}", topic);
             return;
@@ -92,7 +93,7 @@ public class MqttClient : ISmartHubClient
                 sensorData.Id = Guid.NewGuid();
             }
             sensorData.Timestamp = DateTime.Now;
-            sensorData.DeviceName = "humidity-sensor-basement";
+            sensorData.DeviceName = SensorNameConstants.HumiditySensorBasement;
 
             await _repository.UpsertAsync(sensorData);
             _logger.LogDebug("Successfully processed and upserted sensor data for topic: {topic}", topic);
@@ -106,17 +107,4 @@ public class MqttClient : ISmartHubClient
             _logger.LogError(ex, "An unexpected error occurred processing message from topic {topic}. Payload: {payload}", topic, payload);
         }
     }
-}
-
-public record SensorData : IEntity
-{
-    public Guid Id { get; set; }
-    public string? DeviceName { get; set; }
-    public DateTime Timestamp { get; set; }
-    public double Humidity { get; set; }
-    public double Temperature { get; set; }
-
-    //public int Battery { get; set; }
-    //public int Linkquality { get; set; }
-    //public int Voltage { get; set; }
 }

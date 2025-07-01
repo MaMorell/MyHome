@@ -1,0 +1,37 @@
+﻿@using MudBlazor
+
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+
+<MudCard Elevation="3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5" Color="Color.Primary">
+                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                Hygrometer
+            </MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+
+    <MudCardContent>
+        @if (_series is null || _series.Count == 0)
+        {
+            <MudPaper Class="pa-8 d-flex align-center justify-center" Elevation="0">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            </MudPaper>
+        }
+        else
+        {
+            <MudPaper Elevation="0" Class="pa-4">
+                <MudTimeSeriesChart ChartSeries="@_series"
+                                    @bind-SelectedIndex="_index"
+                                    Width="100%"
+                                    Height="400px"
+                                    ChartOptions="@_options"
+                                    TimeLabelSpacing="TimeSpan.FromHours(1)" />
+            </MudPaper>
+        }
+    </MudCardContent>
+</MudCard>
+
+
