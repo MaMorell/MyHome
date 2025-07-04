@@ -20,8 +20,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
 
 builder.Services.RegisterLocalDependencies(builder.Configuration);
-//builder.Services.AddHostedService<HouseAutomationHost>();
-//builder.Services.AddHostedService<EnergyConsumptionWatcherHost>();
+builder.Services.AddHostedService<HouseAutomationHost>();
+builder.Services.AddHostedService<EnergyConsumptionWatcherHost>();
 builder.Services.AddHostedService<SmartHubHost>();
 
 var app = builder.Build();
