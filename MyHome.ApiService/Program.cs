@@ -52,7 +52,10 @@ app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> reposit
         return [];
     }
 
-    return result.OrderByDescending(r => r.Timestamp).Take(limit);
+    return result
+        .Where(r => r != null)
+        .OrderByDescending(r => r.Timestamp)
+        .Take(limit);
 });
 
 app.MapGet("/sensordata/{deviceName}", async ([FromServices] IRepository<SensorData> repository, [FromRoute] string deviceName, [FromQuery] int? limit) =>

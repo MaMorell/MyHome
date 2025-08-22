@@ -43,7 +43,7 @@ public sealed class EnergyConsumptionListener : IDisposable
     {
         try
         {
-            var listener = await _tibberClient.StartRealTimeMeasurementListener(_homeId, cancellationToken);
+            var listener = await _tibberClient.StartRealTimeMeasurementListener(_homeId, cancellationToken: cancellationToken);
             _listenerSubscription = listener.Subscribe(_energyConsumptionObserver);
             _logger.LogInformation("Real Time Measurement listener started");
         }

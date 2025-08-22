@@ -9,7 +9,7 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$TuyaApiSecret,
     [Parameter(Mandatory = $false)]
-    [string]$PublishPath = "\\192.168.10.244\pimylifeupshare",
+    [string]$PublishPath = "\\192.168.10.221\pimylifeupshare",
     [Parameter(Mandatory = $false)]
     [string]$RunTime = "linux-arm64"
 )
@@ -72,7 +72,7 @@ if ((Test-Path $PublishPath) -eq $false) {
     throw "Network share '$PublishPath' not found"
 }
 
-Update-WebAppsettings 'http://192.168.10.244:5001/'
+Update-WebAppsettings 'http://192.168.10.221:5001/'
 Update-ApiAppsettings $MyUplinkClientSecret $TibberApiAccessToken 'InstrumentationKey=01f9ce82-2749-434d-9a43-cdd996c12dae;IngestionEndpoint=https://swedencentral-0.in.applicationinsights.azure.com/;ApplicationId=49260d0a-163f-48a9-b79a-7a1b2e373bf0' $TuyaAccessId $TuyaApiSecret
 Push-Location "$PSScriptRoot\..\MyHome.ApiService\"
 dotnet publish --configuration Release --output "$PublishPath\MyHomeApi" --runtime $RunTime
