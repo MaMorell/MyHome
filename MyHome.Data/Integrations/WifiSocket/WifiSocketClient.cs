@@ -14,7 +14,7 @@ public class WifiSocketClient(
 {
     private const string STATUS_OK = "ok";
 
-    private readonly AuditedHttpClient<WifiSocketOptions> _externalHttpClient = externalHttpClient;
+    private readonly AuditedHttpClient<WifiSocketOptions> _auditedHttpClient = externalHttpClient;
     private readonly WifiSocketOptions _wifiSocketOptions = wifiSocketOptions?.Value ?? throw new ArgumentNullException(nameof(wifiSocketOptions));
     private readonly ILogger<WifiSocketClient> _logger = logger;
 
@@ -22,7 +22,7 @@ public class WifiSocketClient(
 
     public async Task<ControllStatus> GetStatus(CancellationToken cancellationToken = default)
     {
-        var response = await _externalHttpClient.GetAsync<ControllStatus>("control-status", cancellationToken);
+        var response = await _auditedHttpClient.GetAsync<ControllStatus>("control-status", cancellationToken);
 
         response.Name = _wifiSocketOptions.Name;
 
@@ -70,7 +70,7 @@ public class WifiSocketClient(
             Value = value
         };
 
-        var setTempratureResponse = await _externalHttpClient.PostAsync<SetTempratureResponse>(requestBody, "set-temperature", auditEvent, cancellationToken);
+        var setTempratureResponse = await _auditedHttpClient.PostAsync<SetTempratureResponse>(requestBody, "set-temperature", auditEvent, cancellationToken);
 
         return EvaluateSetTempratureResponse(setTempratureResponse);
     }
