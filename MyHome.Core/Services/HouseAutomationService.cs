@@ -28,12 +28,12 @@ public class HouseAutomationService(
 
     private async Task AdjustVentilationForEvening(CancellationToken cancellationToken)
     {
-        if (DateTime.Now.Hour == 19)
+        if (DateTime.Now.Hour == 18 || DateTime.Now.Hour == 19)
         {
             var outdoorTemp = await _heatpumpClient.GetCurrentOutdoorTemp(cancellationToken);
             var exhaustAirTemp = await _heatpumpClient.GetExhaustAirTemp(cancellationToken);
             var diff = exhaustAirTemp - outdoorTemp;
-            if (exhaustAirTemp > 22 && diff > 2)
+            if (exhaustAirTemp >= 24 && diff >= 5)
             {
                 await _heatpumpClient.UpdateIncreasedVentilation(IncreasedVentilationValue.On, cancellationToken);
             }
@@ -47,11 +47,11 @@ public class HouseAutomationService(
     public async Task AdjustHeatingForCurrentPrice(DeviceSettings deviceSettings, CancellationToken cancellationToken)
     {
         var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
-        var updateWifiSocketsTask = _wifiSocketsService.UpdateAllClients(deviceSettings.StorageTemprature, cancellationToken);
+        //var updateWifiSocketsTask = _wifiSocketsService.UpdateAllClients(deviceSettings.StorageTemprature, cancellationToken);
         var opModeTask = _heatpumpClient.UpdateOpMode(deviceSettings.OpMode, cancellationToken);
         //var updateFloorTempratureTask = _floorHeaterRepository.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature);
 
-        await Task.WhenAll(updateWifiSocketsTask, configureHeatPumpTask, opModeTask);
+        await Task.WhenAll(configureHeatPumpTask, opModeTask);
     }
 
     private async Task ConfigureHeatPump(DeviceSettings settings, CancellationToken cancellationToken)
