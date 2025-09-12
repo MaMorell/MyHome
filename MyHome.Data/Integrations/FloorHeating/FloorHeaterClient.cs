@@ -44,14 +44,13 @@ public class FloorHeaterClient : IFloorHeaterClient
 
     public async Task UpdateSetTemperatureAsync(int temperature)
     {
-        var scaledTemprature = ConvertToScaledTemp(temperature);
-
         var currentSetTemperature = await GetSetTemperatureAsync();
-        if (currentSetTemperature == scaledTemprature)
+        if (currentSetTemperature == temperature)
         {
             return;
         }
 
+        var scaledTemprature = ConvertToScaledTemp(temperature);
         await ExecuteTemperatureUpdateAsync(scaledTemprature);
     }
 

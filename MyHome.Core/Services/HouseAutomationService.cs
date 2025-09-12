@@ -49,9 +49,9 @@ public class HouseAutomationService(
         var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
         //var updateWifiSocketsTask = _wifiSocketsService.UpdateAllClients(deviceSettings.StorageTemprature, cancellationToken);
         var opModeTask = _heatpumpClient.UpdateOpMode(deviceSettings.OpMode, cancellationToken);
-        //var updateFloorTempratureTask = _floorHeaterRepository.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature);
+        var updateFloorTempratureTask = _floorHeaterRepository.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature);
 
-        await Task.WhenAll(configureHeatPumpTask, opModeTask);
+        await Task.WhenAll(configureHeatPumpTask, opModeTask, updateFloorTempratureTask);
     }
 
     private async Task ConfigureHeatPump(DeviceSettings settings, CancellationToken cancellationToken)
