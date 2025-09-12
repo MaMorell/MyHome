@@ -31,19 +31,19 @@ public static class DateTimeExtensions
     public static bool IsNightTime(this DateTime date)
     {
         var time = TimeOnly.FromDateTime(date);
-        var nightStart = new TimeOnly(1, 0);
-        var nightEnd = new TimeOnly(4, 0);
+        var start = new TimeOnly(0, 0);
+        var end = new TimeOnly(4, 0);
 
-        return time.IsBetween(nightStart, nightEnd);
+        return time.IsBetween(start, end);
     }
 
     public static bool IsMidDay(this DateTime date)
     {
         var time = TimeOnly.FromDateTime(date);
-        var nightStart = new TimeOnly(10, 0);
-        var nightEnd = new TimeOnly(15, 0);
+        var start = new TimeOnly(10, 0);
+        var end = new TimeOnly(15, 0);
 
-        return time.IsBetween(nightStart, nightEnd);
+        return time.IsBetween(start, end);
     }
 
     public static bool IsWeekdayDayTime(this DateTime date) => date.IsWeekday() && date.IsDayTime();

@@ -190,7 +190,7 @@ public class DeviceSettingsFactory
 
         if (now.IsWeekdayMidDay())
         {
-            result -= 3;
+            result -= 2;
         }
 
         const int MinAllowedTemperature = 5;
