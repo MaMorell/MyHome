@@ -61,7 +61,7 @@ public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient) : I
                             .WithCurrentSubscription(
                                 new SubscriptionQueryBuilder()
                                     .WithAllScalarFields()
-                                    .WithPriceInfo(priceInfoBuilder)
+                                    .WithPriceInfo(priceInfoBuilder, resolution: PriceInfoResolution.Hourly)
                             ),
                         homeId
                     )
