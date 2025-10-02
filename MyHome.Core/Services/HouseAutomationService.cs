@@ -21,8 +21,8 @@ public class HouseAutomationService(
     {
         var prices = await _energyPriceCalculator.CreateForSpecificDateAsync(DateTime.Now);
         var deviceSettings = await _deviceSettingsCalculator.CreateFromPrice(prices);
-        await AdjustHeatingForCurrentPrice(deviceSettings, cancellationToken);
 
+        await AdjustHeatingForCurrentPrice(deviceSettings, cancellationToken);
         await AdjustVentilationForEvening(cancellationToken);
     }
 
@@ -33,7 +33,7 @@ public class HouseAutomationService(
             var outdoorTemp = await _heatpumpClient.GetCurrentOutdoorTemp(cancellationToken);
             var exhaustAirTemp = await _heatpumpClient.GetExhaustAirTemp(cancellationToken);
             var diff = exhaustAirTemp - outdoorTemp;
-            if (exhaustAirTemp >= 24 && diff >= 5)
+            if (exhaustAirTemp >= 25 && diff >= 6)
             {
                 await _heatpumpClient.UpdateIncreasedVentilation(IncreasedVentilationValue.On, cancellationToken);
             }

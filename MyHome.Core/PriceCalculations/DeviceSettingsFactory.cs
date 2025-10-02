@@ -86,13 +86,7 @@ public class DeviceSettingsFactory
 
     private async Task<int> GetHeatOffset(EnergyPriceLevel priceLevel, HeatOffsetProfile profile)
     {
-        var exhaustAirTemp = await _heatPumpClient.GetExhaustAirTemp(CancellationToken.None);
-        if (exhaustAirTemp > 23 && priceLevel != EnergyPriceLevel.Extreme)
-        {
-            return profile.MaxSavings;
-        }
-
-        return priceLevel switch
+        var result = priceLevel switch
         {
             EnergyPriceLevel.Normal => profile.Baseline,
             EnergyPriceLevel.VeryCheap => profile.Enhanced,
@@ -102,11 +96,19 @@ public class DeviceSettingsFactory
             EnergyPriceLevel.Extreme => profile.ExtremeSavings,
             _ => profile.Baseline,
         };
+
+        var exhaustAirTemp = await _heatPumpClient.GetExhaustAirTemp(CancellationToken.None);
+        if (exhaustAirTemp >= 22 && priceLevel != EnergyPriceLevel.Extreme)
+        {
+            result -= 2;
+        }
+
+        return result;
     }
 
     private static ComfortMode GetComfortMode(EnergyPriceLevel priceLevel, ComfortModeProfile profile)
     {
-        if (DateTime.Now.IsWeekdayMidDay())
+        if (DateTime.Now.IsNightTime() || DateTime.Now.IsMidDay())
         {
             return ComfortMode.Economy;
         }
@@ -174,12 +176,12 @@ public class DeviceSettingsFactory
             _ => floorHeaterTemperatures.Baseline,
         };
 
-        result = AdjustTempratureForTimeOfDay(result);
+        result = AdjustFloorTempratureForTimeOfDay(result);
 
         return result;
     }
 
-    private static int AdjustTempratureForTimeOfDay(int result)
+    private static int AdjustFloorTempratureForTimeOfDay(int result)
     {
         var now = DateTime.Now;
 
