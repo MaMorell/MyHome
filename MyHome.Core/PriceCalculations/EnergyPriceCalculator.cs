@@ -1,4 +1,5 @@
-﻿using MyHome.Core.Interfaces;
+﻿using MyHome.Core.Extensions;
+using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.Entities.Constants;
@@ -20,12 +21,16 @@ public class PriceLevelGenerator
 
     public async Task<EnergyPriceDetails> CreateForSpecificDateAsync(DateTime date)
     {
-        var eneryPrices = await CreateAsync(EnergyPriceRange.TodayAndTomorrow);
+        var energyPrices = await CreateAsync(EnergyPriceRange.TodayAndTomorrow);
 
-        return eneryPrices.FirstOrDefault(p =>
-            p.StartsAt.Date == date.Date &&
-            p.StartsAt.Hour == date.Hour)
-            ?? throw new InvalidOperationException($"Hour {date.Hour} not found for date {date.Date:yyyy-MM-dd}");
+        var dateRounded = date.RoundDownToClosestQuarter();
+
+        var result = energyPrices.FirstOrDefault(p =>
+            p.StartsAt.Date == dateRounded.Date
+            && p.StartsAt.Hour == dateRounded.Hour
+            && p.StartsAt.Minute == dateRounded.Minute);
+
+        return result ?? throw new ArgumentException($"Price not found for {dateRounded:yyyy-MM-dd HH:mm}", nameof(date));
     }
 
     public async Task<IEnumerable<EnergyPriceDetails>> CreateAsync(EnergyPriceRange priceRange)
@@ -57,12 +62,14 @@ public class PriceLevelGenerator
 
     private static EnergyPriceLevel CalculateInternalPriceLevel(List<EnergyPrice> prices, PriceThearsholdsProfile profile)
     {
-        if (prices.Count < profile.InternalPriceLevelRange)
+        const int pricesPerHour = 4; // The price resolution is 15 minutes
+
+        if (prices.Count * pricesPerHour < profile.InternalPriceLevelRangeInHours)
         {
             return EnergyPriceLevel.Unknown;
         }
 
-        var pricesFromRange = prices.Take(profile.InternalPriceLevelRange).ToList();
+        var pricesFromRange = prices.Take(profile.InternalPriceLevelRangeInHours * pricesPerHour).ToList();
 
         var priceThresholds = PriceThresholds.Create(pricesFromRange, profile);
 

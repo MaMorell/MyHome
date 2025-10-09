@@ -8,7 +8,7 @@ public class PriceThearsholdsProfile : IEntity
     public decimal Cheap { get; set; } = 0.7m;
     public decimal VeryCheap { get; set; } = 0.4m;
     public decimal Extreme { get; set; } = 3.0m;
-    public int InternalPriceLevelRange { get; set; } = 8;
+    public int InternalPriceLevelRangeInHours { get; set; } = 8;
 
     public string VeryHighPercentage => $"{(VeryExpensive - 1) * 100:N0}%";
     public string HighPercentage => $"{(Expensive - 1) * 100:N0}%";

@@ -1,10 +1,8 @@
-﻿using MyHome.Core.Extensions;
-using MyHome.Core.Interfaces;
+﻿using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Data.Extensions;
 using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Tibber.Sdk;
 
@@ -61,7 +59,7 @@ public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient) : I
                             .WithCurrentSubscription(
                                 new SubscriptionQueryBuilder()
                                     .WithAllScalarFields()
-                                    .WithPriceInfo(priceInfoBuilder, resolution: PriceInfoResolution.Hourly)
+                                    .WithPriceInfo(priceInfoBuilder, resolution: PriceInfoResolution.QuarterHourly)
                             ),
                         homeId
                     )

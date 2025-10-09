@@ -125,7 +125,7 @@ public class PriceLevelGeneratorTests
         // Arrange
         var profile = new PriceThearsholdsProfile()
         {
-            InternalPriceLevelRange = 4,
+            InternalPriceLevelRangeInHours = 4,
             Extreme = 2.0m,
             VeryExpensive = 2.0m,
             Expensive = 1.5m,
@@ -162,7 +162,7 @@ public class PriceLevelGeneratorTests
         // Arrange
         var profile = new PriceThearsholdsProfile()
         {
-            InternalPriceLevelRange = 4,
+            InternalPriceLevelRangeInHours = 4,
             Extreme = 2.0m,
             VeryExpensive = 2.0m,
             Expensive = 2.0m,
@@ -199,7 +199,7 @@ public class PriceLevelGeneratorTests
         // Arrange
         var profile = new PriceThearsholdsProfile()
         {
-            InternalPriceLevelRange = 2,
+            InternalPriceLevelRangeInHours = 2,
             Extreme = 4m,
             VeryExpensive = 3m,
             Expensive = 2m,
