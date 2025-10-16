@@ -6,7 +6,7 @@ namespace MyHome.ApiService.HostedServices;
 
 public sealed class HouseAutomationHost : BackgroundService
 {
-    private readonly CronExpression _cron = CronExpression.Parse("0 * * * *"); // Every hour;
+    private readonly CronExpression _cron = CronExpression.Parse("0,15,30,45 * * * *"); // Every 15 minutes
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<HouseAutomationHost> _logger;
 

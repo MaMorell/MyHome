@@ -25,12 +25,12 @@ public class DeviceSettingsFactory
         var deviceSettings = await GetDeviceSettingsProfileAsync();
 
         var opMode = GetOpMode(price.LevelInternal, deviceSettings.OpModes, price);
-        var targetTemprature = GetRadiatorTemperature(price.LevelInternal, deviceSettings.RadiatorTemperatures);
+        var radiatorTemperature = GetRadiatorTemperature(price.LevelInternal, deviceSettings.RadiatorTemperatures);
         var comfortMode = GetComfortMode(price.LevelInternal, deviceSettings.ComfortModes);
         var floorTemperature = GetFloorHeaterTemperature(price.LevelInternal, deviceSettings.FloorHeaterTemperatures);
         var heatOffset = await GetHeatOffset(price.LevelInternal, deviceSettings.HeatOffsets);
 
-        return new DeviceSettings(heatOffset, targetTemprature, comfortMode, opMode, floorTemperature);
+        return new DeviceSettings(heatOffset, radiatorTemperature, comfortMode, opMode, floorTemperature);
     }
 
     public async Task<DeviceSettings> CreateFromMode(DeviceSettingsMode mode)
@@ -98,7 +98,7 @@ public class DeviceSettingsFactory
         };
 
         var exhaustAirTemp = await _heatPumpClient.GetExhaustAirTemp(CancellationToken.None);
-        if (exhaustAirTemp >= 22 && priceLevel != EnergyPriceLevel.Extreme)
+        if (exhaustAirTemp >= 22)
         {
             result -= 2;
         }
