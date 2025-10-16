@@ -1,0 +1,62 @@
+@using MudBlazor
+@using System.Globalization
+@using MyHome.Core.Models.EnergySupplier
+@using MyHome.Web.ExternalClients
+
+<MudCard Class="rounded-lg ma-5">
+    <MudCardHeader Class="pb-0">
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5">
+                <MudIcon Icon="@Icons.Material.Filled.QueryStats" Class="mr-2" Color="Color.Primary" />
+                Högsta månadsförbrukning
+            </MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="OnRefresh" />
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudDivider Class="my-4 mx-6" />
+    <MudCardContent>
+        <MudItem xs="6" sm="6">
+            @if (TopConsumption != null && TopConsumption.Any())
+            {
+                <MudList T="string" ReadOnly="true">
+                    @foreach (var item in TopConsumption)
+                    {
+                        <MudListItem>
+                            <div class="d-flex flex-column">
+                                <div class="d-flex justify-space-between align-center">
+                                    <MudText>@item.Consumption.ToString("N2") kWh</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@item.Cost.ToString("C2", CultureInfo.CreateSpecificCulture("sk-SE"))</MudText>
+                                </div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @item.PriceDetails.StartsAt.ToString("MM-dd HH:mm")
+                                </MudText>
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+            else
+            {
+                <MudText>Ingen förbrukningsdata tillgänglig</MudText>
+            }
+        </MudItem>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Inject]
+    private EnergySupplierClient EnergySupplierClient { get; set; } = default!;
+
+    public IEnumerable<EnergyConsumptionEntry>? TopConsumption { get; set; }
+
+    protected override async Task OnInitializedAsync() => await RefreshData();
+
+    private async Task OnRefresh() => await RefreshData();
+
+    private async Task RefreshData()
+    {
+        TopConsumption = await EnergySupplierClient.GetTopConsumptionAsync();
+    }
+}

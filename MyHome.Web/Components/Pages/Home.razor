@@ -6,8 +6,15 @@
 <PageTitle>Hem</PageTitle>
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-10">
     <MudText Typo="Typo.h2" Color="Color.Primary" Class="mb-8">Mitt Hem</MudText>
-    <SensorDataChart/>
-    <Statistics />
+    @* <SensorDataChart/> *@
+    <MudGrid>
+        <MudItem xs="6">
+            <EneryCost />
+        </MudItem>
+        <MudItem xs="6">
+            <EnergyConsumption />
+        </MudItem>
+    </MudGrid>
     <MudGrid>
         <MudItem xs="12" sm="6">
             <WifiSocketStatus WifiSocketname="WifiSocketName.Garage" />

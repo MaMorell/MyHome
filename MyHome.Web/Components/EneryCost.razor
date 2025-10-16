@@ -1,0 +1,72 @@
+@using MudBlazor
+@using System.Globalization
+@using MyHome.Core.Models.EnergySupplier
+@using MyHome.Web.ExternalClients
+@using System.Diagnostics
+
+<MudCard Class="rounded-lg ma-5">
+    <MudCardHeader Class="pb-0">
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5">
+                <MudIcon Icon="@Icons.Material.Filled.QueryStats" Class="mr-2" Color="Color.Primary" />
+                Kostnad genomsnitt dag
+            </MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="OnRefresh" />
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudDivider Class="mx-3" />
+    <MudCardContent>
+        <MudItem>
+            <MudTable Items="@DayConsumption" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+                <HeaderContent>
+                    <MudTh>Datum</MudTh>
+                    <MudTh>Kostnad Spot</MudTh>
+                    <MudTh>Kostnad Rörligt</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Datum">@context.Date</MudTd>
+                    <MudTd DataLabel="Kostnad Spot">@context.AverageCostBySpotPrice.ToString("C2", CultureInfo.CreateSpecificCulture("sk-SE"))</MudTd>
+                    <MudTd DataLabel="Kostnad Rörligt">@context.AverageCostByDayPrice.ToString("C2", CultureInfo.CreateSpecificCulture("sk-SE"))</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudItem>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Inject]
+    private EnergySupplierClient EnergySupplierClient { get; set; } = default!;
+
+    public IEnumerable<DailyEnergyConsumption>? DayConsumption { get; set; }
+
+    private bool _loading;
+
+    protected override async Task OnInitializedAsync() => await RefreshData();
+
+    private async Task OnRefresh() => await RefreshData();
+
+    private async Task RefreshData()
+    {
+        _loading = true;
+
+        try
+        {
+            var getDayConsumptionTask = EnergySupplierClient.GetDayConsumptionAsync(lastdays: 10);
+            var delayTask = Task.Delay(500);
+            await Task.WhenAll(getDayConsumptionTask, delayTask);
+
+            DayConsumption = await getDayConsumptionTask;
+
+        }
+        catch (Exception)
+        {
+            Debug.WriteLine("Failed to load DayConsumption");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

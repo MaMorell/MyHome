@@ -15,7 +15,8 @@ public partial class EnergyConsumptionCharts
     private readonly ChartOptions _options = new()
     {
         YAxisTicks = 1,
-        LineStrokeWidth = 3,
+        LineStrokeWidth = 2,
+        
     };
     private readonly List<TimeSeriesChartSeries> _series = [];
 
@@ -29,27 +30,43 @@ public partial class EnergyConsumptionCharts
         if (EnergyConsumptions is null)
             return;
 
-        var priceChart = new TimeSeriesChartSeries
-        {
-            Index = 0,
-            Name = "Elpris (SEK/kWh)",
-            Data = EnergyConsumptions.Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.PriceDetails.PriceTotal)).ToList(),
-            IsVisible = true,
-            LineDisplayType = LineDisplayType.Line
-        };
         var priceLevelChart = new TimeSeriesChartSeries
         {
             Index = 1,
             Name = "Prisnivå (0 = låg, 5 = hög)",
-            Data = EnergyConsumptions.Where(e => e.PriceDetails.LevelInternal != EnergyPriceLevel.Unknown).Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)(p.PriceDetails.LevelInternal) / 2)).ToList(),
+            Data = EnergyConsumptions
+                .Where(e => e.PriceDetails.LevelInternal != EnergyPriceLevel.Unknown)
+                .Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.PriceDetails.LevelInternal))
+                .ToList(),
+            IsVisible = true,
+            LineDisplayType = LineDisplayType.Line
+        };
+        var priceChart = new TimeSeriesChartSeries
+        {
+            Index = 0,
+            Name = "Pris (SEK/kWh)",
+            Data = EnergyConsumptions
+                .Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.PriceDetails.PriceTotal))
+                .ToList(),
             IsVisible = true,
             LineDisplayType = LineDisplayType.Line
         };
         var consumptionChart = new TimeSeriesChartSeries
         {
             Index = 2,
-            Name = "Elförbrukning (kWh)",
+            Name = "Förbrukning (kWh)",
             Data = GetConsumptionChartData(EnergyConsumptions),
+            IsVisible = true,
+            LineDisplayType = LineDisplayType.Line
+        };
+        var costChart = new TimeSeriesChartSeries
+        {
+            Index = 3,
+            Name = "Kostnad (SEK/kWh)",
+            Data = EnergyConsumptions
+                .Where(e => e.Cost != default)
+                .Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.Cost))
+                .ToList(),
             IsVisible = true,
             LineDisplayType = LineDisplayType.Line
         };
@@ -59,6 +76,7 @@ public partial class EnergyConsumptionCharts
         _series.Add(priceChart);
         _series.Add(priceLevelChart);
         _series.Add(consumptionChart);
+        _series.Add(costChart);
     }
 
     private static List<TimeSeriesChartSeries.TimeValue> GetConsumptionChartData(IEnumerable<EnergyConsumptionEntry> prices) =>
