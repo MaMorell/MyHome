@@ -65,8 +65,8 @@ public class ComfortModeProfile : IDeviceProfile<ComfortMode>
 
 public class OpModeProfile : IDeviceProfile<OpMode>
 {
-    public decimal MaxPriceAutoMode { get; set; } = 1.0m;
-    public decimal MaxPriceAutoModeNightTime => MaxPriceAutoMode + 0.5m;
+    public decimal MaxPriceAutoMode { get; set; } = 0.5m;
+    public decimal MaxPriceAutoModeNightTime => MaxPriceAutoMode + 1m;
 
     public OpMode Baseline { get; set; } = OpMode.Auto;
     public OpMode Enhanced { get; set; } = OpMode.Auto;

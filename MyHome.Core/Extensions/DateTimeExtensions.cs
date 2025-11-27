@@ -28,7 +28,7 @@ public static class DateTimeExtensions
         return time.IsBetween(dayStart, dayEnd);
     }
 
-    public static bool IsNightTime(this DateTime date)
+    public static bool IsMidNight(this DateTime date)
     {
         var time = TimeOnly.FromDateTime(date);
         var start = new TimeOnly(0, 0);
@@ -37,10 +37,19 @@ public static class DateTimeExtensions
         return time.IsBetween(start, end);
     }
 
+    public static bool IsEvening(this DateTime date)
+    {
+        var time = TimeOnly.FromDateTime(date);
+        var start = new TimeOnly(21, 0);
+        var end = new TimeOnly(0, 0);
+
+        return time.IsBetween(start, end);
+    }
+
     public static bool IsMidDay(this DateTime date)
     {
         var time = TimeOnly.FromDateTime(date);
-        var start = new TimeOnly(10, 0);
+        var start = new TimeOnly(9, 0);
         var end = new TimeOnly(15, 0);
 
         return time.IsBetween(start, end);

@@ -108,7 +108,7 @@ public class DeviceSettingsFactory
 
     private static ComfortMode GetComfortMode(EnergyPriceLevel priceLevel, ComfortModeProfile profile)
     {
-        if (DateTime.Now.IsNightTime() || DateTime.Now.IsMidDay())
+        if (DateTime.Now.IsMidNight() || DateTime.Now.IsMidDay())
         {
             return ComfortMode.Economy;
         }
@@ -127,7 +127,7 @@ public class DeviceSettingsFactory
 
     private static OpMode GetOpMode(EnergyPriceLevel priceLevel, OpModeProfile profile, EnergyPriceDetails energyPrice)
     {
-        var maxPriceAutoMode = DateTime.Now.IsNightTime()
+        var maxPriceAutoMode = DateTime.Now.IsMidNight()
             ? profile.MaxPriceAutoModeNightTime
             : profile.MaxPriceAutoMode;
         var isPriceUnderAutoModeLimit = energyPrice.PriceTotal < maxPriceAutoMode;
@@ -185,12 +185,12 @@ public class DeviceSettingsFactory
     {
         var now = DateTime.Now;
 
-        if (now.IsNightTime())
+        if (now.IsMidNight())
         {
             result -= 4;
         }
 
-        if (now.IsWeekdayMidDay())
+        if (now.IsWeekdayMidDay() || now.IsEvening())
         {
             result -= 2;
         }
