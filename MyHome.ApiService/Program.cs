@@ -39,11 +39,6 @@ EnergysupplierEndpoints.Map(app);
 PriceThearsholdsEndpoints.Map(app);
 DeviceSettingsEndpoints.Map(app);
 
-app.MapGet("/wifisocket/{name}/status", async ([FromServices] IWifiSocketsService service, string name) =>
-{
-    return await service.GetStatus(name);
-});
-
 app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> repository, [FromQuery] int limit) =>
 {
     var result = await repository.GetAllAsync();

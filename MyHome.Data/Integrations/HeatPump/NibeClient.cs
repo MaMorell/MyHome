@@ -1,15 +1,25 @@
-﻿using MyHome.Core.Interfaces;
+﻿using Microsoft.Extensions.Options;
+using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Integrations.HeatPump;
 using MyHome.Core.Options;
-using MyHome.Data.Http;
 using MyHome.Data.Integrations.HeatPump.Dtos;
+using System.Net.Http.Json;
 
 namespace MyHome.Data.Integrations.HeatPump;
 
-public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) : IHeatPumpClient
+public class NibeClient : IHeatPumpClient
 {
-    private readonly AuditedHttpClient<MyUplinkOptions> _httpClient = externalHttpClient;
+    private readonly HttpClient _httpClient;
+    private readonly IRepository<AuditEvent> _auditRepository;
+    private readonly IOptions<HeatPumpClientOptions> _options;
+
+    public NibeClient(HttpClient httpClient, IRepository<AuditEvent> auditRepository, IOptions<HeatPumpClientOptions> options)
+    {
+        _httpClient = httpClient;
+        _auditRepository = auditRepository;
+        _options = options;
+    }
 
     public async Task<ComfortMode> GetComfortMode(CancellationToken cancellationToken)
     {
@@ -56,7 +66,7 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
             throw new ArgumentException($"Invalid value: {value}. Must be between -10 and 10", nameof(value));
         }
 
-        var currentHeat = await GetHeatOffset(cancellationToken);
+        var currentHeat = await GetPoint(NibeParameterIds.HeatingOffset, cancellationToken);
         if (currentHeat.Value == value)
         {
             return;
@@ -98,16 +108,12 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
         await PatchPoint(value, NibeParameterIds.IncreasedVentilation, cancellationToken);
     }
 
-    private Task<NibePoint> GetHeatOffset(CancellationToken cancellationToken)
-    {
-        return GetPoint(NibeParameterIds.HeatingOffset, cancellationToken);
-    }
-
     private async Task<NibePoint> GetPoint(int pointId, CancellationToken cancellationToken)
     {
         var uri = GetDevicePointsApiPath();
 
-        var result = await _httpClient.GetAsync<IEnumerable<NibePoint>>(uri, cancellationToken);
+        var result = await _httpClient.GetFromJsonAsync<IEnumerable<NibePoint>>(uri, cancellationToken)
+            ?? throw new InvalidOperationException($"Failed to get heat point with id {pointId} from uri {uri}");
 
         return result.SingleOrDefault(result => result.ParameterId == pointId.ToString())
             ?? throw new InvalidOperationException($"Could not find heat point with id {pointId} from uri {uri}");
@@ -120,14 +126,17 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
             { point.ToString(), value }
         };
 
+        var uri = GetDevicePointsApiPath();
+
+        var response = await _httpClient.PatchAsJsonAsync(uri, requestBody, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
         var auditEvent = new AuditEvent(AuditAction.Update, AuditTarget.HeatPump)
         {
             NewValue = value.ToString(),
             TargetName = GetAuditTargetName(point)
         };
-
-        var uri = GetDevicePointsApiPath();
-        await _httpClient.PatchAsync(requestBody, uri, auditEvent, cancellationToken);
+        await _auditRepository.UpsertAsync(auditEvent);
     }
 
     private static string GetAuditTargetName(int point) => point switch
@@ -137,10 +146,5 @@ public class NibeClient(AuditedHttpClient<MyUplinkOptions> externalHttpClient) :
         _ => "NIBE Värmepump",
     };
 
-    private static string GetDevicePointsApiPath()
-    {
-        const string DEVICE_ID = "emmy-r-208006-20240516-06605519022003-54-10-ec-c4-ca-9a";
-
-        return $"v2/devices/{DEVICE_ID}/points";
-    }
+    private Uri GetDevicePointsApiPath() => new($"{_options.Value.BaseAddress}/v2/devices/emmy-r-208006-20240516-06605519022003-54-10-ec-c4-ca-9a/points");
 }

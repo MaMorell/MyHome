@@ -7,13 +7,11 @@ namespace MyHome.Core.Services;
 public class HouseAutomationService(
     PriceLevelGenerator energyPriceCalculator,
     IHeatPumpClient heatpumpClient,
-    IWifiSocketsService wifiSocketsService,
     IFloorHeaterClient floorHeaterRepository,
     DeviceSettingsFactory deviceSettingsCalculator)
 {
     private readonly PriceLevelGenerator _energyPriceCalculator = energyPriceCalculator;
     private readonly IHeatPumpClient _heatpumpClient = heatpumpClient ?? throw new ArgumentNullException(nameof(heatpumpClient));
-    private readonly IWifiSocketsService _wifiSocketsService = wifiSocketsService;
     private readonly IFloorHeaterClient _floorHeaterRepository = floorHeaterRepository;
     private readonly DeviceSettingsFactory _deviceSettingsCalculator = deviceSettingsCalculator;
 
@@ -47,11 +45,10 @@ public class HouseAutomationService(
     public async Task AdjustHeatingForCurrentPrice(DeviceSettings deviceSettings, CancellationToken cancellationToken)
     {
         var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
-        var updateWifiSocketsTask = _wifiSocketsService.UpdateAllClients(deviceSettings.StorageTemprature, cancellationToken);
         var opModeTask = _heatpumpClient.UpdateOpMode(deviceSettings.OpMode, cancellationToken);
         var updateFloorTempratureTask = _floorHeaterRepository.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature);
 
-        await Task.WhenAll(configureHeatPumpTask, opModeTask, updateFloorTempratureTask, updateWifiSocketsTask);
+        await Task.WhenAll(configureHeatPumpTask, opModeTask, updateFloorTempratureTask);
     }
 
     private async Task ConfigureHeatPump(DeviceSettings settings, CancellationToken cancellationToken)
