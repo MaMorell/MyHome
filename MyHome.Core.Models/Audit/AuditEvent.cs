@@ -2,11 +2,13 @@
 
 namespace MyHome.Core.Models.Audit;
 
-public record AuditEvent(AuditAction Action, AuditTarget Target) : IEntity
+public record AuditEvent : IEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public DateTime Timestamp { get; init; } = DateTime.Now;
-    public string? NewValue { get; init; }
-    public string? TargetName { get; init; }
+    public required string Description { get; init; }
+    public required object NewValue { get; init; }
+    public object? OldValue { get; init; }
+
 }
 

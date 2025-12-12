@@ -14,15 +14,15 @@
     <MudTable Class="mb-8" Items="events" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
         <HeaderContent>
             <MudTh>Datum</MudTh>
-            <MudTh>Enhet</MudTh>
             <MudTh>Händelse</MudTh>
             <MudTh>Nytt värde</MudTh>
+            <MudTh>Tidigare värde</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Datum">@context.Timestamp</MudTd>
-            <MudTd DataLabel="Datum">@context.Target</MudTd>
-            <MudTd DataLabel="Datum">@context.Action</MudTd>
+            <MudTd DataLabel="Datum">@context.Description</MudTd>
             <MudTd DataLabel="Datum">@context.NewValue</MudTd>
+            <MudTd DataLabel="Datum">@context.OldValue</MudTd>
         </RowTemplate>
     </MudTable>
 </MudContainer>

@@ -72,29 +72,47 @@ public class NibeClient : IHeatPumpClient
             return;
         }
 
-        await PatchPoint(value, NibeParameterIds.HeatingOffset, cancellationToken);
+        var auditEvent = new AuditEvent
+        {
+            Description = $"Nibe Värmepump - Värme",
+            NewValue = value,
+            OldValue = currentHeat.Value,
+        };
+        await PatchPoint(value, NibeParameterIds.HeatingOffset, auditEvent, cancellationToken);
     }
 
     public async Task UpdateComfortMode(ComfortMode value, CancellationToken cancellationToken)
     {
-        var currentComfortMode = await GetComfortMode(cancellationToken);
-        if (currentComfortMode == value)
+        var currentValue = await GetComfortMode(cancellationToken);
+        if (currentValue == value)
         {
             return;
         }
 
-        await PatchPoint(value, NibeParameterIds.ComfortMode, cancellationToken);
+        var auditEvent = new AuditEvent
+        {
+            Description = $"Nibe Värmepump - Varmvatten",
+            NewValue = value.ToString(),
+            OldValue = currentValue.ToString(),
+        };
+        await PatchPoint(value, NibeParameterIds.ComfortMode, auditEvent, cancellationToken);
     }
 
     public async Task UpdateOpMode(OpMode value, CancellationToken cancellationToken)
     {
-        var currentComfortMode = await GetOpMode(cancellationToken);
-        if (currentComfortMode == value)
+        var currentValue = await GetOpMode(cancellationToken);
+        if (currentValue == value)
         {
             return;
         }
 
-        await PatchPoint(value, NibeParameterIds.OpMode, cancellationToken);
+        var auditEvent = new AuditEvent
+        {
+            Description = $"Nibe Värmepump - Driftläge elpatron",
+            NewValue = value.ToString(),
+            OldValue = currentValue.ToString(),
+        };
+        await PatchPoint(value, NibeParameterIds.OpMode, auditEvent, cancellationToken);
     }
 
     public async Task UpdateIn­creasedVenti­lation(IncreasedVentilationValue value, CancellationToken cancellationToken)
@@ -105,7 +123,13 @@ public class NibeClient : IHeatPumpClient
             return;
         }
 
-        await PatchPoint(value, NibeParameterIds.IncreasedVentilation, cancellationToken);
+        var auditEvent = new AuditEvent
+        {
+            Description = $"Nibe Värmepump - Förhöjd Ventilation",
+            NewValue = value.ToString(),
+            OldValue = currentValue.ToString(),
+        };
+        await PatchPoint(value, NibeParameterIds.IncreasedVentilation, auditEvent, cancellationToken);
     }
 
     private async Task<NibePoint> GetPoint(int pointId, CancellationToken cancellationToken)
@@ -119,7 +143,7 @@ public class NibeClient : IHeatPumpClient
             ?? throw new InvalidOperationException($"Could not find heat point with id {pointId} from uri {uri}");
     }
 
-    private async Task PatchPoint(object value, int point, CancellationToken cancellationToken)
+    private async Task PatchPoint(object value, int point, AuditEvent auditEvent, CancellationToken cancellationToken)
     {
         var requestBody = new Dictionary<string, object>
         {
@@ -131,20 +155,8 @@ public class NibeClient : IHeatPumpClient
         var response = await _httpClient.PatchAsJsonAsync(uri, requestBody, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        var auditEvent = new AuditEvent(AuditAction.Update, AuditTarget.HeatPump)
-        {
-            NewValue = value.ToString(),
-            TargetName = GetAuditTargetName(point)
-        };
         await _auditRepository.UpsertAsync(auditEvent);
     }
-
-    private static string GetAuditTargetName(int point) => point switch
-    {
-        NibeParameterIds.ComfortMode => "Nibe värmepump - Varmvatten",
-        NibeParameterIds.HeatingOffset => "Nibe värmepump - Värme",
-        _ => "NIBE Värmepump",
-    };
 
     private Uri GetDevicePointsApiPath() => new($"{_options.Value.BaseAddress}/v2/devices/emmy-r-208006-20240516-06605519022003-54-10-ec-c4-ca-9a/points");
 }
