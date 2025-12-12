@@ -41,7 +41,7 @@ public static class WebApplicationBuilderExtensions
         services.AddTibberClient(configuration);
 
         services.Configure<FloorHeaterOptions>(configuration.GetSection(FloorHeaterOptions.ConfigurationSection));
-        services.AddScoped<IFloorHeaterClient, FloorHeaterClient>();
+        services.AddScoped<IFloorHeaterClient, TuyaFloorHeaterClient>();
 
         services.AddMyUplinkClient(configuration);
 

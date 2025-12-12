@@ -1,21 +1,24 @@
 ﻿using com.clusterrr.TuyaNet;
 using Microsoft.Extensions.Options;
 using MyHome.Core.Interfaces;
+using MyHome.Core.Models.Audit;
 using MyHome.Core.Options;
 using System.Text.Json;
 using static com.clusterrr.TuyaNet.TuyaApi;
 
 namespace MyHome.Data.Integrations.FloorHeating;
 
-public class FloorHeaterClient : IFloorHeaterClient
+public class TuyaFloorHeaterClient : IFloorHeaterClient
 {
     private const string CODE_TEMP_SET = "temp_set";
 
     private readonly TuyaApi _tuyaApi;
     private readonly string _deviceId;
+    private readonly IRepository<AuditEvent> _auditRepository;
 
-    public FloorHeaterClient(IOptions<FloorHeaterOptions> options)
+    public TuyaFloorHeaterClient(IOptions<FloorHeaterOptions> options, IRepository<AuditEvent> auditRepository)
     {
+        _auditRepository = auditRepository;
         _tuyaApi = new TuyaApi(
             region: Region.CentralEurope,
             accessId: options.Value.AccessId,
@@ -50,8 +53,16 @@ public class FloorHeaterClient : IFloorHeaterClient
             return;
         }
 
+        var auditEvent = new AuditEvent
+        {
+            Description = "Golvvärme - Temperatur",
+            NewValue = temperature,
+            OldValue = currentSetTemperature
+        };
+
         var scaledTemprature = ConvertToScaledTemp(temperature);
         await ExecuteTemperatureUpdateAsync(scaledTemprature);
+        await _auditRepository.UpsertAsync(auditEvent);
     }
 
     private async Task ExecuteTemperatureUpdateAsync(int scaledTemprature)
