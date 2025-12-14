@@ -69,6 +69,7 @@
                         }
                     </MudSelect>
                 </MudItem>
+                @ChildContent
             </MudStack>
         }
         else
@@ -84,4 +85,7 @@
 
     [Parameter]
     public IDeviceProfile<T>? Profile { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 }

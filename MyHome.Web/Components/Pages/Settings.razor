@@ -27,7 +27,12 @@
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <DeviceProfileEnumCard T="OpMode" Profile="@Profile.OpModes" Title="Värmepump - Elpatron Driftläge"></DeviceProfileEnumCard>
+                <DeviceProfileEnumCard T="OpMode" Profile="@Profile.OpModes" Title="Värmepump - Elpatron Driftläge">
+                    <MudItem>
+                        <MudText>Prisgräns Elpatron: <b>@Profile.OpModes.MaxPriceAutoMode</b></MudText>
+                        <MudSlider @bind-Value="Profile.OpModes.MaxPriceAutoMode" Step="0.1m" Min="0" Max="10" />
+                    </MudItem>
+                </DeviceProfileEnumCard>
             </MudItem>
 
             <MudItem xs="12" sm="6">
