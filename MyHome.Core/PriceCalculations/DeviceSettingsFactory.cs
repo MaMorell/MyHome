@@ -98,9 +98,9 @@ public class DeviceSettingsFactory
         };
 
         var exhaustAirTemp = await _heatPumpClient.GetExhaustAirTemp(CancellationToken.None);
-        if (exhaustAirTemp >= 22)
+        if (exhaustAirTemp >= 21)
         {
-            result -= 2;
+            result -= 3;
         }
 
         return result;
