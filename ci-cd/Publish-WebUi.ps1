@@ -8,6 +8,10 @@ param (
     [string]$TuyaAccessId,
     [Parameter(Mandatory = $true)]
     [string]$TuyaApiSecret,
+    [Parameter(Mandatory = $true)]
+    [string]$EbecoUsername,
+    [Parameter(Mandatory = $true)]
+    [string]$EbecoPassword,
     [Parameter(Mandatory = $false)]
     [string]$PublishPath = "\\raspberrypi\pimylifeupshare",
     [Parameter(Mandatory = $false)]
@@ -43,7 +47,9 @@ function Update-ApiAppsettings {
         [string]$TibberApiAccessToken,
         [string]$ApplicationInsightsConnectionString,
         [string]$TuyaAccessId,
-        [string]$TuyaApiSecret
+        [string]$TuyaApiSecret,
+        [string]$EbecoUsername,
+        [string]$EbecoPassword
     )
     
     $configPath = "$PSScriptRoot\..\MyHome.ApiService\appsettings.json"
@@ -60,6 +66,8 @@ function Update-ApiAppsettings {
     $config.APPLICATIONINSIGHTS_CONNECTION_STRING = $ApplicationInsightsConnectionString
     $config.ThermostatTuya.AccessId = $TuyaAccessId
     $config.ThermostatTuya.ApiSecret = $TuyaApiSecret
+    $config.ThermostatEbeco.Username = $EbecoUsername
+    $config.ThermostatEbeco.Password = $EbecoPassword
 
     $updatedJson = $config | ConvertTo-Json -Depth 10
 
@@ -73,7 +81,8 @@ if ((Test-Path $PublishPath) -eq $false) {
 }
 
 Update-WebAppsettings 'http://localhost:5001/'
-Update-ApiAppsettings $MyUplinkClientSecret $TibberApiAccessToken 'InstrumentationKey=01f9ce82-2749-434d-9a43-cdd996c12dae;IngestionEndpoint=https://swedencentral-0.in.applicationinsights.azure.com/;ApplicationId=49260d0a-163f-48a9-b79a-7a1b2e373bf0' $TuyaAccessId $TuyaApiSecret
+Update-ApiAppsettings $MyUplinkClientSecret $TibberApiAccessToken 'InstrumentationKey=01f9ce82-2749-434d-9a43-cdd996c12dae;IngestionEndpoint=https://swedencentral-0.in.applicationinsights.azure.com/;ApplicationId=49260d0a-163f-48a9-b79a-7a1b2e373bf0' $TuyaAccessId $TuyaApiSecret $EbecoUsername $EbecoPassword
+
 Push-Location "$PSScriptRoot\..\MyHome.ApiService\"
 dotnet publish --configuration Release --output "$PublishPath\MyHomeApi" --runtime $RunTime
 Pop-Location
@@ -83,4 +92,4 @@ dotnet publish --configuration Release --output "$PublishPath\MyHomeWebUi" --run
 Pop-Location
 
 Update-WebAppsettings 'https+http://apiservice'
-Update-ApiAppsettings "" "" 'InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://swedencentral-0.in.applicationinsights.azure.com/;ApplicationId=00000000-0000-0000-0000-000000000000' "" ""
+Update-ApiAppsettings "" "" 'InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://swedencentral-0.in.applicationinsights.azure.com/;ApplicationId=00000000-0000-0000-0000-000000000000' "" "" "" ""
