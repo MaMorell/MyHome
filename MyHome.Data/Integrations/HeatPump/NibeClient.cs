@@ -2,8 +2,8 @@
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Integrations.HeatPump;
-using MyHome.Core.Options;
 using MyHome.Data.Integrations.HeatPump.Dtos;
+using MyHome.Data.Options;
 using System.Net.Http.Json;
 
 namespace MyHome.Data.Integrations.HeatPump;

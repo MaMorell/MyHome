@@ -1,16 +1,17 @@
-﻿using MyHome.ApiService.HostedServices.Services;
+﻿using Microsoft.AspNetCore.Routing;
+using MyHome.ApiService.HostedServices.Services;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Entities;
 using MyHome.Core.Models.Entities.Profiles;
-using MyHome.Core.Options;
 using MyHome.Core.PriceCalculations;
 using MyHome.Core.Services;
 using MyHome.Data;
 using MyHome.Data.Http;
 using MyHome.Data.Integrations.EnergySupplier;
-using MyHome.Data.Integrations.FloorHeating;
 using MyHome.Data.Integrations.HeatPump;
+using MyHome.Data.Integrations.Thermostats;
+using MyHome.Data.Options;
 using MyHome.Data.Repositories;
 using System.Net.Http.Headers;
 using Tibber.Sdk;
@@ -38,12 +39,13 @@ public static class WebApplicationBuilderExtensions
         services.AddSingleton<IObserver<RealTimeMeasurement>, EnergyConsumptionObserver>();
         services.AddScoped<EnergyConsumptionListener>();
 
-        services.AddTibberClient(configuration);
 
-        services.Configure<FloorHeaterOptions>(configuration.GetSection(FloorHeaterOptions.ConfigurationSection));
-        services.AddScoped<IFloorHeaterClient, TuyaFloorHeaterClient>();
+        services.Configure<ThermostatTuyaOptions>(configuration.GetSection(ThermostatTuyaOptions.ConfigurationSection));
+        services.AddKeyedScoped<IThermostatClient, TuyaThermostatClient>("tuya");
 
+        services.AddEbecoClient(configuration);
         services.AddMyUplinkClient(configuration);
+        services.AddTibberClient(configuration);
 
         return services;
     }
@@ -74,6 +76,25 @@ public static class WebApplicationBuilderExtensions
             .AddHttpClient<IHeatPumpClient, NibeClient>(httpClient => httpClient.BaseAddress = upLinkOptions.BaseAddress)
             .AddHttpMessageHandler<OAuthHandler>();
 
+
+        return services;
+    }
+
+    private static IServiceCollection AddEbecoClient(this IServiceCollection services, IConfiguration configuration)
+    {
+        var ebecoOptionsSection = configuration.GetSection("ThermostatEbeco");
+        var ebecoOptions = ebecoOptionsSection.Get<EbecoOptions>() ?? throw new InvalidOperationException($"Failed to get {nameof(EbecoOptions)}");
+        services.Configure<EbecoOptions>(ebecoOptionsSection);
+        services.AddTransient<EbecoAuthHandler>();
+
+        // First: Register HttpClient with the concrete type
+        services
+            .AddHttpClient<EbecoConnectClient>(httpClient =>
+                httpClient.BaseAddress = ebecoOptions.BaseAddress)
+            .AddHttpMessageHandler<EbecoAuthHandler>();
+
+        services.AddKeyedScoped<IThermostatClient>("ebeco", (sp, key) =>
+            sp.GetRequiredService<EbecoConnectClient>());
 
         return services;
     }

@@ -58,8 +58,8 @@ function Update-ApiAppsettings {
     $config.UpLinkOptions.ClientSecret = $MyUplinkClientSecret
     $config.TibberApiClient.AccessToken = $TibberApiAccessToken
     $config.APPLICATIONINSIGHTS_CONNECTION_STRING = $ApplicationInsightsConnectionString
-    $config.FloorHeater.AccessId = $TuyaAccessId
-    $config.FloorHeater.ApiSecret = $TuyaApiSecret
+    $config.ThermostatTuya.AccessId = $TuyaAccessId
+    $config.ThermostatTuya.ApiSecret = $TuyaApiSecret
 
     $updatedJson = $config | ConvertTo-Json -Depth 10
 

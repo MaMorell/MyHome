@@ -1,4 +1,4 @@
-﻿namespace MyHome.Core.Options;
+﻿namespace MyHome.Data.Options;
 
 public class HeatPumpClientOptions
 {

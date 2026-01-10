@@ -14,43 +14,43 @@ public class DeviceSettingsFactory
                 profile.RadiatorTemperatures.Baseline,
                 profile.ComfortModes.Baseline,
                 profile.OpModes.Baseline,
-                profile.FloorHeaterTemperatures.Baseline),
+                profile.ThermostatTuyaTemperatures.Baseline),
             DeviceSettingsMode.Enhanced => new DeviceSettings(
                 profile.HeatOffsets.Enhanced,
                 profile.RadiatorTemperatures.Enhanced,
                 profile.ComfortModes.Enhanced,
                 profile.OpModes.Enhanced,
-                profile.FloorHeaterTemperatures.Enhanced),
+                profile.ThermostatTuyaTemperatures.Enhanced),
             DeviceSettingsMode.Moderate => new DeviceSettings(
                 profile.HeatOffsets.Moderate,
                 profile.RadiatorTemperatures.Moderate,
                 profile.ComfortModes.Moderate,
                 profile.OpModes.Moderate,
-                profile.FloorHeaterTemperatures.Moderate),
+                profile.ThermostatTuyaTemperatures.Moderate),
             DeviceSettingsMode.Economic => new DeviceSettings(
                 profile.HeatOffsets.Economic,
                 profile.RadiatorTemperatures.Economic,
                 profile.ComfortModes.Economic,
                 profile.OpModes.Economic,
-                profile.FloorHeaterTemperatures.Economic),
+                profile.ThermostatTuyaTemperatures.Economic),
             DeviceSettingsMode.MaxSavings => new DeviceSettings(
                 profile.HeatOffsets.MaxSavings,
                 profile.RadiatorTemperatures.MaxSavings,
                 profile.ComfortModes.MaxSavings,
                 profile.OpModes.MaxSavings,
-                profile.FloorHeaterTemperatures.MaxSavings),
+                profile.ThermostatTuyaTemperatures.MaxSavings),
             DeviceSettingsMode.ExtremeSavings => new DeviceSettings(
                 profile.HeatOffsets.ExtremeSavings,
                 profile.RadiatorTemperatures.ExtremeSavings,
                 profile.ComfortModes.ExtremeSavings,
                 profile.OpModes.ExtremeSavings,
-                profile.FloorHeaterTemperatures.ExtremeSavings),
+                profile.ThermostatTuyaTemperatures.ExtremeSavings),
             _ => new DeviceSettings(
                 profile.HeatOffsets.Baseline,
                 profile.RadiatorTemperatures.Baseline,
                 profile.ComfortModes.Baseline,
                 profile.OpModes.Baseline,
-                profile.FloorHeaterTemperatures.Baseline)
+                profile.ThermostatTuyaTemperatures.Baseline)
         };
     }
 
@@ -63,43 +63,43 @@ public class DeviceSettingsFactory
                 profile.RadiatorTemperatures.Baseline,
                 profile.ComfortModes.Baseline,
                 profile.OpModes.Baseline,
-                profile.FloorHeaterTemperatures.Baseline),
+                profile.ThermostatTuyaTemperatures.Baseline),
             EnergyPriceLevel.VeryCheap => new DeviceSettings(
                 profile.HeatOffsets.Enhanced,
                 profile.RadiatorTemperatures.Enhanced,
                 profile.ComfortModes.Enhanced,
                 profile.OpModes.Enhanced,
-                profile.FloorHeaterTemperatures.Enhanced),
+                profile.ThermostatTuyaTemperatures.Enhanced),
             EnergyPriceLevel.Cheap => new DeviceSettings(
                 profile.HeatOffsets.Moderate,
                 profile.RadiatorTemperatures.Moderate,
                 profile.ComfortModes.Moderate,
                 profile.OpModes.Moderate,
-                profile.FloorHeaterTemperatures.Moderate),
+                profile.ThermostatTuyaTemperatures.Moderate),
             EnergyPriceLevel.Expensive => new DeviceSettings(
                 profile.HeatOffsets.Economic,
                 profile.RadiatorTemperatures.Economic,
                 profile.ComfortModes.Economic,
                 profile.OpModes.Economic,
-                profile.FloorHeaterTemperatures.Economic),
+                profile.ThermostatTuyaTemperatures.Economic),
             EnergyPriceLevel.VeryExpensive => new DeviceSettings(
                 profile.HeatOffsets.MaxSavings,
                 profile.RadiatorTemperatures.MaxSavings,
                 profile.ComfortModes.MaxSavings,
                 profile.OpModes.MaxSavings,
-                profile.FloorHeaterTemperatures.MaxSavings),
+                profile.ThermostatTuyaTemperatures.MaxSavings),
             EnergyPriceLevel.Extreme => new DeviceSettings(
                 profile.HeatOffsets.ExtremeSavings,
                 profile.RadiatorTemperatures.ExtremeSavings,
                 profile.ComfortModes.ExtremeSavings,
                 profile.OpModes.ExtremeSavings,
-                profile.FloorHeaterTemperatures.ExtremeSavings),
+                profile.ThermostatTuyaTemperatures.ExtremeSavings),
             _ => new DeviceSettings(
                 profile.HeatOffsets.Baseline,
                 profile.RadiatorTemperatures.Baseline,
                 profile.ComfortModes.Baseline,
                 profile.OpModes.Baseline,
-                profile.FloorHeaterTemperatures.Baseline)
+                profile.ThermostatTuyaTemperatures.Baseline)
         };
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace MyHome.Core.Interfaces;
 
-public interface IFloorHeaterClient
+public interface IThermostatClient
 {
     Task<double> GetSetTemperatureAsync();
     Task UpdateSetTemperatureAsync(int temperature);

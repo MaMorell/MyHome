@@ -2,13 +2,13 @@
 using Microsoft.Extensions.Options;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
-using MyHome.Core.Options;
+using MyHome.Data.Options;
 using System.Text.Json;
 using static com.clusterrr.TuyaNet.TuyaApi;
 
-namespace MyHome.Data.Integrations.FloorHeating;
+namespace MyHome.Data.Integrations.Thermostats;
 
-public class TuyaFloorHeaterClient : IFloorHeaterClient
+public class TuyaThermostatClient : IThermostatClient
 {
     private const string CODE_TEMP_SET = "temp_set";
 
@@ -16,7 +16,7 @@ public class TuyaFloorHeaterClient : IFloorHeaterClient
     private readonly string _deviceId;
     private readonly IRepository<AuditEvent> _auditRepository;
 
-    public TuyaFloorHeaterClient(IOptions<FloorHeaterOptions> options, IRepository<AuditEvent> auditRepository)
+    public TuyaThermostatClient(IOptions<ThermostatTuyaOptions> options, IRepository<AuditEvent> auditRepository)
     {
         _auditRepository = auditRepository;
         _tuyaApi = new TuyaApi(
