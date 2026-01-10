@@ -10,7 +10,7 @@ public class DeviceSettingsProfile : IEntity
     public ComfortModeProfile ComfortModes { get; set; } = new ComfortModeProfile();
     public OpModeProfile OpModes { get; set; } = new OpModeProfile();
     public RadiatorTemperatureProfile RadiatorTemperatures { get; set; } = new RadiatorTemperatureProfile();
-    public ThermostatTuyaProfile ThermostatTuyaTemperatures { get; set; } = new ThermostatTuyaProfile();
+    public ThermostatBathZeroProfile ThermostatBathZeroTemperatures { get; set; } = new ThermostatBathZeroProfile();
 }
 
 public enum DeviceSettingsMode
@@ -43,7 +43,7 @@ public class RadiatorTemperatureProfile : IDeviceProfile<int>
     public int ExtremeSavings { get; set; } = 5;
 }
 
-public class ThermostatTuyaProfile : IDeviceProfile<int>
+public class ThermostatBathZeroProfile : IDeviceProfile<int>
 {
     public int Baseline { get; set; } = 22;
     public int Enhanced { get; set; } = 25;

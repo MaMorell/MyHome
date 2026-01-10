@@ -41,7 +41,7 @@ public static class WebApplicationBuilderExtensions
 
 
         services.Configure<ThermostatTuyaOptions>(configuration.GetSection(ThermostatTuyaOptions.ConfigurationSection));
-        services.AddKeyedScoped<IThermostatClient, TuyaThermostatClient>("tuya");
+        services.AddKeyedScoped<IThermostatClient, TuyaThermostatClient>("thermostatBathZero");
 
         services.AddEbecoClient(configuration);
         services.AddMyUplinkClient(configuration);
@@ -93,7 +93,7 @@ public static class WebApplicationBuilderExtensions
                 httpClient.BaseAddress = ebecoOptions.BaseAddress)
             .AddHttpMessageHandler<EbecoAuthHandler>();
 
-        services.AddKeyedScoped<IThermostatClient>("ebeco", (sp, key) =>
+        services.AddKeyedScoped<IThermostatClient>("thermostatBathOne", (sp, key) =>
             sp.GetRequiredService<EbecoConnectClient>());
 
         return services;

@@ -14,14 +14,14 @@ namespace MyHome.Core.Services;
 public class HouseAutomationService(
     PriceLevelGenerator energyPriceCalculator,
     IHeatPumpClient heatPumpClient,
-    [FromKeyedServices("ebeco")] IThermostatClient ebecoThermostat,
-    [FromKeyedServices("tuya")] IThermostatClient tuyaThermostat,
+    [FromKeyedServices("thermostatBathOne")] IThermostatClient bathOneThermostat,
+    [FromKeyedServices("thermostatBathZero")] IThermostatClient bathZeroThermostat,
     IRepository<DeviceSettingsProfile> deviceSettingsRepository)
 {
     private readonly PriceLevelGenerator _energyPriceCalculator = energyPriceCalculator;
     private readonly IHeatPumpClient _heatPumpClient = heatPumpClient ?? throw new ArgumentNullException(nameof(heatPumpClient));
-    private readonly IThermostatClient _ebecoThermostat = ebecoThermostat;
-    private readonly IThermostatClient _tuyaThermostat = tuyaThermostat;
+    private readonly IThermostatClient _bathOneThermostat = bathOneThermostat;
+    private readonly IThermostatClient _bathZeroThermostat = bathZeroThermostat;
     private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository = deviceSettingsRepository;
 
     public async Task UpdateHouseSettings(CancellationToken cancellationToken = default)
@@ -118,10 +118,10 @@ public class HouseAutomationService(
     public async Task AdjustHeatingForCurrentPrice(DeviceSettings deviceSettings, CancellationToken cancellationToken)
     {
         var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
-        var updateTuyaThermostatTask = _tuyaThermostat.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature);
-        var updateEbecoThermostatTask = _ebecoThermostat.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature + 4); //TODO: Add separate profile for Upper floor bathroom thermostat
+        var updateBathZeroThermostatTask = _bathZeroThermostat.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature);
+        var updateBathOneThermostatTask = _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature + 4); //TODO: Add separate profile for Upper floor bathroom thermostat
 
-        await Task.WhenAll(configureHeatPumpTask, updateTuyaThermostatTask, updateEbecoThermostatTask);
+        await Task.WhenAll(configureHeatPumpTask, updateBathZeroThermostatTask, updateBathOneThermostatTask);
     }
 
     private async Task ConfigureHeatPump(DeviceSettings settings, CancellationToken cancellationToken)
