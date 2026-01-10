@@ -19,13 +19,11 @@ public class PriceLevelGenerator
         _energySupplierRepository = energySupplierRepository;
     }
 
-    public async Task<EnergyPriceDetails> CreateForSpecificDateAsync(DateTime date)
+    public static EnergyPriceDetails GetForSpecificDate(DateTime date, IEnumerable<EnergyPriceDetails> prices)
     {
-        var energyPrices = await CreateAsync(EnergyPriceRange.TodayAndTomorrow);
-
         var dateRounded = date.RoundDownToClosestQuarter();
 
-        var result = energyPrices.FirstOrDefault(p =>
+        var result = prices.FirstOrDefault(p =>
             p.StartsAt.Date == dateRounded.Date
             && p.StartsAt.Hour == dateRounded.Hour
             && p.StartsAt.Minute == dateRounded.Minute);
@@ -41,23 +39,22 @@ public class PriceLevelGenerator
 
         var pricesOrderedByTime = prices.OrderBy(p => p.StartsAt).ToList();
 
-        var energyPrices = new List<EnergyPriceDetails>();
+        var result = new List<EnergyPriceDetails>();
         for (int i = 0; i < prices.Count; i++)
         {
             var pricesFromIndex = pricesOrderedByTime.Skip(i).ToList();
-            var priceLevelInternal = CalculateInternalPriceLevel(pricesFromIndex, profile);
             var currentPrice = prices.ElementAt(i);
 
-            energyPrices.Add(new EnergyPriceDetails
+            var price = new EnergyPriceDetails
             {
                 StartsAt = currentPrice.StartsAt,
                 PriceTotal = currentPrice.Total ?? 0,
                 LevelExternal = currentPrice.Level ?? EnergyPriceLevel.Normal,
-                LevelInternal = priceLevelInternal,
-            });
+                LevelInternal = CalculateInternalPriceLevel(pricesFromIndex, profile),
+            };
+            result.Add(price);
         }
-
-        return energyPrices;
+        return result;
     }
 
     private static EnergyPriceLevel CalculateInternalPriceLevel(List<EnergyPrice> prices, PriceThearsholdsProfile profile)

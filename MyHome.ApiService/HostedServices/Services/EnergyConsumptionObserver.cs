@@ -1,8 +1,10 @@
 ﻿using AsyncAwaitBestPractices;
 using MyHome.ApiService.Constants;
+using MyHome.Core.Exceptions;
 using MyHome.Core.Extensions;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Entities;
+using MyHome.Core.Models.Entities.Constants;
 using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.PriceCalculations;
 using MyHome.Core.Services;
@@ -69,10 +71,12 @@ public sealed class EnergyConsumptionObserver(
             HourlyConsumptionLimitKWH);
 
         using var scope = _serviceScopeFactory.CreateScope();
-        var settingsFactory = scope.ServiceProvider.GetRequiredService<DeviceSettingsFactory>();
+        var deviceSettingsRepository = scope.ServiceProvider.GetRequiredService<IRepository<DeviceSettingsProfile>>();
         var heatRegulatorService = scope.ServiceProvider.GetRequiredService<HouseAutomationService>();
 
-        var deviceSettings = await settingsFactory.CreateFromMode(DeviceSettingsMode.MaxSavings);
+        var profile = await deviceSettingsRepository.GetByIdAsync(EntityIdConstants.DeviceSettingsId)
+            ?? throw new EntityNotFoundException(EntityIdConstants.DeviceSettingsId);
+        var deviceSettings = DeviceSettingsFactory.CreateFromMode(DeviceSettingsMode.MaxSavings, profile);
         await heatRegulatorService.AdjustHeatingForCurrentPrice(deviceSettings, CancellationToken.None);
     }
 }

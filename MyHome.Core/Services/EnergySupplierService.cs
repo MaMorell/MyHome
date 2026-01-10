@@ -49,13 +49,13 @@ public class EnergySupplierService(IEnergySupplierRepository energyRepository, P
 
     private static IEnumerable<EnergyConsumptionEntry> CreateEnergyConsumptionEntries(IEnumerable<EnergyPriceDetails> prices, IEnumerable<EnergyConsumptionEntry> consumptions)
     {
-        foreach (var priceDetails in prices)
+        foreach (var price in prices)
         {
-            var consumption = consumptions.FirstOrDefault(c => c.PriceDetails?.StartsAt == priceDetails.StartsAt);
+            var consumption = consumptions.FirstOrDefault(c => c.PriceDetails?.StartsAt == price.StartsAt);
 
             yield return new EnergyConsumptionEntry()
             {
-                PriceDetails = priceDetails,
+                PriceDetails = price,
                 Consumption = consumption?.Consumption ?? 0,
                 Cost = consumption?.Cost ?? 0
             };

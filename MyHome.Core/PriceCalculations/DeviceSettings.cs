@@ -9,9 +9,9 @@ public class DeviceSettings(
     OpMode opMode,
     int floorTemperature)
 {
-    public int HeatOffset => heatOffset;
-    public ComfortMode ComfortMode => comfortMode;
-    public OpMode OpMode => opMode;
-    public int StorageTemprature => storageTemprature;
-    public int FloorTemperature => floorTemperature;
+    public int HeatOffset { get; set; } = heatOffset;
+    public ComfortMode ComfortMode { get; set; } = comfortMode;
+    public OpMode OpMode { get; set; } = opMode;
+    public int StorageTemprature { get; set; } = storageTemprature;
+    public int FloorTemperature { get; set; } = floorTemperature;
 }
