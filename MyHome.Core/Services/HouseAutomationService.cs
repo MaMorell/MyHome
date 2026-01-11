@@ -24,7 +24,7 @@ public class HouseAutomationService(
     private readonly IThermostatClient _bathZeroThermostat = bathZeroThermostat;
     private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository = deviceSettingsRepository;
 
-    public async Task UpdateHouseSettings(CancellationToken cancellationToken = default)
+    public async Task UpdateDevicesForCurrentPeriod(CancellationToken cancellationToken = default)
     {
         var prices = await _energyPriceCalculator.CreateAsync(EnergyPriceRange.TodayAndTomorrow);
         var priceNow = PriceLevelGenerator.GetForSpecificDate(DateTime.Now, prices);
@@ -34,8 +34,17 @@ public class HouseAutomationService(
         var deviceSettings = DeviceSettingsFactory.CreateFromLevel(priceNow.LevelInternal, profile);
         deviceSettings = await CustomizeDeviceSettings(deviceSettings, prices, profile);
 
-        await AdjustHeatingForCurrentPrice(deviceSettings, cancellationToken);
+        await ApplyDeviceSettings(deviceSettings, cancellationToken);
         await AdjustVentilationForEvening(cancellationToken);
+    }
+
+    public async Task ApplyDeviceSettings(DeviceSettings deviceSettings, CancellationToken cancellationToken)
+    {
+        var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
+        var updateBathZeroThermostatTask = _bathZeroThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathZeroTemperature);
+        var updateBathOneThermostatTask = _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathOneTemperature);
+
+        await Task.WhenAll(configureHeatPumpTask, updateBathZeroThermostatTask, updateBathOneThermostatTask);
     }
 
     private async Task<DeviceSettings> CustomizeDeviceSettings(DeviceSettings settings, IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
@@ -115,15 +124,6 @@ public class HouseAutomationService(
         {
             await _heatPumpClient.UpdateIncreasedVentilation(IncreasedVentilationValue.Off, cancellationToken);
         }
-    }
-
-    public async Task AdjustHeatingForCurrentPrice(DeviceSettings deviceSettings, CancellationToken cancellationToken)
-    {
-        var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
-        var updateBathZeroThermostatTask = _bathZeroThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathZeroTemperature);
-        var updateBathOneThermostatTask = _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathOneTemperature);
-
-        await Task.WhenAll(configureHeatPumpTask, updateBathZeroThermostatTask, updateBathOneThermostatTask);
     }
 
     private async Task ConfigureHeatPump(DeviceSettings settings, CancellationToken cancellationToken)

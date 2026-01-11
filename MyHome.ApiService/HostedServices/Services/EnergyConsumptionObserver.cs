@@ -63,7 +63,6 @@ public sealed class EnergyConsumptionObserver(
             return;
         }
 
-
         _logger.LogInformation(
             "Accumulated Consumption Last Hour {Consumption} is above the threshold {Threshold} kWh. " +
             "Applying Max savings",
@@ -72,11 +71,11 @@ public sealed class EnergyConsumptionObserver(
 
         using var scope = _serviceScopeFactory.CreateScope();
         var deviceSettingsRepository = scope.ServiceProvider.GetRequiredService<IRepository<DeviceSettingsProfile>>();
-        var heatRegulatorService = scope.ServiceProvider.GetRequiredService<HouseAutomationService>();
+        var houseAutomationService = scope.ServiceProvider.GetRequiredService<HouseAutomationService>();
 
         var profile = await deviceSettingsRepository.GetByIdAsync(EntityIdConstants.DeviceSettingsId)
             ?? throw new EntityNotFoundException(EntityIdConstants.DeviceSettingsId);
         var deviceSettings = DeviceSettingsFactory.CreateFromMode(DeviceSettingsMode.MaxSavings, profile);
-        await heatRegulatorService.AdjustHeatingForCurrentPrice(deviceSettings, CancellationToken.None);
+        await houseAutomationService.ApplyDeviceSettings(deviceSettings, CancellationToken.None);
     }
 }
