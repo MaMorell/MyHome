@@ -55,11 +55,13 @@ public class HouseAutomationService(
 
         if (now.IsMidNight())
         {
-            settings.FloorTemperature -= 4;
+            settings.ThermostatBathZeroTemperature -= 4;
+            settings.ThermostatBathOneTemperature -= 4;
         }
         else if (now.IsWeekdayMidDay() || now.IsEvening())
         {
-            settings.FloorTemperature -= 2;
+            settings.ThermostatBathZeroTemperature -= 2;
+            settings.ThermostatBathOneTemperature -= 2;
         }
 
         if (ShouldForceManualOpMode(prices, profile))
@@ -118,8 +120,8 @@ public class HouseAutomationService(
     public async Task AdjustHeatingForCurrentPrice(DeviceSettings deviceSettings, CancellationToken cancellationToken)
     {
         var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
-        var updateBathZeroThermostatTask = _bathZeroThermostat.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature);
-        var updateBathOneThermostatTask = _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.FloorTemperature + 4); //TODO: Add separate profile for Upper floor bathroom thermostat
+        var updateBathZeroThermostatTask = _bathZeroThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathZeroTemperature);
+        var updateBathOneThermostatTask = _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathOneTemperature);
 
         await Task.WhenAll(configureHeatPumpTask, updateBathZeroThermostatTask, updateBathOneThermostatTask);
     }

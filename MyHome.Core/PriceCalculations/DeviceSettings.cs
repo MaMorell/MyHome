@@ -7,11 +7,13 @@ public class DeviceSettings(
     int storageTemprature,
     ComfortMode comfortMode,
     OpMode opMode,
-    int floorTemperature)
+    int thermostatBathZero,
+    int thermostatBathOne)
 {
     public int HeatOffset { get; set; } = heatOffset;
     public ComfortMode ComfortMode { get; set; } = comfortMode;
     public OpMode OpMode { get; set; } = opMode;
     public int StorageTemprature { get; set; } = storageTemprature;
-    public int FloorTemperature { get; set; } = floorTemperature;
+    public int ThermostatBathZeroTemperature { get; set; } = thermostatBathZero;
+    public int ThermostatBathOneTemperature { get; set; } = thermostatBathOne;
 }
