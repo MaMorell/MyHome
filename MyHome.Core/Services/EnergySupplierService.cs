@@ -39,10 +39,10 @@ public class EnergySupplierService(IEnergySupplierRepository energyRepository, P
         var consumption = await _energyRepository.GetConsumption(hoursPassedThisMonth);
 
         var consumptionFiltered = onlyDuringWeekdays
-            ? consumption.Where(c => c.PriceDetails.StartsAt.Date.IsWeekdayDayTime())
-            : consumption;
+            ? consumption.Where(c => c.PriceDetails.StartsAt.DateTime.IsWeekdayDayTime()).ToList()
+            : consumption.ToList();
 
-        return consumption
+        return consumptionFiltered
             .OrderByDescending(entry => entry.Consumption)
             .Take(limit);
     }
