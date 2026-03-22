@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using MudBlazor.Charts;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 
@@ -10,15 +11,23 @@ public partial class EnergyConsumptionCharts
     [Parameter]
     public IEnumerable<EnergyConsumptionEntry>? EnergyConsumptions { get; set; }
 
-    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+    private int _index = -1; //default value cannot be 0 -> first selectedindex is 0.
 
-    private readonly ChartOptions _options = new()
+    private readonly TimeSeriesChartOptions _options = new()
     {
+        YAxisLines = false,
         YAxisTicks = 1,
+        MaxNumYAxisTicks = 10,
+        YAxisRequireZeroPoint = true,
+        XAxisLines = false,
         LineStrokeWidth = 2,
-        
+        ShowDataMarkers = false,
+        TooltipTimeLabelFormat = "yyyy MMM dd HH:mm:ss",
+        TimeLabelSpacing = TimeSpan.FromHours(6),
+        XAxisTitle = "Time",
+        YAxisTitle = "Values",
     };
-    private readonly List<TimeSeriesChartSeries> _series = [];
+    private readonly List<ChartSeries<double>> _series = [];
 
     protected override void OnParametersSet()
     {
@@ -30,45 +39,37 @@ public partial class EnergyConsumptionCharts
         if (EnergyConsumptions is null)
             return;
 
-        var priceLevelChart = new TimeSeriesChartSeries
+        var priceLevelChart = new ChartSeries<double>
         {
-            Index = 1,
             Name = "Prisnivå (0 = låg, 5 = hög)",
             Data = EnergyConsumptions
                 .Where(e => e.PriceDetails.LevelInternal != EnergyPriceLevel.Unknown)
-                .Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.PriceDetails.LevelInternal))
+                .Select(p => new TimeValue<double>(p.PriceDetails.StartsAt.LocalDateTime, (double)p.PriceDetails.LevelInternal))
                 .ToList(),
-            IsVisible = true,
-            LineDisplayType = LineDisplayType.Line
+            
         };
-        var priceChart = new TimeSeriesChartSeries
+        var priceChart = new ChartSeries<double>
         {
-            Index = 0,
             Name = "Pris (SEK/kWh)",
             Data = EnergyConsumptions
-                .Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.PriceDetails.PriceTotal))
+                .Select(p => new TimeValue<double>(p.PriceDetails.StartsAt.LocalDateTime, (double)p.PriceDetails.PriceTotal))
                 .ToList(),
-            IsVisible = true,
-            LineDisplayType = LineDisplayType.Line
         };
-        var consumptionChart = new TimeSeriesChartSeries
+        var consumptionChart = new ChartSeries<double>
         {
-            Index = 2,
             Name = "Förbrukning (kWh)",
-            Data = GetConsumptionChartData(EnergyConsumptions),
-            IsVisible = true,
-            LineDisplayType = LineDisplayType.Line
+            Data = EnergyConsumptions
+                .Where(p => p.Consumption != default)
+                .Select(p => new TimeValue<double>(p.PriceDetails.StartsAt.LocalDateTime, (double)p.Consumption))
+                .ToList(),
         };
-        var costChart = new TimeSeriesChartSeries
+        var costChart = new ChartSeries<double>
         {
-            Index = 3,
             Name = "Kostnad (SEK/kWh)",
             Data = EnergyConsumptions
                 .Where(e => e.Cost != default)
-                .Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.Cost))
+                .Select(p => new TimeValue<double>(p.PriceDetails.StartsAt.LocalDateTime, (double)p.Cost))
                 .ToList(),
-            IsVisible = true,
-            LineDisplayType = LineDisplayType.Line
         };
 
         _series.Clear();
@@ -78,10 +79,4 @@ public partial class EnergyConsumptionCharts
         _series.Add(consumptionChart);
         _series.Add(costChart);
     }
-
-    private static List<TimeSeriesChartSeries.TimeValue> GetConsumptionChartData(IEnumerable<EnergyConsumptionEntry> prices) =>
-        prices
-            .Where(p => p.Consumption != default)
-            .Select(p => new TimeSeriesChartSeries.TimeValue(p.PriceDetails.StartsAt.LocalDateTime, (double)p.Consumption))
-            .ToList();
 }
