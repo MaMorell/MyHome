@@ -1,0 +1,49 @@
+services:
+  compose-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
+    ports:
+      - "18888"
+    expose:
+      - "18889"
+      - "18890"
+    networks:
+      - "aspire"
+    restart: "always"
+  myhome-api:
+    image: "${MYHOME_API_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${MYHOME_API_PORT}"
+      UpLinkOptions__ClientSecret: "${UPLINKOPTIONSCLIENTSECRET}"
+      TibberApiClient__AccessToken: "${TIBBERAPICLIENTACCESSTOKEN}"
+      ThermostatEbeco__Password: "${THERMOSTATEBECOPASSWORD}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "myhome-api"
+    expose:
+      - "${MYHOME_API_PORT}"
+    networks:
+      - "aspire"
+  myhome-web:
+    image: "${MYHOME_WEB_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${MYHOME_WEB_PORT}"
+      MYHOME_API_HTTP: "http://myhome-api:${MYHOME_API_PORT}"
+      services__myhome-api__http__0: "http://myhome-api:${MYHOME_API_PORT}"
+      MYHOME_API_HTTPS: "https://myhome-api:${MYHOME_API_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "myhome-web"
+    ports:
+      - "${MYHOME_WEB_PORT}"
+    depends_on:
+      myhome-api:
+        condition: "service_started"
+    networks:
+      - "aspire"
+networks:
+  aspire:
+    driver: "bridge"
