@@ -1,4 +1,15 @@
-# --- Configuration ---
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory=$true, HelpMessage="Enter the Uplink Options Client Secret")]
+    [string]$UplinkClientSecret,
+
+    [Parameter(Mandatory=$true, HelpMessage="Enter the Tibber API Client Access Token")]
+    [string]$TibberAccessToken,
+
+    [Parameter(Mandatory=$true, HelpMessage="Enter the Thermostat Ebeco Password")]
+    [string]$ThermostatPassword
+)
+
 $PI_IP = "10.10.10.113"
 $PI_USER = "mormat"
 $REMOTE_DIR = "/home/$PI_USER/docker/myhomeapp"
@@ -8,6 +19,8 @@ $STAGE_DIR = "$env:TEMP\MyHomeDeploy"
 $API_TAR = "$STAGE_DIR\myhome-api.tar.gz"
 $WEB_TAR = "$STAGE_DIR\myhome-web.tar.gz"
 $ENV_FILE = "$STAGE_DIR\.env"
+
+Push-Location "C:\GIT\Other\MyHome\"
 
 if (Test-Path $STAGE_DIR) { Remove-Item -Recurse -Force $STAGE_DIR }
 New-Item -ItemType Directory -Path $STAGE_DIR | Out-Null
@@ -22,9 +35,9 @@ $EnvContent = @(
     "MYHOME_WEB_IMAGE=myhome-web:latest",
     "MYHOME_API_PORT=5000",
     "MYHOME_WEB_PORT=5001",
-    "UPLINKOPTIONSCLIENTSECRET=foo",
-    "TIBBERAPICLIENTACCESSTOKEN=foo",
-    "THERMOSTATEBECOPASSWORD=foo"
+    "UPLINKOPTIONSCLIENTSECRET=$UplinkClientSecret",
+    "TIBBERAPICLIENTACCESSTOKEN=$TibberAccessToken",
+    "THERMOSTATEBECOPASSWORD=$ThermostatPassword"
 ) -join "`n" # Uses Join with \n to ensure Linux compatibility
 
 [System.IO.File]::WriteAllText($ENV_FILE, $EnvContent)
@@ -43,3 +56,5 @@ ssh "${PI_USER}@${PI_IP}" $SSH_CMD
 Write-Host "🎉 Solution Deployed! Web: http://$PI_IP:5001" -ForegroundColor Green
 
 Remove-Item -Recurse -Force $STAGE_DIR
+
+Pop-Location

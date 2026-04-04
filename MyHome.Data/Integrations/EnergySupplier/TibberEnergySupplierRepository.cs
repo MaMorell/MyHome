@@ -1,4 +1,5 @@
-﻿using MyHome.Core.Interfaces;
+﻿using Microsoft.Extensions.Caching.Memory;
+using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Data.Extensions;
@@ -8,18 +9,27 @@ using Tibber.Sdk;
 
 namespace MyHome.Data.Integrations.EnergySupplier;
 
-public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient) : IEnergySupplierRepository
+public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient, IMemoryCache memoryCache) : IEnergySupplierRepository
 {
     public async Task<ICollection<EnergyPrice>> GetEnergyPrices(EnergyPriceRange priceType)
     {
-        var homeId = await GetHomeId();
-        var query = BuildEnergyPricesQuery(homeId);
-        var queryResponse = await tibberApiClient.Query(query);
+        string cacheKey = $"EnergyPrices_{priceType}";
 
-        var result = GetPricesFromQueryResponse(queryResponse, priceType) ??
-            throw new TibberApiException(GetTibberApiErrorMessage(queryResponse.Data));
+        var cachedPrices = await memoryCache.GetOrCreateAsync(cacheKey, async entry =>
+        {
+            entry.AbsoluteExpiration = DateTime.Today.AddDays(1);
 
-        return result.ToEnergyPrices() ?? ReadOnlyCollection<EnergyPrice>.Empty;
+            var homeId = await GetHomeId();
+            var query = BuildEnergyPricesQuery(homeId);
+            var queryResponse = await tibberApiClient.Query(query);
+
+            var result = GetPricesFromQueryResponse(queryResponse, priceType) ??
+                throw new TibberApiException(GetTibberApiErrorMessage(queryResponse.Data));
+
+            return result.ToEnergyPrices() ?? ReadOnlyCollection<EnergyPrice>.Empty;
+        });
+
+        return cachedPrices ?? ReadOnlyCollection<EnergyPrice>.Empty;
     }
 
     public async Task<ICollection<EnergyConsumptionEntry>> GetConsumption(int lastHours)
@@ -36,10 +46,16 @@ public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient) : I
 
     private async Task<Guid> GetHomeId()
     {
-        var basicData = await tibberApiClient.GetBasicData();
+        return await memoryCache.GetOrCreateAsync("TibberHomeId", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30);
 
-        return basicData.Data.Viewer.Homes.FirstOrDefault()?.Id.GetValueOrDefault() ??
-            throw new TibberApiException(GetTibberApiErrorMessage(basicData.Data));
+            var lightQuery = "query { viewer { homes { id } } }";
+            var queryResponse = await tibberApiClient.Query(lightQuery);
+
+            return queryResponse.Data.Viewer.Homes.FirstOrDefault()?.Id.GetValueOrDefault() ??
+                throw new TibberApiException("Failed to fetch Home ID. Response was empty.");
+        });
     }
 
     private static string BuildEnergyPricesQuery(Guid homeId)

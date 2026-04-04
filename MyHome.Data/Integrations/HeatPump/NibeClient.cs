@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Integrations.HeatPump;
@@ -8,18 +9,12 @@ using System.Net.Http.Json;
 
 namespace MyHome.Data.Integrations.HeatPump;
 
-public class NibeClient : IHeatPumpClient
+public class NibeClient(HttpClient httpClient, IRepository<AuditEvent> auditRepository, IOptions<HeatPumpClientOptions> options, IMemoryCache memoryCache) : IHeatPumpClient
 {
-    private readonly HttpClient _httpClient;
-    private readonly IRepository<AuditEvent> _auditRepository;
-    private readonly IOptions<HeatPumpClientOptions> _options;
-
-    public NibeClient(HttpClient httpClient, IRepository<AuditEvent> auditRepository, IOptions<HeatPumpClientOptions> options)
-    {
-        _httpClient = httpClient;
-        _auditRepository = auditRepository;
-        _options = options;
-    }
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly IRepository<AuditEvent> _auditRepository = auditRepository;
+    private readonly IOptions<HeatPumpClientOptions> _options = options;
+    private readonly IMemoryCache _memoryCache = memoryCache;
 
     public async Task<ComfortMode> GetComfortMode(CancellationToken cancellationToken)
     {
@@ -135,11 +130,17 @@ public class NibeClient : IHeatPumpClient
     private async Task<NibePoint> GetPoint(int pointId, CancellationToken cancellationToken)
     {
         var uri = GetDevicePointsApiPath();
+        var cacheKey = GetDevicePointsCacheKey(uri);
 
-        var result = await _httpClient.GetFromJsonAsync<IEnumerable<NibePoint>>(uri, cancellationToken)
-            ?? throw new InvalidOperationException($"Failed to get heat point with id {pointId} from uri {uri}");
+        var allPoints = await _memoryCache.GetOrCreateAsync(cacheKey, async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
 
-        return result.SingleOrDefault(result => result.ParameterId == pointId.ToString())
+            return await _httpClient.GetFromJsonAsync<IEnumerable<NibePoint>>(uri, cancellationToken)
+                ?? throw new InvalidOperationException($"Failed to get heat points from uri {uri}");
+        });
+
+        return allPoints?.SingleOrDefault(p => p.ParameterId == pointId.ToString())
             ?? throw new InvalidOperationException($"Could not find heat point with id {pointId} from uri {uri}");
     }
 
@@ -156,7 +157,12 @@ public class NibeClient : IHeatPumpClient
         response.EnsureSuccessStatusCode();
 
         await _auditRepository.UpsertAsync(auditEvent);
+
+        var cacheKey = GetDevicePointsCacheKey(uri);
+        _memoryCache.Remove(cacheKey);
     }
+
+    private static string GetDevicePointsCacheKey(Uri uri) => $"NibeDevicePoints_{uri}";
 
     private Uri GetDevicePointsApiPath() => new($"{_options.Value.BaseAddress}/v2/devices/emmy-r-208006-20240516-06605519022003-54-10-ec-c4-ca-9a/points");
 }
