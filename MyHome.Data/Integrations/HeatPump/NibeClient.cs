@@ -1,20 +1,29 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Integrations.HeatPump;
 using MyHome.Data.Integrations.HeatPump.Dtos;
 using MyHome.Data.Options;
+using System.Globalization;
 using System.Net.Http.Json;
 
 namespace MyHome.Data.Integrations.HeatPump;
 
-public class NibeClient(HttpClient httpClient, IRepository<AuditEvent> auditRepository, IOptions<HeatPumpClientOptions> options, IMemoryCache memoryCache) : IHeatPumpClient
+public class NibeClient(
+    HttpClient httpClient,
+    IRepository<AuditEvent> auditRepository,
+    IOptions<HeatPumpClientOptions> options,
+    IMemoryCache memoryCache,
+    ILogger<NibeClient> logger) 
+    : IHeatPumpClient
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly IRepository<AuditEvent> _auditRepository = auditRepository;
     private readonly IOptions<HeatPumpClientOptions> _options = options;
     private readonly IMemoryCache _memoryCache = memoryCache;
+    private readonly ILogger<NibeClient> _logger = logger;
 
     public async Task<ComfortMode> GetComfortMode(CancellationToken cancellationToken)
     {
@@ -52,6 +61,30 @@ public class NibeClient(HttpClient httpClient, IRepository<AuditEvent> auditRepo
     {
         var result = await GetPoint(NibeParameterIds.CurrentOutdoorTemp, cancellationToken);
         return result.Value;
+    }
+
+    public async Task<DateTime?> GetNextPeriodicIncrease(CancellationToken cancellationToken)
+    {
+        var periodicIncreaseValue = await GetPoint(NibeParameterIds.PeriodicHotWaterIncrease, cancellationToken);
+        var parameterNameParts = periodicIncreaseValue.ParameterName.Split(':');
+
+        if (parameterNameParts.Length < 2)
+        {
+            _logger.LogWarning("Failed to parse periodic increase date from value: {Value}", periodicIncreaseValue.ParameterName);
+            return null;
+        }
+
+        var datePart = parameterNameParts[1].Trim();
+        try
+        {
+            return DateTime.ParseExact(datePart, "yyyy - MM - dd", CultureInfo.InvariantCulture);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to parse periodic increase date from value: {Value}", periodicIncreaseValue.ParameterName);
+        }
+
+        return null;
     }
 
     public async Task UpdateHeat(int value, CancellationToken cancellationToken)

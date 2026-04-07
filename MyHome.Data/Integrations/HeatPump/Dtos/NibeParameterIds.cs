@@ -8,4 +8,5 @@ public static class NibeParameterIds
     public const int ExhaustAirTemp = 40025;
     public const int CurrentOutdoorTemp = 40004;
     public const int In­creasedVenti­lation = 50005;
+    public const int PeriodicHotWaterIncrease = 50249;
 }

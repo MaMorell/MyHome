@@ -77,8 +77,29 @@ public class HouseAutomationService(
         {
             settings.OpMode = OpMode.Manual;
         }
+        if (await ShouldForceAutoOpMode())
+        {
+            settings.OpMode = OpMode.Auto;
+        }
 
         return settings;
+    }
+
+    private async Task<bool> ShouldForceAutoOpMode()
+    {
+        var now = DateTime.Now;
+        var nextPeriodicIncrease = await _heatPumpClient.GetNextPeriodicIncrease(CancellationToken.None);
+        if (!nextPeriodicIncrease.HasValue)
+        {
+            return false;
+        }
+
+        var targetDate = nextPeriodicIncrease.Value.Date;
+
+        var windowStart = targetDate.AddMinutes(-30);
+        var windowEnd = targetDate.AddHours(4);
+
+        return now >= windowStart && now <= windowEnd;
     }
 
     private static bool ShouldForceManualOpMode(IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
