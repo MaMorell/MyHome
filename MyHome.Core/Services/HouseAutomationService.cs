@@ -57,7 +57,7 @@ public class HouseAutomationService(
         }
 
         var exhaustAirTemp = await _heatPumpClient.GetExhaustAirTemp(CancellationToken.None);
-        if (exhaustAirTemp >= 21)
+        if (exhaustAirTemp >= 22)
         {
             settings.HeatOffset -= 3;
         }
