@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.12.35514.174
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11620.152 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyHome.AppHost", "MyHome.AppHost\MyHome.AppHost.csproj", "{6D02FE40-01BC-4C64-A5FB-05E819A97F8F}"
 EndProject
@@ -29,6 +29,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyHome.Core.Tests", "MyHome.Core.Tests\MyHome.Core.Tests.csproj", "{116E6B58-EC64-4EB9-92D9-526BA5AD1C57}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{38311EBC-D5D9-4F73-B0BF-BA176F9B403E}"
+	ProjectSection(SolutionItems) = preProject
+		ci-cd\publish-myhome.ps1 = ci-cd\publish-myhome.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

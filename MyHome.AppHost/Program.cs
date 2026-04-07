@@ -13,6 +13,10 @@ var apiService = builder
     .WithEnvironment("ThermostatEbeco__Password", ebecoPassword);
 
 builder.AddProject<Projects.MyHome_Web>("myhome-web")
+    .WithEndpoint("http", endpoint =>
+    {
+        endpoint.Port = 5001;
+    })
     .WithExternalHttpEndpoints()
     .WithReference(apiService)
     .WaitFor(apiService);
