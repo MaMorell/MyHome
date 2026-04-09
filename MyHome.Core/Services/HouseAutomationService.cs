@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MyHome.Core.Exceptions;
 using MyHome.Core.Extensions;
 using MyHome.Core.Interfaces;
@@ -16,13 +17,15 @@ public class HouseAutomationService(
     IHeatPumpClient heatPumpClient,
     [FromKeyedServices("thermostatBathOne")] IThermostatClient bathOneThermostat,
     [FromKeyedServices("thermostatBathZero")] IThermostatClient bathZeroThermostat,
-    IRepository<DeviceSettingsProfile> deviceSettingsRepository)
+    IRepository<DeviceSettingsProfile> deviceSettingsRepository,
+    ILogger<HouseAutomationService> logger)
 {
     private readonly PriceLevelGenerator _energyPriceCalculator = energyPriceCalculator;
     private readonly IHeatPumpClient _heatPumpClient = heatPumpClient ?? throw new ArgumentNullException(nameof(heatPumpClient));
     private readonly IThermostatClient _bathOneThermostat = bathOneThermostat;
     private readonly IThermostatClient _bathZeroThermostat = bathZeroThermostat;
     private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository = deviceSettingsRepository;
+    private readonly ILogger<HouseAutomationService> _logger = logger;
 
     public async Task UpdateDevicesForCurrentPeriod(CancellationToken cancellationToken = default)
     {
@@ -33,6 +36,21 @@ public class HouseAutomationService(
 
         var deviceSettings = DeviceSettingsFactory.CreateFromLevel(priceNow.LevelInternal, profile);
         deviceSettings = await CustomizeDeviceSettings(deviceSettings, prices, profile);
+
+        _logger.LogInformation(
+            "PriceNow: StartsAt={StartsAt}, PriceTotal={PriceTotal}, LevelInternal={LevelInternal}, LevelExternal={LevelExternal} | " +
+            "DeviceSettings: HeatOffset={HeatOffset}, ComfortMode={ComfortMode}, OpMode={OpMode}, " +
+            "StorageTemp={StorageTemp}, BathZeroTemp={BathZeroTemp}, BathOneTemp={BathOneTemp}",
+            priceNow.StartsAt,
+            priceNow.PriceTotal,
+            priceNow.LevelInternal,
+            priceNow.LevelExternal,
+            deviceSettings.HeatOffset,
+            deviceSettings.ComfortMode,
+            deviceSettings.OpMode,
+            deviceSettings.StorageTemprature,
+            deviceSettings.ThermostatBathZeroTemperature,
+            deviceSettings.ThermostatBathOneTemperature);
 
         await ApplyDeviceSettings(deviceSettings, cancellationToken);
         await AdjustVentilationForEvening(cancellationToken);
