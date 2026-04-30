@@ -30,7 +30,7 @@ public class HouseAutomationService(
     public async Task UpdateDevicesForCurrentPeriod(CancellationToken cancellationToken = default)
     {
         var prices = await _energyPriceCalculator.CreateAsync(EnergyPriceRange.TodayAndTomorrow);
-        var priceNow = PriceLevelGenerator.GetForSpecificDate(DateTime.Now, prices);
+        var priceNow = PriceLevelGenerator.GetForSpecificDate(DateTimeOffset.Now, prices);
         var profile = await _deviceSettingsRepository.GetByIdAsync(EntityIdConstants.DeviceSettingsId)
             ?? throw new EntityNotFoundException(EntityIdConstants.DeviceSettingsId);
 
@@ -122,7 +122,7 @@ public class HouseAutomationService(
 
     private static bool ShouldForceManualOpMode(IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
     {
-        var priceNow = PriceLevelGenerator.GetForSpecificDate(DateTime.Now, prices);
+        var priceNow = PriceLevelGenerator.GetForSpecificDate(DateTimeOffset.Now, prices);
 
         if (priceNow.StartsAt.DateTime.IsWeekdayDayTime())
         {

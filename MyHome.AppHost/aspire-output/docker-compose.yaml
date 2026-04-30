@@ -18,6 +18,7 @@ services:
       UpLinkOptions__ClientSecret: "${UPLINKOPTIONSCLIENTSECRET}"
       TibberApiClient__AccessToken: "${TIBBERAPICLIENTACCESSTOKEN}"
       ThermostatEbeco__Password: "${THERMOSTATEBECOPASSWORD}"
+      TZ: "Europe/Stockholm"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "myhome-api"

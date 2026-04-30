@@ -58,16 +58,11 @@ public static class DateTimeExtensions
     public static bool IsWeekdayDayTime(this DateTime date) => date.IsWeekday() && date.IsDayTime();
     public static bool IsWeekdayMidDay(this DateTime date) => date.IsWeekday() && date.IsMidDay();
 
-    public static DateTime RoundDownToClosestQuarter(this DateTime date)
+    public static DateTimeOffset RoundToNearestQuarter(this DateTimeOffset date)
     {
-        var minutesSinceLastQuarter = date.Minute % 15;
-        return new DateTime(
-            date.Year,
-            date.Month,
-            date.Day,
-            date.Hour,
-            date.Minute - minutesSinceLastQuarter,
-            0,
-            0);
+        var totalSeconds = date.Minute * 60 + date.Second + date.Millisecond / 1000.0;
+        var roundedQuarters = (int)Math.Round(totalSeconds / (15 * 60), MidpointRounding.AwayFromZero);
+        return new DateTimeOffset(date.Year, date.Month, date.Day, date.Hour, 0, 0, date.Offset)
+            .AddMinutes(roundedQuarters * 15);
     }
 }

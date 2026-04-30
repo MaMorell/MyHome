@@ -19,14 +19,11 @@ public class PriceLevelGenerator
         _energySupplierRepository = energySupplierRepository;
     }
 
-    public static EnergyPriceDetails GetForSpecificDate(DateTime date, IEnumerable<EnergyPriceDetails> prices)
+    public static EnergyPriceDetails GetForSpecificDate(DateTimeOffset date, IEnumerable<EnergyPriceDetails> prices)
     {
-        var dateRounded = date.RoundDownToClosestQuarter();
+        var dateRounded = date.RoundToNearestQuarter();
 
-        var result = prices.FirstOrDefault(p =>
-            p.StartsAt.Date == dateRounded.Date
-            && p.StartsAt.Hour == dateRounded.Hour
-            && p.StartsAt.Minute == dateRounded.Minute);
+        var result = prices.FirstOrDefault(p => p.StartsAt == dateRounded);
 
         return result ?? throw new ArgumentException($"Price not found for {dateRounded:yyyy-MM-dd HH:mm}", nameof(date));
     }

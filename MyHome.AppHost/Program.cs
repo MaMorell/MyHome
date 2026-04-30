@@ -10,7 +10,8 @@ var apiService = builder
     .AddProject<Projects.MyHome_ApiService>("myhome-api")
     .WithEnvironment("UpLinkOptions__ClientSecret", upLinkSecret)
     .WithEnvironment("TibberApiClient__AccessToken", tibberAccessToken)
-    .WithEnvironment("ThermostatEbeco__Password", ebecoPassword);
+    .WithEnvironment("ThermostatEbeco__Password", ebecoPassword)
+    .WithEnvironment("TZ", "Europe/Stockholm"); ;
 
 builder.AddProject<Projects.MyHome_Web>("myhome-web")
     .WithEndpoint("http", endpoint =>
