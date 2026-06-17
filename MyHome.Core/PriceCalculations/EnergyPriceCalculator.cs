@@ -22,10 +22,22 @@ public class PriceLevelGenerator
     public static EnergyPriceDetails GetForSpecificDate(DateTimeOffset date, IEnumerable<EnergyPriceDetails> prices)
     {
         var dateRounded = date.RoundToNearestQuarter();
+        var orderedPrices = prices.OrderBy(p => p.StartsAt).ToList();
 
-        var result = prices.FirstOrDefault(p => p.StartsAt == dateRounded);
+        var result = orderedPrices.FirstOrDefault(p => p.StartsAt == dateRounded);
+        if (result != null)
+        {
+            return result;
+        }
 
-        return result ?? throw new ArgumentException($"Price not found for {dateRounded:yyyy-MM-dd HH:mm}", nameof(date));
+        // If the rounded time points to a missing future slot, use the latest known slot.
+        result = orderedPrices.LastOrDefault(p => p.StartsAt <= date);
+        if (result != null)
+        {
+            return result;
+        }
+
+        throw new ArgumentException($"Price not found for {dateRounded:yyyy-MM-dd HH:mm}", nameof(date));
     }
 
     public async Task<IEnumerable<EnergyPriceDetails>> CreateAsync(EnergyPriceRange priceRange)

@@ -260,6 +260,22 @@ public class PriceLevelGeneratorTests
         result.StartsAt.ShouldBe(baseTime.AddMinutes(45));
     }
 
+    [Fact]
+    public void GetForSpecificDate_ShouldFallbackToLatestAvailablePriceWhenRoundedSlotIsMissing()
+    {
+        // Arrange – price list ends at 23:45
+        var baseTime = new DateTimeOffset(2026, 5, 10, 23, 0, 0, TimeSpan.FromHours(2));
+        var prices = Enumerable.Range(0, 4)
+            .Select(i => new EnergyPriceDetails { StartsAt = baseTime.AddMinutes(i * 15) })
+            .ToList();
+
+        // Act – scheduler fires 1 second before midnight and rounds to 00:00
+        var queryTime = baseTime.AddMinutes(60).AddSeconds(-1);
+        var result = PriceLevelGenerator.GetForSpecificDate(queryTime, prices);
+
+        result.StartsAt.ShouldBe(baseTime.AddMinutes(45));
+    }
+
     private static DateTimeOffset GetDateTimeNow(int addHours = 0)
     {
         var today = DateTime.Today.AddHours(addHours);

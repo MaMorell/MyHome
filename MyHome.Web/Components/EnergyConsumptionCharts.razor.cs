@@ -41,7 +41,7 @@ public partial class EnergyConsumptionCharts
 
         var priceLevelChart = new ChartSeries<double>
         {
-            Name = "Prisnivå (0 = låg, 5 = hög)",
+            Name = "PrisnivÃ¥ (0 = lÃ¥g, 5 = hÃ¶g)",
             Data = EnergyConsumptions
                 .Where(e => e.PriceDetails.LevelInternal != EnergyPriceLevel.Unknown)
                 .Select(p => new TimeValue<double>(p.PriceDetails.StartsAt.DateTime, (double)p.PriceDetails.LevelInternal))
@@ -57,7 +57,7 @@ public partial class EnergyConsumptionCharts
         };
         var consumptionChart = new ChartSeries<double>
         {
-            Name = "Förbrukning (kWh)",
+            Name = "FÃ¶rbrukning (kWh)",
             Data = EnergyConsumptions
                 .Where(p => p.Consumption != default)
                 .Select(p => new TimeValue<double>(p.PriceDetails.StartsAt.DateTime, (double)p.Consumption))
@@ -66,6 +66,7 @@ public partial class EnergyConsumptionCharts
         var costChart = new ChartSeries<double>
         {
             Name = "Kostnad (SEK/kWh)",
+            Visible = false,
             Data = EnergyConsumptions
                 .Where(e => e.Cost != default)
                 .Select(p => new TimeValue<double>(p.PriceDetails.StartsAt.DateTime, (double)p.Cost))
