@@ -58,11 +58,29 @@ public class HouseAutomationService(
 
     public async Task ApplyDeviceSettings(DeviceSettings deviceSettings, CancellationToken cancellationToken)
     {
-        var configureHeatPumpTask = ConfigureHeatPump(deviceSettings, cancellationToken);
-        //var updateBathZeroThermostatTask = _bathZeroThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathZeroTemperature);
-        var updateBathOneThermostatTask = _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathOneTemperature);
+        var configureHeatPumpTask = ExecuteDeviceUpdateSafely(
+            "heat pump",
+            () => ConfigureHeatPump(deviceSettings, cancellationToken));
+        //var updateBathZeroThermostatTask = ExecuteDeviceUpdateSafely(
+        //  "bath zero thermostat",
+        //  () => _bathZeroThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathZeroTemperature));
+        var updateBathOneThermostatTask = ExecuteDeviceUpdateSafely(
+            "bath one thermostat",
+            () => _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathOneTemperature));
 
         await Task.WhenAll(configureHeatPumpTask, updateBathOneThermostatTask);
+    }
+
+    private async Task ExecuteDeviceUpdateSafely(string deviceName, Func<Task> update)
+    {
+        try
+        {
+            await update();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update {DeviceName}", deviceName);
+        }
     }
 
     private async Task<DeviceSettings> CustomizeDeviceSettings(DeviceSettings settings, IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
