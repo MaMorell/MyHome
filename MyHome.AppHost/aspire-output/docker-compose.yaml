@@ -1,6 +1,6 @@
 services:
   compose-dashboard:
-    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.5"
     ports:
       - "18888"
     expose:
@@ -15,7 +15,6 @@ services:
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
       HTTP_PORTS: "${MYHOME_API_PORT}"
-      UpLinkOptions__ClientSecret: "${UPLINKOPTIONSCLIENTSECRET}"
       TibberApiClient__AccessToken: "${TIBBERAPICLIENTACCESSTOKEN}"
       ThermostatEbeco__Password: "${THERMOSTATEBECOPASSWORD}"
       TZ: "Europe/Stockholm"
