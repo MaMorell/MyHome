@@ -53,7 +53,6 @@ public class HouseAutomationService(
             deviceSettings.ThermostatBathOneTemperature);
 
         await ApplyDeviceSettings(deviceSettings, cancellationToken);
-        await AdjustVentilationForEvening(cancellationToken);
     }
 
     public async Task ApplyDeviceSettings(DeviceSettings deviceSettings, CancellationToken cancellationToken)
@@ -83,19 +82,13 @@ public class HouseAutomationService(
         }
     }
 
-    private async Task<DeviceSettings> CustomizeDeviceSettings(DeviceSettings settings, IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
+    private static async Task<DeviceSettings> CustomizeDeviceSettings(DeviceSettings settings, IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
     {
         var now = DateTime.Now;
 
         if (now.IsMidNight() || now.IsMidDay())
         {
             settings.ComfortMode = ComfortMode.Economy;
-        }
-
-        var exhaustAirTemp = await _heatPumpClient.GetExhaustAirTemp(CancellationToken.None);
-        if (exhaustAirTemp >= 22)
-        {
-            settings.HeatOffset -= 3;
         }
 
         if (now.IsMidNight())
@@ -113,29 +106,8 @@ public class HouseAutomationService(
         {
             settings.OpMode = OpMode.Manual;
         }
-        if (await ShouldForceAutoOpMode())
-        {
-            settings.OpMode = OpMode.Auto;
-        }
 
         return settings;
-    }
-
-    private async Task<bool> ShouldForceAutoOpMode()
-    {
-        var now = DateTime.Now;
-        var nextPeriodicIncrease = await _heatPumpClient.GetNextPeriodicIncrease(CancellationToken.None);
-        if (!nextPeriodicIncrease.HasValue)
-        {
-            return false;
-        }
-
-        var targetDate = nextPeriodicIncrease.Value.Date;
-
-        var windowStart = targetDate.AddMinutes(-30);
-        var windowEnd = targetDate.AddHours(4);
-
-        return now >= windowStart && now <= windowEnd;
     }
 
     private static bool ShouldForceManualOpMode(IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
@@ -163,24 +135,6 @@ public class HouseAutomationService(
         }
 
         return false;
-    }
-
-    private async Task AdjustVentilationForEvening(CancellationToken cancellationToken)
-    {
-        if (DateTime.Now.Hour == 18 || DateTime.Now.Hour == 19)
-        {
-            var outdoorTemp = await _heatPumpClient.GetCurrentOutdoorTemp(cancellationToken);
-            var exhaustAirTemp = await _heatPumpClient.GetExhaustAirTemp(cancellationToken);
-            var diff = exhaustAirTemp - outdoorTemp;
-            if (exhaustAirTemp >= 25 && diff >= 6)
-            {
-                await _heatPumpClient.UpdateIncreasedVentilation(IncreasedVentilationValue.On, cancellationToken);
-            }
-        }
-        else
-        {
-            await _heatPumpClient.UpdateIncreasedVentilation(IncreasedVentilationValue.Off, cancellationToken);
-        }
     }
 
     private async Task ConfigureHeatPump(DeviceSettings settings, CancellationToken cancellationToken)

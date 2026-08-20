@@ -67,16 +67,8 @@ public static class WebApplicationBuilderExtensions
 
     private static IServiceCollection AddMyUplinkClient(this IServiceCollection services, IConfiguration configuration)
     {
-        var upLinkOptionsSection = configuration.GetSection("UpLinkOptions");
-        var upLinkOptions = upLinkOptionsSection.Get<HeatPumpClientOptions>() ?? throw new InvalidOperationException($"Failed to get {nameof(HeatPumpClientOptions)}");
-        services.Configure<HeatPumpClientOptions>(upLinkOptionsSection);
-
-        services.AddTransient<OAuthHandler>();
-        services
-            .AddHttpClient<IHeatPumpClient, NibeClient>(httpClient => httpClient.BaseAddress = upLinkOptions.BaseAddress)
-            .AddHttpMessageHandler<OAuthHandler>();
-
-
+        services.Configure<HeatPumpClientOptions>(configuration.GetSection("UpLinkOptions"));
+        services.AddScoped<IHeatPumpClient, NibeClient>();
         return services;
     }
 

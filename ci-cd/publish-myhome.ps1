@@ -1,8 +1,5 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory=$true, HelpMessage="Enter the Uplink Options Client Secret")]
-    [string]$UplinkClientSecret,
-
     [Parameter(Mandatory=$true, HelpMessage="Enter the Tibber API Client Access Token")]
     [string]$TibberAccessToken,
 
@@ -37,7 +34,6 @@ $EnvContent = @(
     "MYHOME_WEB_IMAGE=myhome-web:latest",
     "MYHOME_API_PORT=5000",
     "MYHOME_WEB_PORT=5001",
-    "UPLINKOPTIONSCLIENTSECRET=$UplinkClientSecret",
     "TIBBERAPICLIENTACCESSTOKEN=$TibberAccessToken",
     "THERMOSTATEBECOPASSWORD=$ThermostatPassword"
 ) -join "`n" # Uses Join with \n to ensure Linux compatibility
