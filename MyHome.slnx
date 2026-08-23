@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="MyHome.ApiService/MyHome.ApiService.csproj" />
+    <Project Path="MyHome.Core/MyHome.Core.csproj" />
+    <Project Path="MyHome.Infrastructure//MyHome.Infrastructure.csproj" />
+    <Project Path="MyHome.Tests/MyHome.Tests.csproj" />
+  </Folder>
+  <Folder Name="/frontend/">
+    <Project Path="MyHome.Web/MyHome.Web.csproj" />
+  </Folder>
+  <Folder Name="/hosting/">
+    <Project Path="MyHome.AppHost/MyHome.AppHost.csproj" />
+    <Project Path="MyHome.ServiceDefaults/MyHome.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/infra/">
+    <File Path="ci-cd/publish-myhome.ps1" />
+  </Folder>
+  <Folder Name="/shared/">
+    <Project Path="MyHome.Core.Models/MyHome.Core.Models.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="MyHome.Core.Tests/MyHome.Core.Tests.csproj" />
+  </Folder>
+</Solution>

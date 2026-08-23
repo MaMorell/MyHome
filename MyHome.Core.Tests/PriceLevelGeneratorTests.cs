@@ -8,7 +8,6 @@ using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Models.PriceCalculations;
 using MyHome.Core.PriceCalculations;
 using Shouldly;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MyHome.Core.Tests;
 
