@@ -3,7 +3,7 @@ using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.PriceCalculations;
 using Tibber.Sdk;
 
-namespace MyHome.Data.Extensions;
+namespace MyHome.Infrastructure.Extensions;
 
 public static class TibberMapper
 {

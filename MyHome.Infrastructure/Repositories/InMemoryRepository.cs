@@ -4,7 +4,7 @@ using MyHome.Core.Models.Exceptions;
 using System.IO;
 using System;
 
-namespace MyHome.Data.Repositories;
+namespace MyHome.Infrastructure.Repositories;
 
 public class InMemoryRepository<T> : IRepository<T> where T : IEntity
 {

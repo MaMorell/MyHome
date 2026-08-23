@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MyHome.Data.Http;
+namespace MyHome.Infrastructure.Http;
 
 public class Token
 {

@@ -1,4 +1,4 @@
-﻿namespace MyHome.Data.Integrations.HeatPump.Dtos;
+namespace MyHome.Infrastructure.Integrations.HeatPump.Dtos;
 
 public class NibePoint
 {

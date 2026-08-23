@@ -3,7 +3,7 @@ using MyHome.Core.Models.Entities;
 using MyHome.Core.Models.Exceptions;
 using System.Text.Json;
 
-namespace MyHome.Data.Repositories;
+namespace MyHome.Infrastructure.Repositories;
 
 public class FileRepository<T> : IRepository<T> where T : IEntity, new()
 {

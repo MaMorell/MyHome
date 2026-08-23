@@ -1,11 +1,11 @@
 ﻿using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
-using MyHome.Data.Integrations.Thermostats.Models;
+using MyHome.Infrastructure.Integrations.Thermostats.Models;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
-namespace MyHome.Data.Integrations.Thermostats;
+namespace MyHome.Infrastructure.Integrations.Thermostats;
 
 public class EbecoConnectClient : IThermostatClient
 {

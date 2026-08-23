@@ -1,4 +1,4 @@
-﻿namespace MyHome.Data.Http;
+namespace MyHome.Infrastructure.Http;
 
 public class EbecoTokenResponse
 {

@@ -1,4 +1,4 @@
-﻿namespace MyHome.Data.Integrations.Thermostats.Models;
+namespace MyHome.Infrastructure.Integrations.Thermostats.Models;
 
 public class UserBuilding
 {

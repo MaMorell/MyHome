@@ -24,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hosting", "hosting", "{E166
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "frontend", "frontend", "{C95A47A7-F5F7-4970-8102-10E019E149EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyHome.Data", "MyHome.Data\MyHome.Data.csproj", "{0316B4ED-DC62-4A8D-9910-D3ECA351CBFA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyHome.Infrastructure", "MyHome.Infrastructure\\MyHome.Infrastructure.csproj", "{0316B4ED-DC62-4A8D-9910-D3ECA351CBFA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject

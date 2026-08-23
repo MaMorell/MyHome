@@ -2,11 +2,11 @@
 using Microsoft.Extensions.Options;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
-using MyHome.Data.Options;
+using MyHome.Infrastructure.Options;
 using System.Text.Json;
 using static com.clusterrr.TuyaNet.TuyaApi;
 
-namespace MyHome.Data.Integrations.Thermostats;
+namespace MyHome.Infrastructure.Integrations.Thermostats;
 
 public class TuyaThermostatClient : IThermostatClient
 {

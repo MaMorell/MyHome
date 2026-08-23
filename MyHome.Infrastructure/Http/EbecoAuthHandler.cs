@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using MyHome.Data.Options;
+using MyHome.Infrastructure.Options;
 using System.Net.Http.Json;
 
-namespace MyHome.Data.Http;
+namespace MyHome.Infrastructure.Http;
 
 public class EbecoAuthHandler(
     IHttpClientFactory httpClientFactory,

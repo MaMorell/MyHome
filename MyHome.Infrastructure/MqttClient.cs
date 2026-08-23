@@ -6,7 +6,7 @@ using MyHome.Core.Models.Entities.Constants;
 using System.Text;
 using System.Text.Json;
 
-namespace MyHome.Data;
+namespace MyHome.Infrastructure;
 
 public class MqttClient : ISmartHubClient
 {

@@ -2,10 +2,10 @@ using Microsoft.Extensions.Options;
 using MQTTnet;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Integrations.HeatPump;
-using MyHome.Data.Integrations.HeatPump.Dtos;
-using MyHome.Data.Options;
+using MyHome.Infrastructure.Integrations.HeatPump.Dtos;
+using MyHome.Infrastructure.Options;
 
-namespace MyHome.Data.Integrations.HeatPump;
+namespace MyHome.Infrastructure.Integrations.HeatPump;
 
 public class NibeClient(IOptions<HeatPumpClientOptions> options) : IHeatPumpClient
 {

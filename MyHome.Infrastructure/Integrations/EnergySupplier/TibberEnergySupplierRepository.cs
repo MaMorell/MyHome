@@ -2,12 +2,12 @@
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
-using MyHome.Data.Extensions;
+using MyHome.Infrastructure.Extensions;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using Tibber.Sdk;
 
-namespace MyHome.Data.Integrations.EnergySupplier;
+namespace MyHome.Infrastructure.Integrations.EnergySupplier;
 
 public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient, IMemoryCache memoryCache) : IEnergySupplierRepository
 {
