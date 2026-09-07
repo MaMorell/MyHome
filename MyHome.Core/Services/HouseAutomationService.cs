@@ -15,6 +15,7 @@ namespace MyHome.Core.Services;
 public class HouseAutomationService(
     PriceLevelGenerator energyPriceCalculator,
     IHeatPumpClient heatPumpClient,
+    IDehumidifierClient dehumidifierClient,
     [FromKeyedServices("thermostatBathOne")] IThermostatClient bathOneThermostat,
     [FromKeyedServices("thermostatBathZero")] IThermostatClient bathZeroThermostat,
     IRepository<DeviceSettingsProfile> deviceSettingsRepository,
@@ -22,6 +23,7 @@ public class HouseAutomationService(
 {
     private readonly PriceLevelGenerator _energyPriceCalculator = energyPriceCalculator;
     private readonly IHeatPumpClient _heatPumpClient = heatPumpClient ?? throw new ArgumentNullException(nameof(heatPumpClient));
+    private readonly IDehumidifierClient _dehumidifierClient = dehumidifierClient ?? throw new ArgumentNullException(nameof(dehumidifierClient));
     private readonly IThermostatClient _bathOneThermostat = bathOneThermostat;
     private readonly IThermostatClient _bathZeroThermostat = bathZeroThermostat;
     private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository = deviceSettingsRepository;
@@ -40,7 +42,7 @@ public class HouseAutomationService(
         _logger.LogInformation(
             "PriceNow: StartsAt={StartsAt}, PriceTotal={PriceTotal}, LevelInternal={LevelInternal}, LevelExternal={LevelExternal} | " +
             "DeviceSettings: HeatOffset={HeatOffset}, ComfortMode={ComfortMode}, OpMode={OpMode}, " +
-            "StorageTemp={StorageTemp}, BathZeroTemp={BathZeroTemp}, BathOneTemp={BathOneTemp}",
+            "StorageTemp={StorageTemp}, BathZeroTemp={BathZeroTemp}, BathOneTemp={BathOneTemp}, DehumidifierTargetHumidity={DehumidifierTargetHumidity}",
             priceNow.StartsAt,
             priceNow.PriceTotal,
             priceNow.LevelInternal,
@@ -50,7 +52,8 @@ public class HouseAutomationService(
             deviceSettings.OpMode,
             deviceSettings.StorageTemprature,
             deviceSettings.ThermostatBathZeroTemperature,
-            deviceSettings.ThermostatBathOneTemperature);
+            deviceSettings.ThermostatBathOneTemperature,
+            deviceSettings.DehumidifierTargetHumidity);
 
         await ApplyDeviceSettings(deviceSettings, cancellationToken);
     }
@@ -66,8 +69,11 @@ public class HouseAutomationService(
         var updateBathOneThermostatTask = ExecuteDeviceUpdateSafely(
             "bath one thermostat",
             () => _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathOneTemperature));
+        var configureDehumidifierTask = ExecuteDeviceUpdateSafely(
+            "dehumidifier",
+            () => _dehumidifierClient.SetTargetHumidityAsync(deviceSettings.DehumidifierTargetHumidity, cancellationToken));
 
-        await Task.WhenAll(configureHeatPumpTask, updateBathOneThermostatTask);
+        await Task.WhenAll(configureHeatPumpTask, updateBathOneThermostatTask, configureDehumidifierTask);
     }
 
     private async Task ExecuteDeviceUpdateSafely(string deviceName, Func<Task> update)

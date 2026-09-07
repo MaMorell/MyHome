@@ -10,6 +10,7 @@ using MyHome.Infrastructure;
 using MyHome.Infrastructure.Http;
 using MyHome.Infrastructure.Integrations.EnergySupplier;
 using MyHome.Infrastructure.Integrations.HeatPump;
+using MyHome.Infrastructure.Integrations.HomeAssistant;
 using MyHome.Infrastructure.Integrations.Thermostats;
 using MyHome.Infrastructure.Options;
 using MyHome.Infrastructure.Repositories;
@@ -46,6 +47,7 @@ public static class WebApplicationBuilderExtensions
         services.AddEbecoClient(configuration);
         services.AddMyUplinkClient(configuration);
         services.AddTibberClient(configuration);
+        services.AddHomeAssistantClient(configuration);
 
         return services;
     }
@@ -87,6 +89,24 @@ public static class WebApplicationBuilderExtensions
 
         services.AddKeyedScoped<IThermostatClient>("thermostatBathOne", (sp, key) =>
             sp.GetRequiredService<EbecoConnectClient>());
+
+        return services;
+    }
+
+    private static IServiceCollection AddHomeAssistantClient(this IServiceCollection services, IConfiguration configuration)
+    {
+        var homeAssistantOptionsSection = configuration.GetSection(HomeAssistantOptions.ConfigurationSection);
+        var homeAssistantOptions = homeAssistantOptionsSection.Get<HomeAssistantOptions>()
+            ?? throw new InvalidOperationException($"Failed to get {nameof(HomeAssistantOptions)}");
+        services.Configure<HomeAssistantOptions>(homeAssistantOptionsSection);
+        services.AddTransient<HomeAssistantAuthHandler>();
+
+        services
+            .AddHttpClient<IHomeAssistantClient, HomeAssistantClient>(httpClient =>
+                httpClient.BaseAddress = homeAssistantOptions.BaseAddress)
+            .AddHttpMessageHandler<HomeAssistantAuthHandler>();
+
+        services.AddScoped<IDehumidifierClient, DehumidifierClient>();
 
         return services;
     }

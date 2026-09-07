@@ -12,6 +12,7 @@ public class DeviceSettingsProfile : IEntity
     public RadiatorTemperatureProfile RadiatorTemperatures { get; set; } = new RadiatorTemperatureProfile();
     public ThermostatBathZeroProfile ThermostatBathZeroTemperatures { get; set; } = new ThermostatBathZeroProfile();
     public ThermostatBathOneProfile ThermostatBathOneTemperatures { get; set; } = new ThermostatBathOneProfile();
+    public DehumidifierTargetHumidityProfile DehumidifierTargetHumidities { get; set; } = new DehumidifierTargetHumidityProfile();
 }
 
 public enum DeviceSettingsMode
@@ -62,6 +63,16 @@ public class ThermostatBathOneProfile : IDeviceProfile<int>
     public int Economic { get; set; } = 20;
     public int MaxSavings { get; set; } = 15;
     public int ExtremeSavings { get; set; } = 10;
+}
+
+public class DehumidifierTargetHumidityProfile : IDeviceProfile<int>
+{
+    public int Baseline { get; set; } = 60;
+    public int Enhanced { get; set; } = 55;
+    public int Moderate { get; set; } = 60;
+    public int Economic { get; set; } = 65;
+    public int MaxSavings { get; set; } = 70;
+    public int ExtremeSavings { get; set; } = 75;
 }
 
 public class ComfortModeProfile : IDeviceProfile<ComfortMode>

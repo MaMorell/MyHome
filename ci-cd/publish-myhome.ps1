@@ -4,7 +4,10 @@ param(
     [string]$TibberAccessToken,
 
     [Parameter(Mandatory=$true, HelpMessage="Enter the Thermostat Ebeco Password")]
-    [string]$ThermostatPassword
+    [string]$ThermostatPassword,
+
+    [Parameter(Mandatory=$true, HelpMessage="Enter the Home Assistant Access Token")]
+    [string]$HomeAssistantAccessToken
 )
 
 $PI_IP = "10.10.10.113"
@@ -35,7 +38,8 @@ $EnvContent = @(
     "MYHOME_API_PORT=5000",
     "MYHOME_WEB_PORT=5001",
     "TIBBERAPICLIENTACCESSTOKEN=$TibberAccessToken",
-    "THERMOSTATEBECOPASSWORD=$ThermostatPassword"
+    "THERMOSTATEBECOPASSWORD=$ThermostatPassword",
+    "HOMEASSISTANTACCESSTOKEN=$HomeAssistantAccessToken"
 ) -join "`n" # Uses Join with \n to ensure Linux compatibility
 
 [System.IO.File]::WriteAllText($ENV_FILE, $EnvContent)

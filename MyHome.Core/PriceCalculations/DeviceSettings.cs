@@ -8,7 +8,8 @@ public class DeviceSettings(
     ComfortMode comfortMode,
     OpMode opMode,
     int thermostatBathZero,
-    int thermostatBathOne)
+    int thermostatBathOne,
+    int dehumidifierTargetHumidity)
 {
     public int HeatOffset { get; set; } = heatOffset;
     public ComfortMode ComfortMode { get; set; } = comfortMode;
@@ -16,4 +17,5 @@ public class DeviceSettings(
     public int StorageTemprature { get; set; } = storageTemprature;
     public int ThermostatBathZeroTemperature { get; set; } = thermostatBathZero;
     public int ThermostatBathOneTemperature { get; set; } = thermostatBathOne;
+    public int DehumidifierTargetHumidity { get; set; } = dehumidifierTargetHumidity;
 }

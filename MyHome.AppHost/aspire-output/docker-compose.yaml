@@ -17,6 +17,7 @@ services:
       HTTP_PORTS: "${MYHOME_API_PORT}"
       TibberApiClient__AccessToken: "${TIBBERAPICLIENTACCESSTOKEN}"
       ThermostatEbeco__Password: "${THERMOSTATEBECOPASSWORD}"
+      HomeAssistant__AccessToken: "${HOMEASSISTANTACCESSTOKEN}"
       TZ: "Europe/Stockholm"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"

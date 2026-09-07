@@ -3,6 +3,7 @@ using MyHome.ApiService.Constants;
 using MyHome.Core.Exceptions;
 using MyHome.Core.Extensions;
 using MyHome.Core.Interfaces;
+using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.Entities;
 using MyHome.Core.Models.Entities.Constants;
 using MyHome.Core.Models.Entities.Profiles;
@@ -76,6 +77,6 @@ public sealed class EnergyConsumptionObserver(
         var profile = await deviceSettingsRepository.GetByIdAsync(EntityIdConstants.DeviceSettingsId)
             ?? throw new EntityNotFoundException(EntityIdConstants.DeviceSettingsId);
         var deviceSettings = DeviceSettingsFactory.CreateFromMode(DeviceSettingsMode.MaxSavings, profile);
-        await houseAutomationService.ApplyDeviceSettings(deviceSettings, CancellationToken.None);
+        await houseAutomationService.ApplyDeviceSettings(deviceSettings, profile, EnergyPriceLevel.VeryExpensive, CancellationToken.None);
     }
 }
