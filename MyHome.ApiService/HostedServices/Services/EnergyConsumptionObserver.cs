@@ -77,6 +77,6 @@ public sealed class EnergyConsumptionObserver(
         var profile = await deviceSettingsRepository.GetByIdAsync(EntityIdConstants.DeviceSettingsId)
             ?? throw new EntityNotFoundException(EntityIdConstants.DeviceSettingsId);
         var deviceSettings = DeviceSettingsFactory.CreateFromMode(DeviceSettingsMode.MaxSavings, profile);
-        await houseAutomationService.ApplyDeviceSettings(deviceSettings, profile, EnergyPriceLevel.VeryExpensive, CancellationToken.None);
+        await houseAutomationService.ApplyDeviceSettings(deviceSettings, CancellationToken.None);
     }
 }

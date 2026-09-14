@@ -63,9 +63,9 @@ public class HouseAutomationService(
         var configureHeatPumpTask = ExecuteDeviceUpdateSafely(
             "heat pump",
             () => ConfigureHeatPump(deviceSettings, cancellationToken));
-        //var updateBathZeroThermostatTask = ExecuteDeviceUpdateSafely(
-        //  "bath zero thermostat",
-        //  () => _bathZeroThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathZeroTemperature));
+        var updateBathZeroThermostatTask = ExecuteDeviceUpdateSafely(
+            "bath zero thermostat",
+            () => _bathZeroThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathZeroTemperature));
         var updateBathOneThermostatTask = ExecuteDeviceUpdateSafely(
             "bath one thermostat",
             () => _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathOneTemperature));
@@ -73,7 +73,7 @@ public class HouseAutomationService(
             "dehumidifier",
             () => _dehumidifierClient.SetTargetHumidityAsync(deviceSettings.DehumidifierTargetHumidity, cancellationToken));
 
-        await Task.WhenAll(configureHeatPumpTask, updateBathOneThermostatTask, configureDehumidifierTask);
+        await Task.WhenAll(configureHeatPumpTask, updateBathZeroThermostatTask, updateBathOneThermostatTask, configureDehumidifierTask);
     }
 
     private async Task ExecuteDeviceUpdateSafely(string deviceName, Func<Task> update)

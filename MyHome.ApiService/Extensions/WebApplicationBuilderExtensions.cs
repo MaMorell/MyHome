@@ -41,9 +41,6 @@ public static class WebApplicationBuilderExtensions
         services.AddScoped<EnergyConsumptionListener>();
 
 
-        services.Configure<ThermostatTuyaOptions>(configuration.GetSection(ThermostatTuyaOptions.ConfigurationSection));
-        services.AddKeyedScoped<IThermostatClient, TuyaThermostatClient>("thermostatBathZero");
-
         services.AddEbecoClient(configuration);
         services.AddMyUplinkClient(configuration);
         services.AddTibberClient(configuration);
@@ -107,6 +104,7 @@ public static class WebApplicationBuilderExtensions
             .AddHttpMessageHandler<HomeAssistantAuthHandler>();
 
         services.AddScoped<IDehumidifierClient, DehumidifierClient>();
+        services.AddKeyedScoped<IThermostatClient, ThermostatClient>("thermostatBathZero");
 
         return services;
     }

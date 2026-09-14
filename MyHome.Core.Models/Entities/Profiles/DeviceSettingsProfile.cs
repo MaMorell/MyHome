@@ -47,12 +47,12 @@ public class RadiatorTemperatureProfile : IDeviceProfile<int>
 
 public class ThermostatBathZeroProfile : IDeviceProfile<int>
 {
-    public int Baseline { get; set; } = 22;
-    public int Enhanced { get; set; } = 25;
-    public int Moderate { get; set; } = 24;
-    public int Economic { get; set; } = 15;
-    public int MaxSavings { get; set; } = 10;
-    public int ExtremeSavings { get; set; } = 5;
+    public int Baseline { get; set; } = 24;
+    public int Enhanced { get; set; } = 27;
+    public int Moderate { get; set; } = 25;
+    public int Economic { get; set; } = 20;
+    public int MaxSavings { get; set; } = 15;
+    public int ExtremeSavings { get; set; } = 10;
 }
 
 public class ThermostatBathOneProfile : IDeviceProfile<int>
