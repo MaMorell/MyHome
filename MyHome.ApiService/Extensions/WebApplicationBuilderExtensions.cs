@@ -104,7 +104,14 @@ public static class WebApplicationBuilderExtensions
             .AddHttpMessageHandler<HomeAssistantAuthHandler>();
 
         services.AddScoped<IDehumidifierClient, DehumidifierClient>();
-        services.AddKeyedScoped<IThermostatClient, ThermostatClient>("thermostatBathZero");
+        services.AddKeyedScoped<IThermostatClient>("thermostatBathZero", (sp, _) =>
+            new ThermostatClient(
+                sp.GetRequiredService<IHomeAssistantClient>(),
+                "climate.thermostat_bath0_thermostat"));
+        services.AddKeyedScoped<IThermostatClient>("thermostatGarage", (sp, _) =>
+            new ThermostatClient(
+                sp.GetRequiredService<IHomeAssistantClient>(),
+                "climate.c03937056c70"));
 
         return services;
     }

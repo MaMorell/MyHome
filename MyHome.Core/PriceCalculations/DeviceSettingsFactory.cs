@@ -16,6 +16,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Baseline,
                 profile.ThermostatBathZeroTemperatures.Baseline,
                 profile.ThermostatBathOneTemperatures.Baseline,
+                profile.ThermostatGarageTemperatures.Baseline,
                 profile.DehumidifierTargetHumidities.Baseline),
             DeviceSettingsMode.Enhanced => new DeviceSettings(
                 profile.HeatOffsets.Enhanced,
@@ -24,6 +25,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Enhanced,
                 profile.ThermostatBathZeroTemperatures.Enhanced,
                 profile.ThermostatBathOneTemperatures.Enhanced,
+                profile.ThermostatGarageTemperatures.Enhanced,
                 profile.DehumidifierTargetHumidities.Enhanced),
             DeviceSettingsMode.Moderate => new DeviceSettings(
                 profile.HeatOffsets.Moderate,
@@ -32,6 +34,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Moderate,
                 profile.ThermostatBathZeroTemperatures.Moderate,
                 profile.ThermostatBathOneTemperatures.Moderate,
+                profile.ThermostatGarageTemperatures.Moderate,
                 profile.DehumidifierTargetHumidities.Moderate),
             DeviceSettingsMode.Economic => new DeviceSettings(
                 profile.HeatOffsets.Economic,
@@ -40,6 +43,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Economic,
                 profile.ThermostatBathZeroTemperatures.Economic,
                 profile.ThermostatBathOneTemperatures.Economic,
+                profile.ThermostatGarageTemperatures.Economic,
                 profile.DehumidifierTargetHumidities.Economic),
             DeviceSettingsMode.MaxSavings => new DeviceSettings(
                 profile.HeatOffsets.MaxSavings,
@@ -48,6 +52,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.MaxSavings,
                 profile.ThermostatBathZeroTemperatures.MaxSavings,
                 profile.ThermostatBathOneTemperatures.MaxSavings,
+                profile.ThermostatGarageTemperatures.MaxSavings,
                 profile.DehumidifierTargetHumidities.MaxSavings),
             DeviceSettingsMode.ExtremeSavings => new DeviceSettings(
                 profile.HeatOffsets.ExtremeSavings,
@@ -56,6 +61,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.ExtremeSavings,
                 profile.ThermostatBathZeroTemperatures.ExtremeSavings,
                 profile.ThermostatBathOneTemperatures.ExtremeSavings,
+                profile.ThermostatGarageTemperatures.ExtremeSavings,
                 profile.DehumidifierTargetHumidities.ExtremeSavings),
             _ => new DeviceSettings(
                 profile.HeatOffsets.Baseline,
@@ -64,6 +70,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Baseline,
                 profile.ThermostatBathZeroTemperatures.Baseline,
                 profile.ThermostatBathOneTemperatures.Baseline,
+                profile.ThermostatGarageTemperatures.Baseline,
                 profile.DehumidifierTargetHumidities.Baseline)
         };
     }
@@ -79,6 +86,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Baseline,
                 profile.ThermostatBathZeroTemperatures.Baseline,
                 profile.ThermostatBathOneTemperatures.Baseline,
+                profile.ThermostatGarageTemperatures.Baseline,
                 profile.DehumidifierTargetHumidities.Baseline),
             EnergyPriceLevel.VeryCheap => new DeviceSettings(
                 profile.HeatOffsets.Enhanced,
@@ -87,6 +95,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Enhanced,
                 profile.ThermostatBathZeroTemperatures.Enhanced,
                 profile.ThermostatBathOneTemperatures.Enhanced,
+                profile.ThermostatGarageTemperatures.Enhanced,
                 profile.DehumidifierTargetHumidities.Enhanced),
             EnergyPriceLevel.Cheap => new DeviceSettings(
                 profile.HeatOffsets.Moderate,
@@ -95,6 +104,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Moderate,
                 profile.ThermostatBathZeroTemperatures.Moderate,
                 profile.ThermostatBathOneTemperatures.Moderate,
+                profile.ThermostatGarageTemperatures.Moderate,
                 profile.DehumidifierTargetHumidities.Moderate),
             EnergyPriceLevel.Expensive => new DeviceSettings(
                 profile.HeatOffsets.Economic,
@@ -103,6 +113,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Economic,
                 profile.ThermostatBathZeroTemperatures.Economic,
                 profile.ThermostatBathOneTemperatures.Economic,
+                profile.ThermostatGarageTemperatures.Economic,
                 profile.DehumidifierTargetHumidities.Economic),
             EnergyPriceLevel.VeryExpensive => new DeviceSettings(
                 profile.HeatOffsets.MaxSavings,
@@ -111,6 +122,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.MaxSavings,
                 profile.ThermostatBathZeroTemperatures.MaxSavings,
                 profile.ThermostatBathOneTemperatures.MaxSavings,
+                profile.ThermostatGarageTemperatures.MaxSavings,
                 profile.DehumidifierTargetHumidities.MaxSavings),
             EnergyPriceLevel.Extreme => new DeviceSettings(
                 profile.HeatOffsets.ExtremeSavings,
@@ -119,6 +131,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.ExtremeSavings,
                 profile.ThermostatBathZeroTemperatures.ExtremeSavings,
                 profile.ThermostatBathOneTemperatures.ExtremeSavings,
+                profile.ThermostatGarageTemperatures.ExtremeSavings,
                 profile.DehumidifierTargetHumidities.ExtremeSavings),
             _ => new DeviceSettings(
                 profile.HeatOffsets.Baseline,
@@ -127,6 +140,7 @@ public class DeviceSettingsFactory
                 profile.OpModes.Baseline,
                 profile.ThermostatBathZeroTemperatures.Baseline,
                 profile.ThermostatBathOneTemperatures.Baseline,
+                profile.ThermostatGarageTemperatures.Baseline,
                 profile.DehumidifierTargetHumidities.Baseline)
         };
     }

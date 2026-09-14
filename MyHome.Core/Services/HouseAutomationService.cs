@@ -18,6 +18,7 @@ public class HouseAutomationService(
     IDehumidifierClient dehumidifierClient,
     [FromKeyedServices("thermostatBathOne")] IThermostatClient bathOneThermostat,
     [FromKeyedServices("thermostatBathZero")] IThermostatClient bathZeroThermostat,
+    [FromKeyedServices("thermostatGarage")] IThermostatClient garageThermostat,
     IRepository<DeviceSettingsProfile> deviceSettingsRepository,
     ILogger<HouseAutomationService> logger)
 {
@@ -26,6 +27,7 @@ public class HouseAutomationService(
     private readonly IDehumidifierClient _dehumidifierClient = dehumidifierClient ?? throw new ArgumentNullException(nameof(dehumidifierClient));
     private readonly IThermostatClient _bathOneThermostat = bathOneThermostat;
     private readonly IThermostatClient _bathZeroThermostat = bathZeroThermostat;
+    private readonly IThermostatClient _garageThermostat = garageThermostat;
     private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository = deviceSettingsRepository;
     private readonly ILogger<HouseAutomationService> _logger = logger;
 
@@ -42,7 +44,7 @@ public class HouseAutomationService(
         _logger.LogInformation(
             "PriceNow: StartsAt={StartsAt}, PriceTotal={PriceTotal}, LevelInternal={LevelInternal}, LevelExternal={LevelExternal} | " +
             "DeviceSettings: HeatOffset={HeatOffset}, ComfortMode={ComfortMode}, OpMode={OpMode}, " +
-            "StorageTemp={StorageTemp}, BathZeroTemp={BathZeroTemp}, BathOneTemp={BathOneTemp}, DehumidifierTargetHumidity={DehumidifierTargetHumidity}",
+            "StorageTemp={StorageTemp}, BathZeroTemp={BathZeroTemp}, BathOneTemp={BathOneTemp}, GarageTemp={GarageTemp}, DehumidifierTargetHumidity={DehumidifierTargetHumidity}",
             priceNow.StartsAt,
             priceNow.PriceTotal,
             priceNow.LevelInternal,
@@ -53,6 +55,7 @@ public class HouseAutomationService(
             deviceSettings.StorageTemprature,
             deviceSettings.ThermostatBathZeroTemperature,
             deviceSettings.ThermostatBathOneTemperature,
+            deviceSettings.ThermostatGarageTemperature,
             deviceSettings.DehumidifierTargetHumidity);
 
         await ApplyDeviceSettings(deviceSettings, cancellationToken);
@@ -69,11 +72,19 @@ public class HouseAutomationService(
         var updateBathOneThermostatTask = ExecuteDeviceUpdateSafely(
             "bath one thermostat",
             () => _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathOneTemperature));
+        var updateGarageThermostatTask = ExecuteDeviceUpdateSafely(
+            "garage thermostat",
+            () => _garageThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatGarageTemperature));
         var configureDehumidifierTask = ExecuteDeviceUpdateSafely(
             "dehumidifier",
             () => _dehumidifierClient.SetTargetHumidityAsync(deviceSettings.DehumidifierTargetHumidity, cancellationToken));
 
-        await Task.WhenAll(configureHeatPumpTask, updateBathZeroThermostatTask, updateBathOneThermostatTask, configureDehumidifierTask);
+        await Task.WhenAll(
+            configureHeatPumpTask,
+            updateBathZeroThermostatTask,
+            updateBathOneThermostatTask,
+            updateGarageThermostatTask,
+            configureDehumidifierTask);
     }
 
     private async Task ExecuteDeviceUpdateSafely(string deviceName, Func<Task> update)
