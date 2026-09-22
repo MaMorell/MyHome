@@ -23,6 +23,22 @@
             </MudItem>
 
             <MudItem xs="12" sm="6">
+                <DeviceProfileCard Profile="@Profile.ThermostatBathZeroTemperatures" Title="Golvvärme (Nerevåning) - Temperatur (°C)" MinValue="5" MaxValue="35"></DeviceProfileCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <DeviceProfileCard Profile="@Profile.ThermostatBathOneTemperatures" Title="Golvvärme (Övervåning) - Temperatur (°C)" MinValue="5" MaxValue="25"></DeviceProfileCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <DeviceProfileCard Profile="@Profile.ThermostatGarageTemperatures" Title="Garage - LLVP (°C)" MinValue="8" MaxValue="25"></DeviceProfileCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <DeviceProfileCard Profile="@Profile.DehumidifierTargetHumidities" Title="Avfuktare - Målfuktighet (%)" MinValue="0" MaxValue="100"></DeviceProfileCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
                 <DeviceProfileEnumCard T="ComfortMode" Profile="@Profile.ComfortModes" Title="Värmepump - Vatten Komfortläge"></DeviceProfileEnumCard>
             </MudItem>
 
@@ -33,13 +49,6 @@
                         <MudSlider @bind-Value="Profile.OpModes.MaxPriceAutoMode" Step="0.1m" Min="0" Max="10" />
                     </MudItem>
                 </DeviceProfileEnumCard>
-            </MudItem>
-
-            <MudItem xs="12" sm="6">
-                <DeviceProfileCard Profile="@Profile.ThermostatBathZeroTemperatures" Title="Golvvärme (Nerevåning) - Temperatur (°C)" MinValue="5" MaxValue="35"></DeviceProfileCard>
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <DeviceProfileCard Profile="@Profile.ThermostatBathOneTemperatures" Title="Golvvärme (Övervåning) - Temperatur (°C)" MinValue="5" MaxValue="25"></DeviceProfileCard>
             </MudItem>
         </MudGrid>
         <MudCard Elevation="4" Class="mt-6">
