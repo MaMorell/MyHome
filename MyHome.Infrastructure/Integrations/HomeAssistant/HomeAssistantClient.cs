@@ -14,7 +14,8 @@ public class HomeAssistantClient(HttpClient httpClient) : IHomeAssistantClient
 {
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
     public async Task<HomeAssistantState> GetStateAsync(string entityId, CancellationToken cancellationToken = default)

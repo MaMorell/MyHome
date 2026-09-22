@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Routing;
-using MyHome.ApiService.HostedServices.Services;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Entities;
@@ -24,7 +23,6 @@ public static class WebApplicationBuilderExtensions
     public static IServiceCollection RegisterLocalDependencies(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IRepository<AuditEvent>, InMemoryRepository<AuditEvent>>();
-        services.AddSingleton<IRepository<EnergyMeasurement>, InMemoryRepository<EnergyMeasurement>>();
         services.AddSingleton<IRepository<SensorData>, InMemoryRepository<SensorData>>();
         services.AddScoped<IRepository<DeviceSettingsProfile>, FileRepository<DeviceSettingsProfile>>();
         services.AddScoped<IRepository<PriceThearsholdsProfile>, FileRepository<PriceThearsholdsProfile>>();
@@ -36,10 +34,6 @@ public static class WebApplicationBuilderExtensions
 
         services.AddScoped<DeviceSettingsFactory>();
         services.AddScoped<PriceLevelGenerator>();
-
-        services.AddSingleton<IObserver<RealTimeMeasurement>, EnergyConsumptionObserver>();
-        services.AddScoped<EnergyConsumptionListener>();
-
 
         services.AddEbecoClient(configuration);
         services.AddMyUplinkClient(configuration);
@@ -103,6 +97,7 @@ public static class WebApplicationBuilderExtensions
                 httpClient.BaseAddress = homeAssistantOptions.BaseAddress)
             .AddHttpMessageHandler<HomeAssistantAuthHandler>();
 
+        services.AddScoped<IHomeAssistantEnergyClient, HomeAssistantEnergyClient>();
         services.AddScoped<IDehumidifierClient, DehumidifierClient>();
         services.AddKeyedScoped<IThermostatClient>("thermostatBathZero", (sp, _) =>
             new ThermostatClient(

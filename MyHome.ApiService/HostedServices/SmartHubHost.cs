@@ -1,5 +1,4 @@
-﻿using MyHome.ApiService.HostedServices.Services;
-using MyHome.Core.Interfaces;
+﻿using MyHome.Core.Interfaces;
 
 namespace MyHome.ApiService.HostedServices;
 

@@ -1,5 +1,4 @@
 using MyHome.Core.Models.EnergySupplier;
-using MyHome.Core.Models.Entities;
 
 namespace MyHome.Web.ExternalClients;
 
@@ -9,12 +8,6 @@ public class EnergySupplierClient(ApiServiceClient client)
     {
         var result = await client.GetFromJsonAsync<IEnumerable<EnergyConsumptionEntry>>("energysupplier/energyprice", cancellationToken);
         return result ?? [];
-    }
-
-    public async Task<EnergyMeasurement> GetLastEnergyMeasurementAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await client.GetFromJsonAsync<EnergyMeasurement>("energysupplier/energymeasurement", cancellationToken);
-        return result ?? new EnergyMeasurement();
     }
 
     public async Task<IEnumerable<EnergyConsumptionEntry>> GetTopConsumptionAsync(

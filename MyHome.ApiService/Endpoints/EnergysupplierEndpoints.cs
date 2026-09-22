@@ -1,18 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using MyHome.ApiService.Constants;
-using MyHome.Core.Interfaces;
-using MyHome.Core.Models.Entities;
 using MyHome.Core.Services;
 
 public static class EnergysupplierEndpoints
 {
     public static void Map(WebApplication app)
     {
-        app.MapGet("energysupplier/energymeasurement", async ([FromServices] IRepository<EnergyMeasurement> repository) =>
-        {
-            return await repository.GetByIdAsync(MyHomeConstants.MyTibberHomeId);
-        });
-
         app.MapGet("/energysupplier/consumption/top", async (
             [FromServices] EnergySupplierService energyPriceService,
             [FromQuery] int limit = 3,

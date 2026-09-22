@@ -20,8 +20,11 @@ public class HouseAutomationService(
     [FromKeyedServices("thermostatBathZero")] IThermostatClient bathZeroThermostat,
     [FromKeyedServices("thermostatGarage")] IThermostatClient garageThermostat,
     IRepository<DeviceSettingsProfile> deviceSettingsRepository,
+    IHomeAssistantEnergyClient homeAssistantEnergyClient,
     ILogger<HouseAutomationService> logger)
 {
+    private const decimal HourlyConsumptionLimitKWH = 3;
+
     private readonly PriceLevelGenerator _energyPriceCalculator = energyPriceCalculator;
     private readonly IHeatPumpClient _heatPumpClient = heatPumpClient ?? throw new ArgumentNullException(nameof(heatPumpClient));
     private readonly IDehumidifierClient _dehumidifierClient = dehumidifierClient ?? throw new ArgumentNullException(nameof(dehumidifierClient));
@@ -29,6 +32,7 @@ public class HouseAutomationService(
     private readonly IThermostatClient _bathZeroThermostat = bathZeroThermostat;
     private readonly IThermostatClient _garageThermostat = garageThermostat;
     private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository = deviceSettingsRepository;
+    private readonly IHomeAssistantEnergyClient _homeAssistantEnergyClient = homeAssistantEnergyClient ?? throw new ArgumentNullException(nameof(homeAssistantEnergyClient));
     private readonly ILogger<HouseAutomationService> _logger = logger;
 
     public async Task UpdateDevicesForCurrentPeriod(CancellationToken cancellationToken = default)
@@ -40,6 +44,7 @@ public class HouseAutomationService(
 
         var deviceSettings = DeviceSettingsFactory.CreateFromLevel(priceNow.LevelInternal, profile);
         deviceSettings = await CustomizeDeviceSettings(deviceSettings, prices, profile);
+        deviceSettings = await ApplyConsumptionOverride(deviceSettings, profile, cancellationToken);
 
         _logger.LogInformation(
             "PriceNow: StartsAt={StartsAt}, PriceTotal={PriceTotal}, LevelInternal={LevelInternal}, LevelExternal={LevelExternal} | " +
@@ -96,6 +101,42 @@ public class HouseAutomationService(
         {
             _logger.LogError(ex, "Failed to update {DeviceName}", deviceName);
         }
+    }
+
+    private async Task<DeviceSettings> ApplyConsumptionOverride(
+        DeviceSettings settings,
+        DeviceSettingsProfile profile,
+        CancellationToken cancellationToken)
+    {
+        if (!DateTime.Now.IsWeekdayDayTime())
+        {
+            return settings;
+        }
+
+        decimal accumulatedConsumptionCurrentHour;
+        try
+        {
+            accumulatedConsumptionCurrentHour = await _homeAssistantEnergyClient
+                .GetAccumulatedConsumptionCurrentHourAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to read accumulated consumption from Home Assistant");
+            return settings;
+        }
+
+        if (accumulatedConsumptionCurrentHour < HourlyConsumptionLimitKWH)
+        {
+            return settings;
+        }
+
+        _logger.LogInformation(
+            "Accumulated Consumption Current Hour {Consumption} is above the threshold {Threshold} kWh. " +
+            "Applying Max savings",
+            accumulatedConsumptionCurrentHour,
+            HourlyConsumptionLimitKWH);
+
+        return DeviceSettingsFactory.CreateFromLevel(EnergyPriceLevel.VeryExpensive, profile);
     }
 
     private static async Task<DeviceSettings> CustomizeDeviceSettings(DeviceSettings settings, IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
