@@ -16,15 +16,6 @@
         {
             <MudStack Spacing="3">
                 <MudItem>
-                    <MudText>Extremt dyrt:</MudText>
-                    <MudSelect T="T" @bind-Value="Profile.ExtremeSavings" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                        @foreach (var mode in Enum.GetValues<T>())
-                        {
-                            <MudSelectItem Value="@mode">@mode</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem>
                     <MudText>Väldigt dyrt:</MudText>
                     <MudSelect T="T" @bind-Value="Profile.MaxSavings" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
                         @foreach (var mode in Enum.GetValues<T>())
@@ -61,7 +52,7 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem>
-                    <MudText>Extremt billigt:</MudText>
+                    <MudText>Väldigt billigt:</MudText>
                     <MudSelect T="T" @bind-Value="Profile.Enhanced" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
                         @foreach (var mode in Enum.GetValues<T>())
                         {

@@ -35,7 +35,6 @@ public class EnergyListItem
         EnergyPriceLevel.Normal => Colors.Gray.Lighten1,
         EnergyPriceLevel.Expensive => Colors.Yellow.Lighten1,
         EnergyPriceLevel.VeryExpensive => Colors.Orange.Lighten1,
-        EnergyPriceLevel.Extreme => Colors.Red.Lighten1,
         _ => Colors.Gray.Darken2,
     };
 }

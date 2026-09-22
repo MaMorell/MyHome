@@ -9,21 +9,10 @@ public class DeviceSettingsProfile : IEntity
     public HeatOffsetProfile HeatOffsets { get; set; } = new HeatOffsetProfile();
     public ComfortModeProfile ComfortModes { get; set; } = new ComfortModeProfile();
     public OpModeProfile OpModes { get; set; } = new OpModeProfile();
-    public RadiatorTemperatureProfile RadiatorTemperatures { get; set; } = new RadiatorTemperatureProfile();
     public ThermostatBathZeroProfile ThermostatBathZeroTemperatures { get; set; } = new ThermostatBathZeroProfile();
     public ThermostatBathOneProfile ThermostatBathOneTemperatures { get; set; } = new ThermostatBathOneProfile();
     public ThermostatGarageProfile ThermostatGarageTemperatures { get; set; } = new ThermostatGarageProfile();
     public DehumidifierTargetHumidityProfile DehumidifierTargetHumidities { get; set; } = new DehumidifierTargetHumidityProfile();
-}
-
-public enum DeviceSettingsMode
-{
-    Baseline = 0,
-    Enhanced = 1,
-    Moderate = 2,
-    Economic = 3,
-    MaxSavings = 4,
-    ExtremeSavings = 5
 }
 
 public class HeatOffsetProfile : IDeviceProfile<int>
@@ -33,17 +22,6 @@ public class HeatOffsetProfile : IDeviceProfile<int>
     public int Moderate { get; set; } = 1;
     public int Economic { get; set; } = -2;
     public int MaxSavings { get; set; } = -3;
-    public int ExtremeSavings { get; set; } = -5;
-}
-
-public class RadiatorTemperatureProfile : IDeviceProfile<int>
-{
-    public int Baseline { get; set; } = 7;
-    public int Enhanced { get; set; } = 9;
-    public int Moderate { get; set; } = 8;
-    public int Economic { get; set; } = 6;
-    public int MaxSavings { get; set; } = 5;
-    public int ExtremeSavings { get; set; } = 5;
 }
 
 public class ThermostatBathZeroProfile : IDeviceProfile<int>
@@ -53,7 +31,6 @@ public class ThermostatBathZeroProfile : IDeviceProfile<int>
     public int Moderate { get; set; } = 25;
     public int Economic { get; set; } = 20;
     public int MaxSavings { get; set; } = 15;
-    public int ExtremeSavings { get; set; } = 10;
 }
 
 public class ThermostatBathOneProfile : IDeviceProfile<int>
@@ -63,7 +40,6 @@ public class ThermostatBathOneProfile : IDeviceProfile<int>
     public int Moderate { get; set; } = 28;
     public int Economic { get; set; } = 20;
     public int MaxSavings { get; set; } = 15;
-    public int ExtremeSavings { get; set; } = 10;
 }
 
 public class ThermostatGarageProfile : IDeviceProfile<int>
@@ -73,17 +49,15 @@ public class ThermostatGarageProfile : IDeviceProfile<int>
     public int Moderate { get; set; } = 14;
     public int Economic { get; set; } = 10;
     public int MaxSavings { get; set; } = 8;
-    public int ExtremeSavings { get; set; } = 8;
 }
 
 public class DehumidifierTargetHumidityProfile : IDeviceProfile<int>
 {
-    public int Baseline { get; set; } = 60;
+    public int Baseline { get; set; } = 65;
     public int Enhanced { get; set; } = 55;
     public int Moderate { get; set; } = 60;
-    public int Economic { get; set; } = 65;
-    public int MaxSavings { get; set; } = 70;
-    public int ExtremeSavings { get; set; } = 75;
+    public int Economic { get; set; } = 70;
+    public int MaxSavings { get; set; } = 75;
 }
 
 public class ComfortModeProfile : IDeviceProfile<ComfortMode>
@@ -93,7 +67,6 @@ public class ComfortModeProfile : IDeviceProfile<ComfortMode>
     public ComfortMode Moderate { get; set; } = ComfortMode.Normal;
     public ComfortMode Economic { get; set; } = ComfortMode.Economy;
     public ComfortMode MaxSavings { get; set; } = ComfortMode.Economy;
-    public ComfortMode ExtremeSavings { get; set; } = ComfortMode.Economy;
 }
 
 public class OpModeProfile : IDeviceProfile<OpMode>
@@ -106,5 +79,4 @@ public class OpModeProfile : IDeviceProfile<OpMode>
     public OpMode Moderate { get; set; } = OpMode.Auto;
     public OpMode Economic { get; set; } = OpMode.Manual;
     public OpMode MaxSavings { get; set; } = OpMode.Manual;
-    public OpMode ExtremeSavings { get; set; } = OpMode.Manual;
 }

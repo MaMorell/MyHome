@@ -13,12 +13,8 @@
         {
             <MudStack Spacing="3">
                 <MudItem>
-                    <MudText>Extremt dyrt: <b>@Profile.ExtremeSavings</b></MudText>
-                    <MudSlider T="int" @bind-Value="Profile.ExtremeSavings" Step="1" Min="@MinValue" Max="@Profile.MaxSavings" />
-                </MudItem>
-                <MudItem>
                     <MudText>Väldigt dyrt: <b>@Profile.MaxSavings</b></MudText>
-                    <MudSlider T="int" @bind-Value="Profile.MaxSavings" Step="1" Min="@Profile.ExtremeSavings" Max="@Profile.Economic" />
+                    <MudSlider T="int" @bind-Value="Profile.MaxSavings" Step="1" Min="@MinValue" Max="@Profile.Economic" />
                 </MudItem>
                 <MudItem>
                     <MudText>Dyrt: <b>@Profile.Economic</b></MudText>
@@ -33,7 +29,7 @@
                     <MudSlider T="int" @bind-Value="Profile.Moderate" Step="1" Min="@Profile.Baseline" Max="@Profile.Enhanced" />
                 </MudItem>
                 <MudItem>
-                    <MudText>Extremt billigt: <b>@Profile.Enhanced</b></MudText>
+                    <MudText>Väldigt billigt: <b>@Profile.Enhanced</b></MudText>
                     <MudSlider T="int" @bind-Value="Profile.Enhanced" Step="1" Min="@Profile.Moderate" Max="@MaxValue" />
                 </MudItem>
             </MudStack>

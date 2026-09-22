@@ -9,17 +9,14 @@ public class PriceThresholds
         decimal veryHighThreshold,
         decimal highThreshold,
         decimal lowThreshold,
-        decimal veryLowThreshold,
-        decimal extremeThreshold)
+        decimal veryLowThreshold)
     {
         VeryHighThreshold = veryHighThreshold;
         HighThreshold = highThreshold;
         LowThreshold = lowThreshold;
         VeryLowThreshold = veryLowThreshold;
-        ExtremeThreshold = extremeThreshold;
     }
 
-    public decimal ExtremeThreshold { get; }
     public decimal VeryHighThreshold { get; }
     public decimal HighThreshold { get; }
     public decimal LowThreshold { get; }
@@ -33,8 +30,7 @@ public class PriceThresholds
             profile.VeryExpensive * average,
             profile.Expensive * average,
             profile.Cheap * average,
-            profile.VeryCheap * average,
-            profile.Extreme
+            profile.VeryCheap * average
         );
     }
 }

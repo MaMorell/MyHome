@@ -84,11 +84,7 @@ public class PriceLevelGenerator
 
     private static EnergyPriceLevel ComputeInternalPriceLevel(PriceThresholds thresholds, EnergyPriceLevel? priceLevelExternal, decimal? price)
     {
-        if (price >= thresholds.ExtremeThreshold && priceLevelExternal == EnergyPriceLevel.VeryExpensive)
-        {
-            return EnergyPriceLevel.Extreme;
-        }
-        else if (price >= thresholds.VeryHighThreshold && priceLevelExternal == EnergyPriceLevel.VeryExpensive)
+        if (price >= thresholds.VeryHighThreshold && priceLevelExternal == EnergyPriceLevel.VeryExpensive)
         {
             return EnergyPriceLevel.VeryExpensive;
         }

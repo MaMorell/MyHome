@@ -44,7 +44,7 @@ public class HouseAutomationService(
         _logger.LogInformation(
             "PriceNow: StartsAt={StartsAt}, PriceTotal={PriceTotal}, LevelInternal={LevelInternal}, LevelExternal={LevelExternal} | " +
             "DeviceSettings: HeatOffset={HeatOffset}, ComfortMode={ComfortMode}, OpMode={OpMode}, " +
-            "StorageTemp={StorageTemp}, BathZeroTemp={BathZeroTemp}, BathOneTemp={BathOneTemp}, GarageTemp={GarageTemp}, DehumidifierTargetHumidity={DehumidifierTargetHumidity}",
+            "BathZeroTemp={BathZeroTemp}, BathOneTemp={BathOneTemp}, GarageTemp={GarageTemp}, DehumidifierTargetHumidity={DehumidifierTargetHumidity}",
             priceNow.StartsAt,
             priceNow.PriceTotal,
             priceNow.LevelInternal,
@@ -52,7 +52,6 @@ public class HouseAutomationService(
             deviceSettings.HeatOffset,
             deviceSettings.ComfortMode,
             deviceSettings.OpMode,
-            deviceSettings.StorageTemprature,
             deviceSettings.ThermostatBathZeroTemperature,
             deviceSettings.ThermostatBathOneTemperature,
             deviceSettings.ThermostatGarageTemperature,

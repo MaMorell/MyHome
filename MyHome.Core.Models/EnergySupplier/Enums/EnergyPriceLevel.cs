@@ -7,6 +7,5 @@ public enum EnergyPriceLevel
     Cheap,
     Normal,
     Expensive,
-    VeryExpensive,
-    Extreme
+    VeryExpensive
 }
