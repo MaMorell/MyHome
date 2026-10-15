@@ -70,12 +70,13 @@ public class PriceLevelGenerator
     {
         const int pricesPerHour = 4; // The price resolution is 15 minutes
 
-        if (prices.Count * pricesPerHour < profile.InternalPriceLevelRangeInHours)
+        var pricesInRange = profile.InternalPriceLevelRangeInHours * pricesPerHour;
+        if (prices.Count < pricesInRange)
         {
             return EnergyPriceLevel.Unknown;
         }
 
-        var pricesFromRange = prices.Take(profile.InternalPriceLevelRangeInHours * pricesPerHour).ToList();
+        var pricesFromRange = prices.Take(pricesInRange).ToList();
 
         var priceThresholds = PriceThresholds.Create(pricesFromRange, profile);
 

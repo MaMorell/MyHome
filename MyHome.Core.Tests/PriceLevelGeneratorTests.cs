@@ -132,13 +132,14 @@ public class PriceLevelGeneratorTests
         };
         _priceThearsholdsRepository.Setup(p => p.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(profile);
 
-        var prices = new List<EnergyPrice>()
-        {
-            new() { StartsAt = GetDateTimeNow(0), Total = 15, Level = EnergyPriceLevel.Expensive },
-            new() { StartsAt = GetDateTimeNow(1), Total = 15, Level = EnergyPriceLevel.Expensive },
-            new() { StartsAt = GetDateTimeNow(2), Total = 5, Level = EnergyPriceLevel.Cheap },
-            new() { StartsAt = GetDateTimeNow(3), Total = 5, Level = EnergyPriceLevel.Cheap },
-        };
+        var prices = Enumerable.Range(0, 16)
+            .Select(i => new EnergyPrice
+            {
+                StartsAt = GetDateTimeNow(0).AddMinutes(i * 15),
+                Total = i < 2 ? 15 : 5,
+                Level = i < 2 ? EnergyPriceLevel.Expensive : EnergyPriceLevel.Cheap
+            })
+            .ToList();
         _energySupplierRepository
             .Setup(r => r.GetEnergyPrices(It.IsAny<EnergyPriceRange>()))
             .ReturnsAsync(prices);
@@ -168,13 +169,14 @@ public class PriceLevelGeneratorTests
         };
         _priceThearsholdsRepository.Setup(p => p.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(profile);
 
-        var prices = new List<EnergyPrice>()
-        {
-            new() { StartsAt = GetDateTimeNow(0), Total = 5, Level = EnergyPriceLevel.Cheap },
-            new() { StartsAt = GetDateTimeNow(1), Total = 5, Level = EnergyPriceLevel.Cheap },
-            new() { StartsAt = GetDateTimeNow(2), Total = 15, Level = EnergyPriceLevel.Expensive },
-            new() { StartsAt = GetDateTimeNow(3), Total = 15, Level = EnergyPriceLevel.Expensive },
-        };
+        var prices = Enumerable.Range(0, 16)
+            .Select(i => new EnergyPrice
+            {
+                StartsAt = GetDateTimeNow(0).AddMinutes(i * 15),
+                Total = i < 2 ? 5 : 15,
+                Level = i < 2 ? EnergyPriceLevel.Cheap : EnergyPriceLevel.Expensive
+            })
+            .ToList();
         _energySupplierRepository
             .Setup(r => r.GetEnergyPrices(It.IsAny<EnergyPriceRange>()))
             .ReturnsAsync(prices);
@@ -204,12 +206,14 @@ public class PriceLevelGeneratorTests
         };
         _priceThearsholdsRepository.Setup(p => p.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(profile);
 
-        var prices = new List<EnergyPrice>()
-        {
-            new() { StartsAt = GetDateTimeNow(0), Total = 5, Level = EnergyPriceLevel.Cheap },
-            new() { StartsAt = GetDateTimeNow(1), Total = 5, Level = EnergyPriceLevel.Cheap },
-            new() { StartsAt = GetDateTimeNow(2), Total = 1, Level = EnergyPriceLevel.Cheap },
-        };
+        var prices = Enumerable.Range(0, 9)
+            .Select(i => new EnergyPrice
+            {
+                StartsAt = GetDateTimeNow(0).AddMinutes(i * 15),
+                Total = i == 1 ? 5 : 1,
+                Level = EnergyPriceLevel.Cheap
+            })
+            .ToList();
         _energySupplierRepository
             .Setup(r => r.GetEnergyPrices(It.IsAny<EnergyPriceRange>()))
             .ReturnsAsync(prices);
