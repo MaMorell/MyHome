@@ -1,0 +1,14 @@
+.settings-cards ::deep .mud-grid > .mud-grid-item {
+    display: flex;
+}
+
+.settings-cards ::deep .mud-grid > .mud-grid-item > .mud-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 0 !important;
+}
+
+.baseline-settings ::deep .mud-card-content {
+    margin-top: auto;
+}
