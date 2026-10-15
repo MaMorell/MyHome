@@ -13,13 +13,4 @@ var apiService = builder
     .WithEnvironment("HomeAssistant__AccessToken", homeAssistantAccessToken)
     .WithEnvironment("TZ", "Europe/Stockholm");
 
-builder.AddProject<Projects.MyHome_Web>("myhome-web")
-    .WithEndpoint("http", endpoint =>
-    {
-        endpoint.Port = 5001;
-    })
-    .WithExternalHttpEndpoints()
-    .WithReference(apiService)
-    .WaitFor(apiService);
-
 builder.Build().Run();
