@@ -1,0 +1,63 @@
+name: Build Raspberry Pi deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Linux ARM64 deployment artifacts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      ARTIFACT_DIR: ${{ runner.temp }}/myhome-deployment
+      COMPOSE_DIR: ${{ runner.temp }}/myhome-compose
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Aspire CLI
+        run: dotnet tool install --global Aspire.Cli --version 13.5.4
+
+      - name: Generate Docker Compose file
+        shell: bash
+        run: |
+          set -euo pipefail
+          aspire publish --apphost MyHome.AppHost/MyHome.AppHost.csproj \
+            --output-path "$COMPOSE_DIR" --non-interactive
+          mkdir -p "$ARTIFACT_DIR"
+          cp "$COMPOSE_DIR/docker-compose.yaml" "$ARTIFACT_DIR/docker-compose.yml"
+
+      - name: Build API container archive
+        run: |
+          dotnet publish MyHome.ApiService/MyHome.ApiService.csproj \
+            --configuration Release --os linux --arch arm64 /t:PublishContainer \
+            -p:ContainerArchiveOutputPath="$ARTIFACT_DIR/myhome-api.tar.gz" \
+            -p:ContainerRepository=myhome-api -p:ContainerImageTag=latest
+
+      - name: Build web container archive
+        run: |
+          dotnet publish MyHome.Web/MyHome.Web.csproj \
+            --configuration Release --os linux --arch arm64 /t:PublishContainer \
+            -p:ContainerArchiveOutputPath="$ARTIFACT_DIR/myhome-web.tar.gz" \
+            -p:ContainerRepository=myhome-web -p:ContainerImageTag=latest
+
+      - name: Upload deployment artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: myhome-linux-arm64-${{ github.sha }}
+          path: |
+            ${{ env.ARTIFACT_DIR }}/myhome-api.tar.gz
+            ${{ env.ARTIFACT_DIR }}/myhome-web.tar.gz
+            ${{ env.ARTIFACT_DIR }}/docker-compose.yml
+          if-no-files-found: error
+          retention-days: 7
