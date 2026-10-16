@@ -24,5 +24,12 @@ public class WebTests
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Contains("app.css", html);
+        Assert.Contains("_framework/blazor.web.js", html);
+
+        var stylesheet = await httpClient.GetAsync("/app.css");
+        Assert.Equal(HttpStatusCode.OK, stylesheet.StatusCode);
+        Assert.Contains(".price-bar", await stylesheet.Content.ReadAsStringAsync());
     }
 }

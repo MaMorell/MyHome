@@ -1,5 +1,3 @@
-using MyHome.Core.Models.Integrations.HomeAssistant;
-
 namespace MyHome.Core.Interfaces;
 
 /// <summary>

@@ -1,12 +1,13 @@
 ﻿using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Models.Interfaces;
+using MyHome.Core.Models.PriceCalculations;
 using EnergyPriceLevel = MyHome.Core.Models.EnergySupplier.Enums.EnergyPriceLevel;
 
 namespace MyHome.Core.PriceCalculations;
 
-public class DeviceSettingsFactory
+public class DeviceTargetsFactory
 {
-    public static DeviceSettings CreateFromLevel(EnergyPriceLevel priceLevel, DeviceSettingsProfile profile)
+    public static DeviceTargets CreateFromLevel(EnergyPriceLevel priceLevel, DeviceSettingsProfile profile)
     {
         var delta = priceLevel switch
         {
@@ -17,14 +18,16 @@ public class DeviceSettingsFactory
             _ => 0
         };
 
-        return new DeviceSettings(
-            profile.HeatOffsetBaseline + delta,
-            GetMode(priceLevel, profile.ComfortModes),
-            GetMode(priceLevel, profile.OpModes),
-            profile.ThermostatBathZeroTemperatureBaseline + delta,
-            profile.ThermostatBathOneTemperatureBaseline + delta,
-            profile.ThermostatGarageTemperatureBaseline + delta,
-            profile.DehumidifierTargetHumidityBaseline - delta);
+        return new DeviceTargets
+        {
+            HeatOffset = profile.HeatOffsetBaseline + delta,
+            ComfortMode = GetMode(priceLevel, profile.ComfortModes),
+            OpMode = GetMode(priceLevel, profile.OpModes),
+            ThermostatBathZeroTemperature = profile.ThermostatBathZeroTemperatureBaseline + delta,
+            ThermostatBathOneTemperature = profile.ThermostatBathOneTemperatureBaseline + delta,
+            ThermostatGarageTemperature = profile.ThermostatGarageTemperatureBaseline + delta,
+            DehumidifierTargetHumidity = profile.DehumidifierTargetHumidityBaseline - delta
+        };
     }
 
     private static T GetMode<T>(EnergyPriceLevel priceLevel, IDeviceProfile<T> profile) => priceLevel switch

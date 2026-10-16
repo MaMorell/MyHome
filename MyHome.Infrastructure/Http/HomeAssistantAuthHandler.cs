@@ -1,4 +1,4 @@
- using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using MyHome.Infrastructure.Options;
 using System.Net.Http.Headers;
 

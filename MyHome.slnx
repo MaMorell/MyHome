@@ -8,6 +8,7 @@
   <Folder Name="/hosting/">
     <Project Path="MyHome.AppHost/MyHome.AppHost.csproj" />
     <Project Path="MyHome.ServiceDefaults/MyHome.ServiceDefaults.csproj" />
+    <Project Path="MyHome.Web/MyHome.Web.csproj" />
   </Folder>
   <Folder Name="/shared/">
     <Project Path="MyHome.Core.Models/MyHome.Core.Models.csproj" />

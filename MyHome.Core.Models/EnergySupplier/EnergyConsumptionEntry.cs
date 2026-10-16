@@ -5,12 +5,12 @@ namespace MyHome.Core.Models.EnergySupplier;
 public class DailyEnergyConsumption
 {
     public DateOnly Date { get; set; }
-    
+
     public decimal AverageCostBySpotPrice
     {
-        get 
+        get
         {
-            return ConsumptionEntries.Sum(c => c.Cost); 
+            return ConsumptionEntries.Sum(c => c.Cost);
         }
     }
 
@@ -18,7 +18,10 @@ public class DailyEnergyConsumption
     {
         get
         {
-            return ConsumptionEntries.Average(c => c.PriceDetails.PriceTotal) * ConsumptionEntries.Sum(c => c.Consumption);
+            var entries = ConsumptionEntries.ToList();
+            return entries.Count == 0
+                ? 0
+                : entries.Average(c => c.PriceDetails.PriceTotal) * entries.Sum(c => c.Consumption);
         }
     }
 

@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyHome.AppHost\MyHome.AppHost.csproj" />
+    <ProjectReference Include="..\MyHome.Web\MyHome.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

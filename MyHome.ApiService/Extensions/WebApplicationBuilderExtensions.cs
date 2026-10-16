@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Routing;
-using MyHome.Core.Interfaces;
+﻿using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.Entities;
 using MyHome.Core.Models.Entities.Profiles;
@@ -32,7 +31,7 @@ public static class WebApplicationBuilderExtensions
         services.AddScoped<HouseAutomationService>();
         services.AddSingleton<ISmartHubClient, MqttClient>();
 
-        services.AddScoped<DeviceSettingsFactory>();
+        services.AddScoped<DeviceTargetsFactory>();
         services.AddScoped<PriceLevelGenerator>();
 
         services.AddEbecoClient(configuration);

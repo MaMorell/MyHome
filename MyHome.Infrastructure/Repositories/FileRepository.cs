@@ -14,7 +14,7 @@ public class FileRepository<T> : IRepository<T> where T : IEntity, new()
         var homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var appDataFolder = Path.Combine(homePath, ".myhomeapp");
 
-        Directory.CreateDirectory(appDataFolder); 
+        Directory.CreateDirectory(appDataFolder);
 
         _filePath = Path.Combine(appDataFolder, $"{typeof(T).Name}.json");
 
@@ -73,9 +73,9 @@ public class FileRepository<T> : IRepository<T> where T : IEntity, new()
     public async Task UpdateAsync(T entity)
     {
         var allItems = await GetAllAsync();
-        var existingItem = allItems.FirstOrDefault(item => item.Id == entity.Id) 
+        var existingItem = allItems.FirstOrDefault(item => item.Id == entity.Id)
             ?? throw new NotFoundException<T>(entity.Id);
-        
+
         var updatedItems = allItems.Where(item => item.Id != entity.Id).Append(entity);
         await SaveToFileAsync(updatedItems);
     }

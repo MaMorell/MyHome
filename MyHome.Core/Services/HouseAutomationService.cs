@@ -6,7 +6,6 @@ using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.Entities.Constants;
 using MyHome.Core.Models.Entities.Profiles;
-using MyHome.Core.Models.Integrations.HeatPump;
 using MyHome.Core.Models.PriceCalculations;
 using MyHome.Core.PriceCalculations;
 
@@ -35,16 +34,16 @@ public class HouseAutomationService(
     private readonly IHomeAssistantEnergyClient _homeAssistantEnergyClient = homeAssistantEnergyClient ?? throw new ArgumentNullException(nameof(homeAssistantEnergyClient));
     private readonly ILogger<HouseAutomationService> _logger = logger;
 
-    public async Task UpdateDevicesForCurrentPeriod(CancellationToken cancellationToken = default)
+    public async Task RunCurrentPeriodAutomationAsync(CancellationToken cancellationToken = default)
     {
-        var prices = await _energyPriceCalculator.CreateAsync(EnergyPriceRange.TodayAndTomorrow);
-        var priceNow = PriceLevelGenerator.GetForSpecificDate(DateTimeOffset.Now, prices);
-        var profile = await _deviceSettingsRepository.GetByIdAsync(EntityIdConstants.DeviceSettingsId)
-            ?? throw new EntityNotFoundException(EntityIdConstants.DeviceSettingsId);
+        var (prices, profile) = await GetPlanningInputsAsync();
 
-        var deviceSettings = DeviceSettingsFactory.CreateFromLevel(priceNow.LevelInternal, profile);
-        deviceSettings = await CustomizeDeviceSettings(deviceSettings, prices, profile);
-        deviceSettings = await ApplyConsumptionOverride(deviceSettings, profile, cancellationToken);
+        var now = DateTimeOffset.Now;
+
+        var priceNow = PriceLevelGenerator.GetForSpecificDate(now, prices);
+
+        var deviceSettings = DeviceTargetsPlanner.Create(priceNow, prices, profile, now);
+        (deviceSettings, _, _) = await ApplyConsumptionOverride(deviceSettings, profile, now, cancellationToken);
 
         _logger.LogInformation(
             "PriceNow: StartsAt={StartsAt}, PriceTotal={PriceTotal}, LevelInternal={LevelInternal}, LevelExternal={LevelExternal} | " +
@@ -65,7 +64,55 @@ public class HouseAutomationService(
         await ApplyDeviceSettings(deviceSettings, cancellationToken);
     }
 
-    public async Task ApplyDeviceSettings(DeviceSettings deviceSettings, CancellationToken cancellationToken)
+    public async Task<AutomationPreview> GetPreviewAsync(
+        DateTimeOffset? at = null,
+        CancellationToken cancellationToken = default)
+    {
+        var (prices, profile) = await GetPlanningInputsAsync();
+
+        var now = at ?? DateTimeOffset.Now;
+        var priceNow = PriceLevelGenerator.GetForSpecificDate(now, prices);
+
+        var baseline = DeviceTargetsFactory.CreateFromLevel(EnergyPriceLevel.Normal, profile);
+
+        var periods = prices
+            .Where(price => price.StartsAt >= priceNow.StartsAt)
+            .Select(price => new AutomationPeriodPreview
+            {
+                PriceDetails = price,
+                Targets = DeviceTargetsPlanner.Create(price, prices, profile, price.StartsAt),
+                IsCurrentPeriod = price.StartsAt == priceNow.StartsAt
+            })
+            .ToList();
+
+        var currentSettings = DeviceTargetsPlanner.Create(priceNow, prices, profile, now);
+        var (effectiveSettings, overrideStatus, accumulatedConsumptionCurrentHour) =
+            await ApplyConsumptionOverride(currentSettings, profile, now, cancellationToken, readOutsideOverrideWindow: true);
+
+        var currentIndex = periods.FindIndex(period => period.IsCurrentPeriod);
+        periods[currentIndex] = periods[currentIndex] with { Targets = effectiveSettings };
+
+        return new AutomationPreview
+        {
+            GeneratedAt = now,
+            Baseline = baseline,
+            CurrentConsumptionOverride = overrideStatus,
+            AccumulatedConsumptionCurrentHour = accumulatedConsumptionCurrentHour,
+            Periods = periods
+        };
+    }
+
+    private async Task<(IReadOnlyList<EnergyPriceDetails> Prices, DeviceSettingsProfile Profile)> GetPlanningInputsAsync()
+    {
+        var prices = (await _energyPriceCalculator.CreateAsync(EnergyPriceRange.TodayAndTomorrow))
+            .OrderBy(price => price.StartsAt)
+            .ToList();
+        var profile = await _deviceSettingsRepository.GetByIdAsync(EntityIdConstants.DeviceSettingsId)
+            ?? throw new EntityNotFoundException(EntityIdConstants.DeviceSettingsId);
+        return (prices, profile);
+    }
+
+    private async Task ApplyDeviceSettings(DeviceTargets deviceSettings, CancellationToken cancellationToken)
     {
         var configureHeatPumpTask = ExecuteDeviceUpdateSafely(
             "heat pump",
@@ -103,14 +150,17 @@ public class HouseAutomationService(
         }
     }
 
-    private async Task<DeviceSettings> ApplyConsumptionOverride(
-        DeviceSettings settings,
+    private async Task<(DeviceTargets Settings, ConsumptionOverrideStatus Status, decimal? Consumption)> ApplyConsumptionOverride(
+        DeviceTargets settings,
         DeviceSettingsProfile profile,
-        CancellationToken cancellationToken)
+        DateTimeOffset at,
+        CancellationToken cancellationToken,
+        bool readOutsideOverrideWindow = false)
     {
-        if (!DateTime.Now.IsWeekdayDayTime())
+        var overrideApplicable = at.DateTime.IsWeekdayDayTime();
+        if (!overrideApplicable && !readOutsideOverrideWindow)
         {
-            return settings;
+            return (settings, ConsumptionOverrideStatus.NotApplicable, null);
         }
 
         decimal accumulatedConsumptionCurrentHour;
@@ -119,15 +169,24 @@ public class HouseAutomationService(
             accumulatedConsumptionCurrentHour = await _homeAssistantEnergyClient
                 .GetAccumulatedConsumptionCurrentHourAsync(cancellationToken);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to read accumulated consumption from Home Assistant");
-            return settings;
+            return (settings, overrideApplicable ? ConsumptionOverrideStatus.Unavailable : ConsumptionOverrideStatus.NotApplicable, null);
+        }
+
+        if (!overrideApplicable)
+        {
+            return (settings, ConsumptionOverrideStatus.NotApplicable, accumulatedConsumptionCurrentHour);
         }
 
         if (accumulatedConsumptionCurrentHour < HourlyConsumptionLimitKWH)
         {
-            return settings;
+            return (settings, ConsumptionOverrideStatus.BelowLimit, accumulatedConsumptionCurrentHour);
         }
 
         _logger.LogInformation(
@@ -136,65 +195,12 @@ public class HouseAutomationService(
             accumulatedConsumptionCurrentHour,
             HourlyConsumptionLimitKWH);
 
-        return DeviceSettingsFactory.CreateFromLevel(EnergyPriceLevel.VeryExpensive, profile);
+        return (DeviceTargetsFactory.CreateFromLevel(EnergyPriceLevel.VeryExpensive, profile),
+            ConsumptionOverrideStatus.Applied,
+            accumulatedConsumptionCurrentHour);
     }
 
-    private static async Task<DeviceSettings> CustomizeDeviceSettings(DeviceSettings settings, IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
-    {
-        var now = DateTime.Now;
-
-        if (now.IsMidNight() || now.IsMidDay())
-        {
-            settings.ComfortMode = ComfortMode.Economy;
-        }
-
-        if (now.IsMidNight())
-        {
-            settings.ThermostatBathZeroTemperature -= 4;
-            settings.ThermostatBathOneTemperature -= 4;
-        }
-        else if (now.IsWeekdayMidDay() || now.IsEvening())
-        {
-            settings.ThermostatBathZeroTemperature -= 2;
-            settings.ThermostatBathOneTemperature -= 2;
-        }
-
-        if (ShouldForceManualOpMode(prices, profile))
-        {
-            settings.OpMode = OpMode.Manual;
-        }
-
-        return settings;
-    }
-
-    private static bool ShouldForceManualOpMode(IEnumerable<EnergyPriceDetails> prices, DeviceSettingsProfile profile)
-    {
-        var priceNow = PriceLevelGenerator.GetForSpecificDate(DateTimeOffset.Now, prices);
-
-        if (priceNow.StartsAt.DateTime.IsWeekdayDayTime())
-        {
-            return true;
-        }
-
-        if (priceNow.PriceTotal > profile.OpModes.MaxPriceAutoMode)
-        {
-            return true;
-        }
-
-        var nonMidayPrices = prices.Where(p => !p.StartsAt.DateTime.IsWeekdayDayTime()).ToList();
-        var lowestSixthThreshold = nonMidayPrices
-            .OrderBy(p => p.PriceTotal)
-            .ElementAtOrDefault(nonMidayPrices.Count / 6);
-
-        if (lowestSixthThreshold == null || priceNow.PriceTotal > lowestSixthThreshold.PriceTotal)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private async Task ConfigureHeatPump(DeviceSettings settings, CancellationToken cancellationToken)
+    private async Task ConfigureHeatPump(DeviceTargets settings, CancellationToken cancellationToken)
     {
         await _heatPumpClient.UpdateHeat(settings.HeatOffset, cancellationToken);
         await _heatPumpClient.UpdateComfortMode(settings.ComfortMode, cancellationToken);

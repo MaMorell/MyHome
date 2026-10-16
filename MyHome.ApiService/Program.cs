@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MyHome.ApiService.Endpoints;
 using MyHome.ApiService.Extensions;
 using MyHome.ApiService.HostedServices;
 using MyHome.Core.Interfaces;
@@ -37,6 +38,7 @@ if (app.Environment.IsDevelopment())
 EnergysupplierEndpoints.Map(app);
 PriceThearsholdsEndpoints.Map(app);
 DeviceSettingsEndpoints.Map(app);
+AutomationPreviewEndpoints.Map(app);
 
 app.MapGet("/auditevents", async ([FromServices] IRepository<AuditEvent> repository, [FromQuery] int limit) =>
 {

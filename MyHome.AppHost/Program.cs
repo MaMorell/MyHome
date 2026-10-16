@@ -13,4 +13,9 @@ var apiService = builder
     .WithEnvironment("HomeAssistant__AccessToken", homeAssistantAccessToken)
     .WithEnvironment("TZ", "Europe/Stockholm");
 
+builder.AddProject<Projects.MyHome_Web>("myhome-web")
+    .WithReference(apiService)
+    .WithExternalHttpEndpoints()
+    .WithEnvironment("TZ", "Europe/Stockholm");
+
 builder.Build().Run();
