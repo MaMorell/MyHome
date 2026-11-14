@@ -38,12 +38,26 @@ public static class DeviceTargetsPlanner
             };
         }
 
-        if (ShouldForceManualOpMode(prices, profile, at))
+        if (IsPeriodicIncreaseWindow(localTime))
+        {
+            settings = settings with { OpMode = OpMode.Auto };
+        }
+        else if (ShouldForceManualOpMode(prices, profile, at))
         {
             settings = settings with { OpMode = OpMode.Manual };
         }
 
         return settings;
+    }
+
+    private static bool IsPeriodicIncreaseWindow(DateTime localTime)
+    {
+        var startDate = new DateOnly(2026, 11, 20);
+        var daysSinceStart = DateOnly.FromDateTime(localTime).DayNumber - startDate.DayNumber;
+
+        return daysSinceStart >= 0 &&
+            daysSinceStart % 14 == 0 &&
+            localTime.TimeOfDay < TimeSpan.FromHours(2);
     }
 
     private static bool ShouldForceManualOpMode(

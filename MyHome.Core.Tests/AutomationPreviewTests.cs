@@ -11,6 +11,35 @@ public class AutomationPreviewTests
     private static readonly DateTimeOffset MondayMidday = new(2026, 1, 5, 11, 1, 0, TimeSpan.FromHours(1));
 
     [Theory]
+    [InlineData(2026, 11, 6, 0, 0, 0, 1, OpMode.Manual)]
+    [InlineData(2026, 11, 19, 23, 59, 59, 1, OpMode.Manual)]
+    [InlineData(2026, 11, 20, 0, 0, 0, 1, OpMode.Auto)]
+    [InlineData(2026, 11, 20, 1, 59, 59, 1, OpMode.Auto)]
+    [InlineData(2026, 11, 20, 2, 0, 0, 1, OpMode.Manual)]
+    [InlineData(2026, 11, 21, 1, 0, 0, 1, OpMode.Manual)]
+    [InlineData(2026, 11, 27, 1, 0, 0, 1, OpMode.Manual)]
+    [InlineData(2026, 12, 4, 0, 0, 0, 1, OpMode.Auto)]
+    [InlineData(2026, 12, 18, 1, 0, 0, 1, OpMode.Auto)]
+    [InlineData(2027, 1, 1, 1, 0, 0, 1, OpMode.Auto)]
+    [InlineData(2027, 7, 2, 0, 0, 0, 2, OpMode.Auto)]
+    [InlineData(2027, 7, 2, 2, 0, 0, 2, OpMode.Manual)]
+    public void PeriodicIncreaseWindowOverridesPriceRulesEveryFourteenDays(
+        int year, int month, int day, int hour, int minute, int second, int offsetHours, OpMode expectedMode)
+    {
+        var time = new DateTimeOffset(year, month, day, hour, minute, second, TimeSpan.FromHours(offsetHours));
+        var price = new EnergyPriceDetails
+        {
+            StartsAt = time,
+            PriceTotal = 10m,
+            LevelInternal = EnergyPriceLevel.VeryExpensive
+        };
+
+        var targets = DeviceTargetsPlanner.Create(price, [price], new DeviceSettingsProfile(), time);
+
+        Assert.Equal(expectedMode, targets.OpMode);
+    }
+
+    [Theory]
     [InlineData(EnergyPriceLevel.VeryCheap, 2, 26, 28, 14, 23, 63)]
     [InlineData(EnergyPriceLevel.Cheap, 1, 25, 27, 13, 22, 64)]
     [InlineData(EnergyPriceLevel.Normal, 0, 24, 26, 12, 21, 65)]
