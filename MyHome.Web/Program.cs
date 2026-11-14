@@ -19,6 +19,12 @@ builder.Services.AddHttpClient<EnergyDashboardClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(15);
 });
 
+builder.Services.AddHttpClient<DeviceSettingsClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler("/error");

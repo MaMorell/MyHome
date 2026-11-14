@@ -60,6 +60,17 @@ h1 { font-size: clamp(30px, 3vw, 40px); font-weight: 800; letter-spacing: -1.9px
 .refresh-button:disabled { opacity: .55; cursor: wait; }
 .refresh-button span { font-size: 18px; line-height: 1; }
 .alert { display: flex; gap: 8px; flex-wrap: wrap; border: 1px solid #8c633a; border-radius: 8px; padding: 13px 16px; margin-bottom: 20px; background: #3c3021; color: #ffdcaa; font-size: 12px; }
+.alert.alert-success { border-color: #3c6353; background: #193b30; color: #cef1dc; }
+.settings-panel { padding: 26px 29px 29px; margin-bottom: 20px; }
+.settings-group { margin-top: 24px; }
+.settings-group:first-of-type { margin-top: 20px; }
+.settings-group h3 { margin: 0 0 14px; font-size: 13px; font-weight: 700; color: #8fdfb1; letter-spacing: .4px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.form-field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #a8bac4; }
+.form-field input, .form-field select { padding: 9px 11px; border: 1px solid #2f424c; border-radius: 7px; background: #0f1a24; color: #e9edf2; font-size: 13px; }
+.form-field input:focus, .form-field select:focus { outline: 2px solid #89dfb2; outline-offset: 1px; }
+.form-field-readonly input { opacity: .65; }
+.form-actions { margin-top: 26px; }
 .loading-state { padding: 18px 0; color: #a8c7b5; font-size: 13px; }
 .level-pill { display: inline-block; width: fit-content; padding: 5px 9px; border-radius: 5px; white-space: nowrap; font-size: 10px; font-weight: 700; }
 .level-pill.very-cheap { background: #163d2c; color: #7df0ad; }

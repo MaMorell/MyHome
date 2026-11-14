@@ -2,10 +2,14 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using System.Globalization
 @using System.Text.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using MyHome.Core.Models.Entities.Profiles
 @using MyHome.Core.Models.EnergySupplier
 @using MyHome.Core.Models.EnergySupplier.Enums
+@using MyHome.Core.Models.Integrations.HeatPump
 @using MyHome.Web.Services
 @inject EnergyDashboardClient Dashboard
+@inject DeviceSettingsClient DeviceSettings
 @inject ILogger<Home> Logger
 
 <PageTitle>Energy dashboard | MyHome</PageTitle>
@@ -21,6 +25,7 @@
         <nav aria-label="Dashboard navigation">
             <a class="nav-link active" href="#overview"><span class="nav-symbol">◫</span> Overview</a>
             <a class="nav-link" href="#prices"><span class="nav-symbol">▥</span> Price explorer</a>
+            <a class="nav-link" href="#device-settings"><span class="nav-symbol">⚙</span> Device settings</a>
         </nav>
 
         <div class="sidebar-bottom">
@@ -127,6 +132,194 @@
                 }
             </section>
 
+            <section class="panel settings-panel" id="device-settings" aria-labelledby="device-settings-title">
+                <div class="panel-header">
+                    <div>
+                        <div class="section-kicker">AUTOMATION TUNING</div>
+                        <h2 id="device-settings-title">Device settings</h2>
+                        <p>Baselines and comfort/operation modes used when MyHome automates your devices.</p>
+                    </div>
+                </div>
+
+                @if (_deviceSettingsLoading && _deviceSettings is null)
+                {
+                    <div class="loading-state" role="status">Loading device settings...</div>
+                }
+                else if (_deviceSettingsError is not null && _deviceSettings is null)
+                {
+                    <div class="alert" role="alert">
+                        <strong>Device settings could not be loaded.</strong>
+                        <span>@_deviceSettingsError</span>
+                    </div>
+                }
+                else if (_deviceSettings is not null)
+                {
+                    @if (_deviceSettingsError is not null)
+                    {
+                        <div class="alert" role="alert">
+                            <strong>Device settings could not be saved.</strong>
+                            <span>@_deviceSettingsError</span>
+                        </div>
+                    }
+                    @if (_deviceSettingsSaveMessage is not null)
+                    {
+                        <div class="alert alert-success" role="status">
+                            <span>@_deviceSettingsSaveMessage</span>
+                        </div>
+                    }
+
+                    <EditForm Model="_deviceSettings" OnValidSubmit="SaveDeviceSettingsAsync">
+                        <DataAnnotationsValidator />
+
+                        <div class="settings-group">
+                            <h3>Baselines</h3>
+                            <div class="form-grid">
+                                <label class="form-field">
+                                    <span>Heat offset baseline</span>
+                                    <InputNumber @bind-Value="_deviceSettings.HeatOffsetBaseline" />
+                                </label>
+                                <label class="form-field">
+                                    <span>Thermostat bath 0 baseline (°C)</span>
+                                    <InputNumber @bind-Value="_deviceSettings.ThermostatBathZeroTemperatureBaseline" />
+                                </label>
+                                <label class="form-field">
+                                    <span>Thermostat bath 1 baseline (°C)</span>
+                                    <InputNumber @bind-Value="_deviceSettings.ThermostatBathOneTemperatureBaseline" />
+                                </label>
+                                <label class="form-field">
+                                    <span>LLVP Gree baseline (°C)</span>
+                                    <InputNumber @bind-Value="_deviceSettings.LlvpGreeTemperatureBaseline" />
+                                </label>
+                                <label class="form-field">
+                                    <span>LLVP Hero baseline (°C)</span>
+                                    <InputNumber @bind-Value="_deviceSettings.LlvpHeroTemperatureBaseline" />
+                                </label>
+                                <label class="form-field">
+                                    <span>Dehumidifier target humidity baseline (%)</span>
+                                    <InputNumber @bind-Value="_deviceSettings.DehumidifierTargetHumidityBaseline" />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3>Comfort modes</h3>
+                            <div class="form-grid">
+                                <label class="form-field">
+                                    <span>Max savings</span>
+                                    <InputSelect @bind-Value="_deviceSettings.ComfortModes.MaxSavings">
+                                        @foreach (var mode in ComfortModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                                <label class="form-field">
+                                    <span>Economic</span>
+                                    <InputSelect @bind-Value="_deviceSettings.ComfortModes.Economic">
+                                        @foreach (var mode in ComfortModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                                <label class="form-field">
+                                    <span>Baseline</span>
+                                    <InputSelect @bind-Value="_deviceSettings.ComfortModes.Baseline">
+                                        @foreach (var mode in ComfortModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                                <label class="form-field">
+                                    <span>Moderate</span>
+                                    <InputSelect @bind-Value="_deviceSettings.ComfortModes.Moderate">
+                                        @foreach (var mode in ComfortModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                                <label class="form-field">
+                                    <span>Enhanced</span>
+                                    <InputSelect @bind-Value="_deviceSettings.ComfortModes.Enhanced">
+                                        @foreach (var mode in ComfortModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3>Operation modes</h3>
+                            <div class="form-grid">
+                                <label class="form-field">
+                                    <span>Max savings</span>
+                                    <InputSelect @bind-Value="_deviceSettings.OpModes.MaxSavings">
+                                        @foreach (var mode in OpModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                                <label class="form-field">
+                                    <span>Economic</span>
+                                    <InputSelect @bind-Value="_deviceSettings.OpModes.Economic">
+                                        @foreach (var mode in OpModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                                <label class="form-field">
+                                    <span>Baseline</span>
+                                    <InputSelect @bind-Value="_deviceSettings.OpModes.Baseline">
+                                        @foreach (var mode in OpModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                                <label class="form-field">
+                                    <span>Moderate</span>
+                                    <InputSelect @bind-Value="_deviceSettings.OpModes.Moderate">
+                                        @foreach (var mode in OpModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                                <label class="form-field">
+                                    <span>Enhanced</span>
+                                    <InputSelect @bind-Value="_deviceSettings.OpModes.Enhanced">
+                                        @foreach (var mode in OpModeValues)
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                                <label class="form-field">
+                                    <span>Max price auto mode (SEK/kWh)</span>
+                                    <InputNumber @bind-Value="_deviceSettings.OpModes.MaxPriceAutoMode" step="0.01" />
+                                </label>
+                                <label class="form-field form-field-readonly">
+                                    <span>Max price auto mode, night time (SEK/kWh)</span>
+                                    <input type="text" value="@Price(_deviceSettings.OpModes.MaxPriceAutoModeNightTime)" disabled />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="action-button" type="submit" disabled="@_deviceSettingsSaving">
+                                @(_deviceSettingsSaving ? "Saving..." : "Save device settings")
+                            </button>
+                        </div>
+                    </EditForm>
+                }
+            </section>
+
             <footer class="footer">
                 <span>MYHOME <span class="footer-divider">/</span> ENERGY DASHBOARD</span>
                 <span>@(_lastUpdated is null ? "Waiting for data" : $"Updated {_lastUpdated:HH:mm:ss}") · Prices provided by Tibber</span>
@@ -153,7 +346,62 @@
     private decimal ChartMax => Math.Max(0, VisiblePrices.Max(e => e.PriceDetails.PriceTotal));
     private decimal ChartRange => ChartMax == ChartMin ? 1 : ChartMax - ChartMin;
 
-    protected override async Task OnInitializedAsync() => await RefreshAsync();
+    private static readonly IReadOnlyList<ComfortMode> ComfortModeValues = Enum.GetValues<ComfortMode>();
+    private static readonly IReadOnlyList<OpMode> OpModeValues = Enum.GetValues<OpMode>();
+
+    private DeviceSettingsProfile? _deviceSettings;
+    private string? _deviceSettingsError;
+    private string? _deviceSettingsSaveMessage;
+    private bool _deviceSettingsLoading = true;
+    private bool _deviceSettingsSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(RefreshAsync(), LoadDeviceSettingsAsync());
+    }
+
+    private async Task LoadDeviceSettingsAsync()
+    {
+        _deviceSettingsLoading = true;
+        _deviceSettingsError = null;
+
+        try
+        {
+            _deviceSettings = await DeviceSettings.GetAsync();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException or InvalidOperationException)
+        {
+            Logger.LogError(ex, "Could not load device settings");
+            _deviceSettingsError = "Device settings are unavailable.";
+        }
+
+        _deviceSettingsLoading = false;
+    }
+
+    private async Task SaveDeviceSettingsAsync()
+    {
+        if (_deviceSettings is null)
+        {
+            return;
+        }
+
+        _deviceSettingsSaving = true;
+        _deviceSettingsError = null;
+        _deviceSettingsSaveMessage = null;
+
+        try
+        {
+            await DeviceSettings.SaveAsync(_deviceSettings);
+            _deviceSettingsSaveMessage = "Device settings saved.";
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException or InvalidOperationException)
+        {
+            Logger.LogError(ex, "Could not save device settings");
+            _deviceSettingsError = "Device settings could not be saved. Please try again.";
+        }
+
+        _deviceSettingsSaving = false;
+    }
 
     private async Task RefreshAsync()
     {

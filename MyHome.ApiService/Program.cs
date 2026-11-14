@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MyHome.ApiService.Endpoints;
 using MyHome.ApiService.Extensions;
 using MyHome.ApiService.HostedServices;
 using MyHome.Core.Interfaces;

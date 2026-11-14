@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.Entities.Profiles;
 
+namespace MyHome.ApiService.Endpoints;
+
 public static class DeviceSettingsEndpoints
 {
     public static void Map(WebApplication app)
