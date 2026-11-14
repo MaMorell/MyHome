@@ -20,19 +20,3 @@ public sealed record DeviceTargets
     public required int ThermostatGarageTemperature { get; init; }
     public required int DehumidifierTargetHumidity { get; init; }
 }
-
-public sealed record AutomationPeriodPreview
-{
-    public required EnergyPriceDetails PriceDetails { get; init; }
-    public required DeviceTargets Targets { get; init; }
-    public required bool IsCurrentPeriod { get; init; }
-}
-
-public sealed record AutomationPreview
-{
-    public required DateTimeOffset GeneratedAt { get; init; }
-    public required DeviceTargets Baseline { get; init; }
-    public required ConsumptionOverrideStatus CurrentConsumptionOverride { get; init; }
-    public decimal? AccumulatedConsumptionCurrentHour { get; init; }
-    public required IReadOnlyList<AutomationPeriodPreview> Periods { get; init; }
-}

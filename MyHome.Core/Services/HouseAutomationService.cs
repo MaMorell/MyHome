@@ -64,44 +64,6 @@ public class HouseAutomationService(
         await ApplyDeviceSettings(deviceSettings, cancellationToken);
     }
 
-    public async Task<AutomationPreview> GetPreviewAsync(
-        DateTimeOffset? at = null,
-        CancellationToken cancellationToken = default)
-    {
-        var (prices, profile) = await GetPlanningInputsAsync();
-
-        var now = at ?? DateTimeOffset.Now;
-        var priceNow = PriceLevelGenerator.GetForSpecificDate(now, prices);
-
-        var baseline = DeviceTargetsFactory.CreateFromLevel(EnergyPriceLevel.Normal, profile);
-
-        var periods = prices
-            .Where(price => price.StartsAt >= priceNow.StartsAt)
-            .Select(price => new AutomationPeriodPreview
-            {
-                PriceDetails = price,
-                Targets = DeviceTargetsPlanner.Create(price, prices, profile, price.StartsAt),
-                IsCurrentPeriod = price.StartsAt == priceNow.StartsAt
-            })
-            .ToList();
-
-        var currentSettings = DeviceTargetsPlanner.Create(priceNow, prices, profile, now);
-        var (effectiveSettings, overrideStatus, accumulatedConsumptionCurrentHour) =
-            await ApplyConsumptionOverride(currentSettings, profile, now, cancellationToken, readOutsideOverrideWindow: true);
-
-        var currentIndex = periods.FindIndex(period => period.IsCurrentPeriod);
-        periods[currentIndex] = periods[currentIndex] with { Targets = effectiveSettings };
-
-        return new AutomationPreview
-        {
-            GeneratedAt = now,
-            Baseline = baseline,
-            CurrentConsumptionOverride = overrideStatus,
-            AccumulatedConsumptionCurrentHour = accumulatedConsumptionCurrentHour,
-            Periods = periods
-        };
-    }
-
     private async Task<(IReadOnlyList<EnergyPriceDetails> Prices, DeviceSettingsProfile Profile)> GetPlanningInputsAsync()
     {
         var prices = (await _energyPriceCalculator.CreateAsync(EnergyPriceRange.TodayAndTomorrow))

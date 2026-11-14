@@ -32,18 +32,6 @@ public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient, IMe
         return cachedPrices ?? ReadOnlyCollection<EnergyPrice>.Empty;
     }
 
-    public async Task<ICollection<EnergyConsumptionEntry>> GetConsumption(int lastHours)
-    {
-        var homeId = await GetHomeId();
-        var query = BuildEnergyConsumptionQuery(homeId, lastHours, EnergyResolution.Hourly);
-        var queryResponse = await tibberApiClient.Query(query);
-
-        var result = queryResponse.Data.Viewer.Home?.Consumption?.Nodes ??
-            throw new TibberApiException(GetTibberApiErrorMessage(queryResponse.Data));
-
-        return result.ToEnergyConsumptionEntries();
-    }
-
     private async Task<Guid> GetHomeId()
     {
         return await memoryCache.GetOrCreateAsync("TibberHomeId", async entry =>
@@ -77,24 +65,6 @@ public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient, IMe
                                     .WithAllScalarFields()
                                     .WithPriceInfo(priceInfoBuilder, resolution: PriceInfoResolution.QuarterHourly)
                             ),
-                        homeId
-                    )
-            );
-
-        return customQueryBuilder.Build();
-    }
-
-    private static string BuildEnergyConsumptionQuery(Guid homeId, int lastEntries, EnergyResolution energyResolution)
-    {
-        var customQueryBuilder = new TibberQueryBuilder()
-            .WithAllScalarFields()
-            .WithViewer(
-                new ViewerQueryBuilder()
-                    .WithAllScalarFields()
-                    .WithHome(
-                        new HomeQueryBuilder()
-                            .WithAllScalarFields()
-                            .WithConsumption(energyResolution, lastEntries),
                         homeId
                     )
             );

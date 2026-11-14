@@ -4,7 +4,6 @@
 @using System.Text.Json
 @using MyHome.Core.Models.EnergySupplier
 @using MyHome.Core.Models.EnergySupplier.Enums
-@using MyHome.Core.Models.PriceCalculations
 @using MyHome.Web.Services
 @inject EnergyDashboardClient Dashboard
 @inject ILogger<Home> Logger
@@ -53,87 +52,18 @@
                 </button>
             </div>
 
-            @if (_priceError is not null || _consumptionError is not null || _automationError is not null)
+            @if (_priceError is not null)
             {
                 <div class="alert" role="alert">
                     <strong>Some data could not be loaded.</strong>
-                    <span>@_priceError @_consumptionError @_automationError</span>
+                    <span>@_priceError</span>
                 </div>
             }
 
-            @if (_loading && _prices.Count == 0 && _daily.Count == 0 && _automation is null)
+            @if (_loading && _prices.Count == 0)
             {
                 <div class="loading-state" role="status">Loading live energy data...</div>
             }
-
-            <section class="stat-grid" aria-label="Energy summary">
-                <div class="stat-card current-card">
-                    <div class="stat-top"><span>CURRENT PRICE</span><span class="live-tag"><span class="status-dot"></span> LIVE</span></div>
-                    @if (CurrentPrice is { } current)
-                    {
-                        <div class="stat-value">@Price(current.PriceDetails.PriceTotal)<span> SEK/kWh</span></div>
-                        <div class="stat-bottom"><span class="level-pill @LevelClass(current.PriceDetails.LevelExternal)">@LevelName(current.PriceDetails.LevelExternal)</span><span>Tibber · current 15-min period</span></div>
-                        <div class="internal-level">MyHome level: @LevelName(current.PriceDetails.LevelInternal)</div>
-                    }
-                    else
-                    {
-                        <div class="stat-value unavailable">—</div>
-                        <div class="stat-bottom">Current price unavailable</div>
-                    }
-                </div>
-                <div class="stat-card">
-                    <div class="stat-top"><span>LOWEST IN NEXT 12 HOURS</span><span class="stat-icon">↘</span></div>
-                    @if (NextLow is { } low)
-                    {
-                        <div class="stat-value">@Price(low.PriceDetails.PriceTotal)<span> SEK/kWh</span></div>
-                        <div class="stat-bottom">Starts @low.PriceDetails.StartsAt.ToString("ddd HH:mm", CultureInfo.InvariantCulture)</div>
-                    }
-                    else
-                    {
-                        <div class="stat-value unavailable">—</div>
-                        <div class="stat-bottom">No upcoming prices available</div>
-                    }
-                </div>
-                <div class="stat-card">
-                    <div class="stat-top"><span>USED TODAY</span><span class="stat-icon">⌁</span></div>
-                    @if (TodayConsumption is { } today && today.ConsumptionEntries.Any())
-                    {
-                        <div class="stat-value">@Quantity(TotalConsumption(today))<span> kWh</span></div>
-                        <div class="stat-bottom">Reported cost @Money(TotalCost(today)) SEK</div>
-                    }
-                    else
-                    {
-                        <div class="stat-value unavailable">—</div>
-                        <div class="stat-bottom">No consumption reported yet</div>
-                    }
-                </div>
-                <div class="stat-card">
-                    <div class="stat-top"><span>LAST 7 DAYS</span><span class="stat-icon">▥</span></div>
-                    @if (_daily.Any(day => day.ConsumptionEntries.Any()))
-                    {
-                        <div class="stat-value">@Quantity(_daily.Sum(TotalConsumption))<span> kWh</span></div>
-                        <div class="stat-bottom">Reported cost @Money(_daily.Sum(TotalCost)) SEK</div>
-                    }
-                    else
-                    {
-                        <div class="stat-value unavailable">—</div>
-                        <div class="stat-bottom">No consumption reported</div>
-                    }
-                </div>
-                <div class="stat-card">
-                    <div class="stat-top"><span>CURRENT HOUR USAGE</span><span class="stat-icon">⌁</span></div>
-                    @if (_automation?.AccumulatedConsumptionCurrentHour is { } currentHourConsumption)
-                    {
-                        <div class="stat-value">@Quantity(currentHourConsumption)<span> kWh</span></div>
-                        <div class="stat-bottom">Accumulated this hour</div>
-                    }
-                    else
-                    {
-                        <div class="stat-value unavailable">—</div>
-                        <div class="stat-bottom">Usage unavailable</div>
-                    }
-                </div>
-            </section>
 
             <section class="panel price-panel" id="prices" aria-labelledby="prices-title">
                 <div class="panel-header">
@@ -171,29 +101,6 @@
                                 </div>
                             }
                         </div>
-                        @if (VisibleHourlyConsumption.Count > 0)
-                        {
-                            <div class="consumption-series-label">REPORTED HOURLY CONSUMPTION <span>kWh · only hours with readings</span></div>
-                            <div class="hourly-consumption-plot" role="img" aria-label="Hourly electricity consumption for @SelectedDay.ToString("d MMMM", CultureInfo.InvariantCulture), maximum @Quantity(MaxHourlyConsumption) kWh">
-                                <span class="usage-y-max">@Quantity(MaxHourlyConsumption)</span>
-                                <span class="usage-y-zero">0</span>
-                                @for (var i = 0; i < VisiblePrices.Count; i++)
-                                {
-                                    var usage = ConsumptionAt(VisiblePrices[i].PriceDetails.StartsAt);
-                                    var previousUsage = i > 0 ? ConsumptionAt(VisiblePrices[i - 1].PriceDetails.StartsAt) : null;
-                                    <div class="chart-slot">
-                                        @if (usage is not null && usage.PriceDetails.StartsAt != previousUsage?.PriceDetails.StartsAt)
-                                        {
-                                            <div class="hourly-consumption-bar" style="height:@HourlyBarHeight(usage.Consumption)" title="@($"Hour starting {usage.PriceDetails.StartsAt:HH:mm}: {Quantity(usage.Consumption)} kWh consumed")"></div>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="chart-consumption-empty">Hourly consumption has not been reported for this day.</div>
-                        }
                         <div class="chart-axis">
                             @for (var i = 0; i < VisiblePrices.Count; i++)
                             {
@@ -206,18 +113,6 @@
                             }
                         </div>
                     </div>
-                    @if (VisibleHourlyConsumption.Count > 0)
-                    {
-                        <div class="hourly-readings" aria-label="Reported consumption by hour">
-                            @foreach (var usage in VisibleHourlyConsumption)
-                            {
-                                <span class="hourly-reading" title="@($"{usage.PriceDetails.StartsAt:HH:mm zzz}: {Quantity(usage.Consumption)} kWh consumed")">
-                                    <time datetime="@usage.PriceDetails.StartsAt.ToString("O")">@usage.PriceDetails.StartsAt.ToString("HH:mm")</time>
-                                    <strong>@Quantity(usage.Consumption)</strong> kWh
-                                </span>
-                            }
-                        </div>
-                    }
                     <div class="chart-legend">
                         <strong>MYHOME INTERNAL LEVEL</strong>
                         <span><i class="legend-dot very-cheap"></i> Very cheap</span>
@@ -234,182 +129,9 @@
                 }
             </section>
 
-            <section class="panel automation-panel" id="automation" aria-labelledby="automation-title">
-                <div class="panel-header">
-                    <div>
-                        <div class="section-kicker">BEHIND THE AUTOMATION</div>
-                        <h2 id="automation-title">Device outlook</h2>
-                        <p>Targets calculated from MyHome's internal price level, device profile and time-of-day rules.</p>
-                    </div>
-                    <span class="period-badge">READ-ONLY PREVIEW</span>
-                </div>
-
-                @if (_automation is { } automation && CurrentPlan is { } currentPlan)
-                {
-                    <div class="automation-intro">
-                        <div>
-                            <strong>Target if automation runs now</strong>
-                            <span>@currentPlan.PriceDetails.StartsAt.ToString("ddd d MMM, HH:mm", CultureInfo.InvariantCulture) · @Price(currentPlan.PriceDetails.PriceTotal) SEK/kWh · @LevelName(currentPlan.PriceDetails.LevelInternal) internal level</span>
-                        </div>
-                        <span>Calculated @automation.GeneratedAt.ToString("HH:mm:ss")</span>
-                    </div>
-
-                    <div class="device-grid">
-                        <div class="device-card">
-                            <div class="device-card-name">HEAT PUMP</div>
-                            <strong>Offset @Signed(currentPlan.Targets.HeatOffset)</strong>
-                            <span>@Difference(currentPlan.Targets.HeatOffset, automation.Baseline.HeatOffset, "offset")</span>
-                            <div class="device-modes">Comfort <b>@currentPlan.Targets.ComfortMode</b>@ModeDifference(currentPlan.Targets.ComfortMode, automation.Baseline.ComfortMode)<br />Operation <b>@currentPlan.Targets.OpMode</b>@ModeDifference(currentPlan.Targets.OpMode, automation.Baseline.OpMode)</div>
-                        </div>
-                        <div class="device-card">
-                            <div class="device-card-name">BATH 0 THERMOSTAT</div>
-                            <strong>@currentPlan.Targets.ThermostatBathZeroTemperature °C</strong>
-                            <span>@Difference(currentPlan.Targets.ThermostatBathZeroTemperature, automation.Baseline.ThermostatBathZeroTemperature, "°C")</span>
-                        </div>
-                        <div class="device-card">
-                            <div class="device-card-name">BATH 1 THERMOSTAT</div>
-                            <strong>@currentPlan.Targets.ThermostatBathOneTemperature °C</strong>
-                            <span>@Difference(currentPlan.Targets.ThermostatBathOneTemperature, automation.Baseline.ThermostatBathOneTemperature, "°C")</span>
-                        </div>
-                        <div class="device-card">
-                            <div class="device-card-name">GARAGE THERMOSTAT</div>
-                            <strong>@currentPlan.Targets.ThermostatGarageTemperature °C</strong>
-                            <span>@Difference(currentPlan.Targets.ThermostatGarageTemperature, automation.Baseline.ThermostatGarageTemperature, "°C")</span>
-                        </div>
-                        <div class="device-card">
-                            <div class="device-card-name">BASEMENT DEHUMIDIFIER</div>
-                            <strong>@currentPlan.Targets.DehumidifierTargetHumidity %</strong>
-                            <span>@Difference(currentPlan.Targets.DehumidifierTargetHumidity, automation.Baseline.DehumidifierTargetHumidity, "%")</span>
-                        </div>
-                    </div>
-
-                    <div class="override-status @(automation.CurrentConsumptionOverride == ConsumptionOverrideStatus.Unavailable ? "override-warning" : "")">
-                        <span class="status-dot @(automation.CurrentConsumptionOverride == ConsumptionOverrideStatus.Unavailable ? "status-error" : "")"></span>
-                        @OverrideDescription(automation.CurrentConsumptionOverride)
-                    </div>
-
-                    <div class="schedule-heading">
-                        <div>
-                            <h3>Upcoming targets</h3>
-                            <p>Every 15 minutes · @SelectedDay.ToString("dddd, d MMMM", CultureInfo.InvariantCulture)</p>
-                        </div>
-                        <div class="segmented-control" aria-label="Select device outlook day">
-                            <button type="button" class="@(!_showTomorrow ? "selected" : "")" aria-pressed="@(!_showTomorrow)" @onclick="() => _showTomorrow = false">Today</button>
-                            <button type="button" class="@(_showTomorrow ? "selected" : "")" aria-pressed="@_showTomorrow" @onclick="() => _showTomorrow = true">Tomorrow</button>
-                        </div>
-                    </div>
-                    @if (VisiblePlans.Count > 0)
-                    {
-                        <div class="schedule-scroll">
-                            <table class="schedule-table">
-                                <thead><tr>
-                                    <th scope="col">Time</th>
-                                    <th scope="col">Price</th>
-                                    <th scope="col">Price level</th>
-                                    <th scope="col">Heat pump</th>
-                                    <th scope="col">Bath 0</th>
-                                    <th scope="col">Bath 1</th>
-                                    <th scope="col">Garage</th>
-                                    <th scope="col">Dehumidifier</th>
-                                </tr></thead>
-                                <tbody>
-                                    @foreach (var period in VisiblePlans)
-                                    {
-                                        <tr class="@(period.IsCurrentPeriod ? "current-period" : "")">
-                                            <td><strong>@period.PriceDetails.StartsAt.ToString("HH:mm")</strong>@(period.IsCurrentPeriod ? " · now" : "")</td>
-                                            <td>@Price(period.PriceDetails.PriceTotal)</td>
-                                            <td><span class="level-pill @LevelClass(period.PriceDetails.LevelInternal)">@LevelName(period.PriceDetails.LevelInternal)</span><small>Tibber: @LevelName(period.PriceDetails.LevelExternal)</small></td>
-                                            <td><strong>@Signed(period.Targets.HeatOffset)</strong><small>@period.Targets.ComfortMode · @period.Targets.OpMode</small><small>@Difference(period.Targets.HeatOffset, automation.Baseline.HeatOffset, "offset")</small></td>
-                                            <td>@period.Targets.ThermostatBathZeroTemperature °C<small>@Difference(period.Targets.ThermostatBathZeroTemperature, automation.Baseline.ThermostatBathZeroTemperature, "°C")</small></td>
-                                            <td>@period.Targets.ThermostatBathOneTemperature °C<small>@Difference(period.Targets.ThermostatBathOneTemperature, automation.Baseline.ThermostatBathOneTemperature, "°C")</small></td>
-                                            <td>@period.Targets.ThermostatGarageTemperature °C<small>@Difference(period.Targets.ThermostatGarageTemperature, automation.Baseline.ThermostatGarageTemperature, "°C")</small></td>
-                                            <td>@period.Targets.DehumidifierTargetHumidity %<small>@Difference(period.Targets.DehumidifierTargetHumidity, automation.Baseline.DehumidifierTargetHumidity, "%")</small></td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="empty-state">No upcoming targets are available for @(_showTomorrow ? "tomorrow" : "today").</div>
-                    }
-                    <p class="preview-disclaimer">These are calculated targets, not readings from the devices. A lower humidity target means more dehumidification. Unknown internal price levels use profile baselines before time rules. Future targets exclude the live hourly-consumption override; the current row includes it when available. Targets can change when prices, settings or consumption change.</p>
-                }
-                else
-                {
-                    <div class="empty-state">Device targets are unavailable until price and profile data can be loaded.</div>
-                }
-            </section>
-
-            <div class="detail-grid">
-                <section class="panel consumption-panel" id="consumption" aria-labelledby="consumption-title">
-                    <div class="panel-header">
-                        <div>
-                            <div class="section-kicker">YOUR ENERGY FOOTPRINT</div>
-                            <h2 id="consumption-title">Daily consumption</h2>
-                            <p>Usage and actual cost for the past week.</p>
-                        </div>
-                        <span class="period-badge">LAST 7 DAYS</span>
-                    </div>
-                    @if (_daily.Any(day => day.ConsumptionEntries.Any()))
-                    {
-                        <div class="usage-chart" role="img" aria-label="Daily energy consumption for the past seven days">
-                            @foreach (var day in _daily.OrderBy(d => d.Date))
-                            {
-                                <div class="usage-column" title="@($"{day.Date:ddd d MMM}: {Quantity(TotalConsumption(day))} kWh, {Money(TotalCost(day))} SEK")">
-                                    <strong>@Quantity(TotalConsumption(day))</strong>
-                                    <div class="usage-track"><div class="usage-bar" style="height:@UsageHeight(day)"></div></div>
-                                    <span>@day.Date.ToString("ddd", CultureInfo.InvariantCulture)</span>
-                                </div>
-                            }
-                        </div>
-                        <div class="usage-footer">
-                            <span>Total cost <strong>@Money(_daily.Sum(TotalCost)) SEK</strong></span>
-                            <span>Daily average <strong>@Quantity(_daily.Average(TotalConsumption)) kWh</strong></span>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="empty-state">No consumption data has been reported for the past week.</div>
-                    }
-                </section>
-
-                <section class="panel upcoming-panel" aria-labelledby="upcoming-title">
-                    <div class="panel-header">
-                        <div>
-                            <div class="section-kicker">PLAN AHEAD</div>
-                            <h2 id="upcoming-title">Coming up next</h2>
-                            <p>Prices for the next few intervals.</p>
-                        </div>
-                    </div>
-                    @if (UpcomingPrices.Count > 0)
-                    {
-                        <div class="upcoming-list">
-                            @foreach (var entry in UpcomingPrices)
-                            {
-                                <div class="upcoming-row">
-                                    <div class="time-block"><strong>@entry.PriceDetails.StartsAt.ToString("HH:mm")</strong><span>@entry.PriceDetails.StartsAt.ToString("ddd", CultureInfo.InvariantCulture)</span></div>
-                                    <div class="upcoming-levels">
-                                        <span class="level-pill @LevelClass(entry.PriceDetails.LevelExternal)">@LevelName(entry.PriceDetails.LevelExternal)</span>
-                                        <span>MyHome: @LevelName(entry.PriceDetails.LevelInternal)</span>
-                                    </div>
-                                    <div class="upcoming-price">@Price(entry.PriceDetails.PriceTotal) <span>SEK/kWh</span></div>
-                                </div>
-                            }
-                        </div>
-                        <div class="upcoming-note">Colored levels are provided by Tibber. MyHome levels use your automation thresholds and can differ.</div>
-                    }
-                    else
-                    {
-                        <div class="empty-state">No upcoming price intervals are available.</div>
-                    }
-                </section>
-            </div>
-
             <footer class="footer">
                 <span>MYHOME <span class="footer-divider">/</span> ENERGY DASHBOARD</span>
-                <span>@(_lastUpdated is null ? "Waiting for data" : $"Updated {_lastUpdated:HH:mm:ss}") · Prices and consumption provided by Tibber</span>
+                <span>@(_lastUpdated is null ? "Waiting for data" : $"Updated {_lastUpdated:HH:mm:ss}") · Prices provided by Tibber</span>
             </footer>
         </div>
     </main>
@@ -418,13 +140,9 @@
 @code {
     private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("sv-SE");
     private IReadOnlyList<EnergyConsumptionEntry> _prices = [];
-    private IReadOnlyList<DailyEnergyConsumption> _daily = [];
-    private AutomationPreview? _automation;
     private DateOnly _today = DateOnly.FromDateTime(DateTime.Now);
     private DateTime? _lastUpdated;
     private string? _priceError;
-    private string? _consumptionError;
-    private string? _automationError;
     private bool _loading = true;
     private bool _showTomorrow;
 
@@ -433,31 +151,9 @@
         .Where(e => DateOnly.FromDateTime(e.PriceDetails.StartsAt.DateTime) == SelectedDay)
         .OrderBy(e => e.PriceDetails.StartsAt)
         .ToList();
-    private IReadOnlyList<EnergyConsumptionEntry> VisibleHourlyConsumption => _daily
-        .SelectMany(day => day.ConsumptionEntries)
-        .Where(e => DateOnly.FromDateTime(e.PriceDetails.StartsAt.DateTime) == SelectedDay)
-        .OrderBy(e => e.PriceDetails.StartsAt)
-        .ToList();
-    private EnergyConsumptionEntry? CurrentPrice => _prices.FirstOrDefault(e =>
-        e.PriceDetails.StartsAt <= DateTimeOffset.Now && e.PriceDetails.StartsAt.AddMinutes(15) > DateTimeOffset.Now);
-    private EnergyConsumptionEntry? NextLow => _prices
-        .Where(e => e.PriceDetails.StartsAt > DateTimeOffset.Now && e.PriceDetails.StartsAt <= DateTimeOffset.Now.AddHours(12))
-        .MinBy(e => e.PriceDetails.PriceTotal);
-    private DailyEnergyConsumption? TodayConsumption => _daily.FirstOrDefault(d => d.Date == _today);
-    private IReadOnlyList<EnergyConsumptionEntry> UpcomingPrices => _prices
-        .Where(e => e.PriceDetails.StartsAt > DateTimeOffset.Now)
-        .OrderBy(e => e.PriceDetails.StartsAt)
-        .Take(5)
-        .ToList();
-    private AutomationPeriodPreview? CurrentPlan => _automation?.Periods.FirstOrDefault(period => period.IsCurrentPeriod);
-    private IReadOnlyList<AutomationPeriodPreview> VisiblePlans => _automation?.Periods
-        .Where(period => DateOnly.FromDateTime(period.PriceDetails.StartsAt.DateTime) == SelectedDay)
-        .ToList() ?? [];
-
     private decimal ChartMin => Math.Min(0, VisiblePrices.Min(e => e.PriceDetails.PriceTotal));
     private decimal ChartMax => Math.Max(0, VisiblePrices.Max(e => e.PriceDetails.PriceTotal));
     private decimal ChartRange => ChartMax == ChartMin ? 1 : ChartMax - ChartMin;
-    private decimal MaxHourlyConsumption => VisibleHourlyConsumption.Max(e => e.Consumption);
 
     protected override async Task OnInitializedAsync() => await RefreshAsync();
 
@@ -465,8 +161,6 @@
     {
         _loading = true;
         _priceError = null;
-        _consumptionError = null;
-        _automationError = null;
         _today = DateOnly.FromDateTime(DateTime.Now);
 
         try
@@ -480,51 +174,11 @@
             _priceError = _prices.Count > 0 ? "Prices could not be refreshed; previously loaded prices are shown." : "Prices are unavailable.";
         }
 
-        try
-        {
-            _daily = await Dashboard.GetDailyConsumptionAsync();
-            _lastUpdated = DateTime.Now;
-        }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException or InvalidOperationException)
-        {
-            Logger.LogError(ex, "Could not load Tibber consumption");
-            _consumptionError = _daily.Count > 0 ? "Consumption could not be refreshed; previously loaded values are shown." : "Consumption is unavailable.";
-        }
-
-        try
-        {
-            _automation = await Dashboard.GetAutomationPreviewAsync();
-            _lastUpdated = DateTime.Now;
-        }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException or InvalidOperationException)
-        {
-            Logger.LogError(ex, "Could not load the device automation preview");
-            _automationError = _automation is not null
-                ? "Device targets could not be refreshed; previously calculated targets are shown."
-                : "Device targets are unavailable.";
-        }
-
         _loading = false;
     }
 
-    private static decimal TotalConsumption(DailyEnergyConsumption day) => day.ConsumptionEntries.Sum(e => e.Consumption);
-    private static decimal TotalCost(DailyEnergyConsumption day) => day.ConsumptionEntries.Sum(e => e.Cost);
     private static string Price(decimal value) => value.ToString("0.00", NumberCulture);
     private static string Quantity(decimal value) => value.ToString("0.#", NumberCulture);
-    private static string Money(decimal value) => value.ToString("0.00", NumberCulture);
-    private static string Signed(int value) => value.ToString("+0;-0;0", NumberCulture);
-    private static string Difference(int value, int baseline, string unit) =>
-        value == baseline ? "At profile baseline" : $"{Signed(value - baseline)} {unit} vs baseline";
-    private static string ModeDifference<T>(T value, T baseline) where T : Enum =>
-        EqualityComparer<T>.Default.Equals(value, baseline) ? "" : $" (baseline {baseline})";
-
-    private static string OverrideDescription(ConsumptionOverrideStatus status) => status switch
-    {
-        ConsumptionOverrideStatus.Applied => "Current-hour usage reached 3 kWh: maximum-savings targets replaced the scheduled adjustments.",
-        ConsumptionOverrideStatus.BelowLimit => "Current-hour usage is below the 3 kWh override threshold.",
-        ConsumptionOverrideStatus.Unavailable => "Home Assistant usage could not be read. The current targets are shown without the consumption override.",
-        _ => "The consumption override only applies on weekdays between 07:00 and 19:00."
-    };
 
     private static string LevelName(EnergyPriceLevel level) => level switch
     {
@@ -557,26 +211,9 @@
         return FormattableString.Invariant($"bottom:{bottom:0.##}%;height:{height:0.##}%");
     }
 
-    private EnergyConsumptionEntry? ConsumptionAt(DateTimeOffset at) =>
-        PriceChartData.ConsumptionAt(VisibleHourlyConsumption, at);
-
     private string PriceTooltip(EnergyConsumptionEntry entry)
     {
         var details = entry.PriceDetails;
-        var usage = ConsumptionAt(details.StartsAt);
-        var usageDescription = usage is null
-            ? "hourly consumption unavailable"
-            : $"{Quantity(usage.Consumption)} kWh consumed this hour";
-
-        return $"{details.StartsAt:HH:mm} — {Price(details.PriceTotal)} SEK/kWh · MyHome: {LevelName(details.LevelInternal)} · Tibber: {LevelName(details.LevelExternal)} · {usageDescription}";
-    }
-
-    private string HourlyBarHeight(decimal consumption) =>
-        FormattableString.Invariant($"{(MaxHourlyConsumption == 0 ? 0 : consumption / MaxHourlyConsumption * 100):0.#}%");
-
-    private string UsageHeight(DailyEnergyConsumption day)
-    {
-        var max = _daily.Max(TotalConsumption);
-        return FormattableString.Invariant($"{(max == 0 ? 0 : TotalConsumption(day) / max * 100):0.#}%");
+        return $"{details.StartsAt:HH:mm} — {Price(details.PriceTotal)} SEK/kWh · MyHome: {LevelName(details.LevelInternal)} · Tibber: {LevelName(details.LevelExternal)}";
     }
 }

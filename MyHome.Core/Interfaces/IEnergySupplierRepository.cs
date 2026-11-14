@@ -6,5 +6,4 @@ namespace MyHome.Core.Interfaces;
 public interface IEnergySupplierRepository
 {
     Task<ICollection<EnergyPrice>> GetEnergyPrices(EnergyPriceRange range);
-    Task<ICollection<EnergyConsumptionEntry>> GetConsumption(int lastHours);
 }

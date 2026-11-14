@@ -1,14 +1,8 @@
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
-using MyHome.Core.Interfaces;
-using MyHome.Core.Models.EnergySupplier;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.Entities.Profiles;
 using MyHome.Core.Models.Integrations.HeatPump;
 using MyHome.Core.Models.PriceCalculations;
 using MyHome.Core.PriceCalculations;
-using MyHome.Core.Services;
-using System.Text.Json;
 
 namespace MyHome.Core.Tests;
 
@@ -73,105 +67,5 @@ public class AutomationPreviewTests
         Assert.Equal(21, targets.ThermostatBathZeroTemperature);
         Assert.Equal(23, targets.ThermostatBathOneTemperature);
         Assert.Equal(13, targets.ThermostatGarageTemperature);
-    }
-
-    [Fact]
-    public async Task PreviewAppliesLiveOverrideOnlyToCurrentPeriodWithoutWritingDevices()
-    {
-        var (service, heatPump, dehumidifier, bathZero, bathOne, garage) = CreateService(3m);
-
-        var preview = await service.GetPreviewAsync(MondayMidday);
-
-        Assert.Equal(MondayMidday, preview.GeneratedAt);
-        Assert.Equal(ConsumptionOverrideStatus.Applied, preview.CurrentConsumptionOverride);
-        Assert.Equal(3m, preview.AccumulatedConsumptionCurrentHour);
-        Assert.Equal(24, preview.Baseline.ThermostatBathZeroTemperature);
-        Assert.Equal(65, preview.Baseline.DehumidifierTargetHumidity);
-        Assert.True(preview.Periods.Count > 1);
-        Assert.True(preview.Periods[0].IsCurrentPeriod);
-        Assert.Equal(-4, preview.Periods[0].Targets.HeatOffset);
-        Assert.Equal(20, preview.Periods[0].Targets.ThermostatBathZeroTemperature);
-        Assert.Equal(69, preview.Periods[0].Targets.DehumidifierTargetHumidity);
-        Assert.False(preview.Periods[1].IsCurrentPeriod);
-        Assert.Equal(0, preview.Periods[1].Targets.HeatOffset);
-        Assert.Equal(22, preview.Periods[1].Targets.ThermostatBathZeroTemperature);
-        Assert.Equal(ComfortMode.Economy, preview.Periods[1].Targets.ComfortMode);
-        Assert.Equal(OpMode.Manual, preview.Periods[1].Targets.OpMode);
-        var json = JsonSerializer.Serialize(preview, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        var response = JsonSerializer.Deserialize<AutomationPreview>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        Assert.Equal(ConsumptionOverrideStatus.Applied, response!.CurrentConsumptionOverride);
-        Assert.Equal(3m, response.AccumulatedConsumptionCurrentHour);
-        Assert.Equal(preview.Periods.Count, response.Periods.Count);
-        Assert.Equal(preview.Periods[0].Targets, response.Periods[0].Targets);
-        heatPump.VerifyNoOtherCalls();
-        dehumidifier.VerifyNoOtherCalls();
-        bathZero.VerifyNoOtherCalls();
-        bathOne.VerifyNoOtherCalls();
-        garage.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task PreviewReportsUnavailableConsumptionInsteadOfClaimingOverrideApplied()
-    {
-        var (service, _, _, _, _, _) = CreateService(null);
-
-        var preview = await service.GetPreviewAsync(MondayMidday);
-
-        Assert.Equal(ConsumptionOverrideStatus.Unavailable, preview.CurrentConsumptionOverride);
-        Assert.Null(preview.AccumulatedConsumptionCurrentHour);
-        Assert.Equal(0, preview.Periods[0].Targets.HeatOffset);
-        Assert.Equal(22, preview.Periods[0].Targets.ThermostatBathZeroTemperature);
-    }
-
-    private static (
-        HouseAutomationService Service,
-        Mock<IHeatPumpClient> HeatPump,
-        Mock<IDehumidifierClient> Dehumidifier,
-        Mock<IThermostatClient> BathZero,
-        Mock<IThermostatClient> BathOne,
-        Mock<IThermostatClient> Garage) CreateService(decimal? accumulatedConsumption)
-    {
-        var profile = new DeviceSettingsProfile();
-        var profileRepository = new Mock<IRepository<DeviceSettingsProfile>>();
-        profileRepository.Setup(repository => repository.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(profile);
-
-        var thresholdRepository = new Mock<IRepository<PriceThearsholdsProfile>>();
-        thresholdRepository.Setup(repository => repository.GetByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(new PriceThearsholdsProfile { InternalPriceLevelRangeInHours = 1 });
-
-        ICollection<EnergyPrice> prices = Enumerable.Range(0, 8)
-            .Select(i => new EnergyPrice
-            {
-                StartsAt = MondayMidday.AddMinutes(-1 + i * 15),
-                Total = 1m,
-                Level = EnergyPriceLevel.Normal
-            })
-            .ToList();
-        var supplier = new Mock<IEnergySupplierRepository>();
-        supplier.Setup(repository => repository.GetEnergyPrices(EnergyPriceRange.TodayAndTomorrow))
-            .ReturnsAsync(prices);
-
-        var homeAssistant = new Mock<IHomeAssistantEnergyClient>();
-        if (accumulatedConsumption.HasValue)
-        {
-            homeAssistant.Setup(client => client.GetAccumulatedConsumptionCurrentHourAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(accumulatedConsumption.Value);
-        }
-        else
-        {
-            homeAssistant.Setup(client => client.GetAccumulatedConsumptionCurrentHourAsync(It.IsAny<CancellationToken>()))
-                .ThrowsAsync(new HttpRequestException("Sensor unavailable"));
-        }
-
-        var heatPump = new Mock<IHeatPumpClient>(MockBehavior.Strict);
-        var dehumidifier = new Mock<IDehumidifierClient>(MockBehavior.Strict);
-        var bathZero = new Mock<IThermostatClient>(MockBehavior.Strict);
-        var bathOne = new Mock<IThermostatClient>(MockBehavior.Strict);
-        var garage = new Mock<IThermostatClient>(MockBehavior.Strict);
-        var service = new HouseAutomationService(
-            new PriceLevelGenerator(thresholdRepository.Object, supplier.Object),
-            heatPump.Object, dehumidifier.Object, bathOne.Object, bathZero.Object, garage.Object,
-            profileRepository.Object, homeAssistant.Object, NullLogger<HouseAutomationService>.Instance);
-        return (service, heatPump, dehumidifier, bathZero, bathOne, garage);
     }
 }
