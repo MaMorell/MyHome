@@ -9,5 +9,12 @@ public static class EnergysupplierEndpoints
         {
             return await energyPriceService.GetFutureEnergyPrices();
         });
+
+        app.MapGet("energysupplier/energyconsumption/{day}", async (
+            [FromServices] EnergySupplierService energyPriceService,
+            [FromRoute] DateOnly day) =>
+        {
+            return await energyPriceService.GetHourlyConsumptionAsync(day);
+        });
     }
 }

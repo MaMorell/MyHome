@@ -50,7 +50,7 @@
                     <h1>Energy overview<span class="heading-dot">.</span></h1>
                     <p>Know what your energy costs, and when it pays to use it.</p>
                 </div>
-                <button class="refresh-button" type="button" @onclick="RefreshAsync" disabled="@_loading">
+                <button class="refresh-button" type="button" @onclick="RefreshAllAsync" disabled="@_loading">
                     <span aria-hidden="true">↻</span> @(_loading ? "Loading..." : "Refresh data")
                 </button>
             </div>
@@ -76,8 +76,8 @@
                         <p>Quarter-hour spot prices from Tibber, colored by MyHome's internal price level.</p>
                     </div>
                     <div class="segmented-control" aria-label="Select price day">
-                        <button type="button" class="@(!_showTomorrow ? "selected" : "")" aria-pressed="@(!_showTomorrow)" @onclick="() => _showTomorrow = false">Today</button>
-                        <button type="button" class="@(_showTomorrow ? "selected" : "")" aria-pressed="@_showTomorrow" @onclick="() => _showTomorrow = true">Tomorrow</button>
+                        <button type="button" class="@(!_showTomorrow ? "selected" : "")" aria-pressed="@(!_showTomorrow)" @onclick="() => SelectDayAsync(false)">Today</button>
+                        <button type="button" class="@(_showTomorrow ? "selected" : "")" aria-pressed="@_showTomorrow" @onclick="() => SelectDayAsync(true)">Tomorrow</button>
                     </div>
                 </div>
 
@@ -125,6 +125,53 @@
                         <span><i class="legend-dot very-expensive"></i> Very expensive</span>
                         <span><i class="legend-dot unknown"></i> Unknown</span>
                     </div>
+
+                    <div class="consumption-header">
+                        <h3>Energy consumption</h3>
+                        <p>Measured hourly consumption, so you can see if usage was high when prices were high.</p>
+                    </div>
+                    @if (_consumptionLoading)
+                    {
+                        <div class="loading-state" role="status">Loading consumption data...</div>
+                    }
+                    else if (_consumptionError is not null)
+                    {
+                        <div class="empty-state">@_consumptionError</div>
+                    }
+                    else if (VisibleConsumption.Count > 0)
+                    {
+                        <div class="chart-frame consumption-frame">
+                            <div class="chart-y-label">kWh</div>
+                            <div class="chart-plot consumption-plot" role="img" aria-label="Hourly electricity consumption for @SelectedDay.ToString("d MMMM", CultureInfo.InvariantCulture)">
+                                <div class="chart-gridline top"><span>@Quantity(ConsumptionMax)</span></div>
+                                <div class="chart-gridline zero" style="bottom:0"><span>@Quantity(0)</span></div>
+                                @foreach (var entry in VisibleConsumption)
+                                {
+                                    var hasData = MeasuredConsumption.Contains(entry);
+                                    <div class="chart-slot">
+                                        <div class="consumption-bar @(hasData && entry.StartsAt < DateTimeOffset.Now ? "past" : "future")"
+                                             style="@ConsumptionBarStyle(entry)"
+                                             title="@(hasData ? ConsumptionTooltip(entry) : $"{entry.StartsAt:HH:mm} — no data yet")"></div>
+                                    </div>
+                                }
+                            </div>
+                            <div class="chart-axis">
+                                @foreach (var entry in VisibleConsumption)
+                                {
+                                    <div class="axis-slot">
+                                        @if (entry.StartsAt.Hour % 4 == 0)
+                                        {
+                                            <span>@entry.StartsAt.ToString("HH:mm")</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">No consumption data is available for @(_showTomorrow ? "tomorrow." : "today yet.")</div>
+                    }
                 }
                 else
                 {
@@ -175,15 +222,15 @@
                             <h3>Baselines</h3>
                             <div class="form-grid">
                                 <label class="form-field">
-                                    <span>Heat offset baseline</span>
+                                    <span>Nibe heat offset baseline</span>
                                     <InputNumber @bind-Value="_deviceSettings.HeatOffsetBaseline" />
                                 </label>
                                 <label class="form-field">
-                                    <span>Thermostat bath 0 baseline (°C)</span>
+                                    <span>Bath floor 0 baseline (°C)</span>
                                     <InputNumber @bind-Value="_deviceSettings.ThermostatBathZeroTemperatureBaseline" />
                                 </label>
                                 <label class="form-field">
-                                    <span>Thermostat bath 1 baseline (°C)</span>
+                                    <span>Bath floor 1 baseline (°C)</span>
                                     <InputNumber @bind-Value="_deviceSettings.ThermostatBathOneTemperatureBaseline" />
                                 </label>
                                 <label class="form-field">
@@ -331,10 +378,13 @@
 @code {
     private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("sv-SE");
     private IReadOnlyList<EnergyConsumptionEntry> _prices = [];
+    private IReadOnlyList<EnergyConsumptionHour> _consumption = [];
     private DateOnly _today = DateOnly.FromDateTime(DateTime.Now);
     private DateTime? _lastUpdated;
     private string? _priceError;
+    private string? _consumptionError;
     private bool _loading = true;
+    private bool _consumptionLoading = true;
     private bool _showTomorrow;
 
     private DateOnly SelectedDay => _today.AddDays(_showTomorrow ? 1 : 0);
@@ -345,6 +395,26 @@
     private decimal ChartMin => Math.Min(0, VisiblePrices.Min(e => e.PriceDetails.PriceTotal));
     private decimal ChartMax => Math.Max(0, VisiblePrices.Max(e => e.PriceDetails.PriceTotal));
     private decimal ChartRange => ChartMax == ChartMin ? 1 : ChartMax - ChartMin;
+
+    // Pads the measured hours out to a full 24-hour grid so the consumption chart's x-axis
+    // lines up with the quarter-hour price chart above it, instead of stretching to fit
+    // whatever subset of hours has been measured so far.
+    private IReadOnlyList<EnergyConsumptionHour> VisibleConsumption
+    {
+        get
+        {
+            var byHour = _consumption.ToDictionary(e => e.StartsAt.Hour);
+            var dayStart = new DateTimeOffset(SelectedDay.ToDateTime(TimeOnly.MinValue), DateTimeOffset.Now.Offset);
+            return Enumerable.Range(0, 24)
+                .Select(hour => byHour.TryGetValue(hour, out var entry)
+                    ? entry
+                    : new EnergyConsumptionHour { StartsAt = dayStart.AddHours(hour), ConsumptionKWh = 0 })
+                .OrderBy(e => e.StartsAt)
+                .ToList();
+        }
+    }
+    private HashSet<EnergyConsumptionHour> MeasuredConsumption => _consumption.ToHashSet();
+    private decimal ConsumptionMax => Math.Max(0.1m, VisibleConsumption.Count > 0 ? VisibleConsumption.Max(e => e.ConsumptionKWh) : 0);
 
     private static readonly IReadOnlyList<ComfortMode> ComfortModeValues = Enum.GetValues<ComfortMode>();
     private static readonly IReadOnlyList<OpMode> OpModeValues = Enum.GetValues<OpMode>();
@@ -357,8 +427,22 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(RefreshAsync(), LoadDeviceSettingsAsync());
+        await Task.WhenAll(RefreshAsync(), LoadConsumptionAsync(), LoadDeviceSettingsAsync());
     }
+
+    private async Task SelectDayAsync(bool showTomorrow)
+    {
+        if (_showTomorrow == showTomorrow)
+        {
+            return;
+        }
+
+        _showTomorrow = showTomorrow;
+        await LoadConsumptionAsync();
+    }
+
+    private async Task RefreshAllAsync() =>
+        await Task.WhenAll(RefreshAsync(), LoadConsumptionAsync());
 
     private async Task LoadDeviceSettingsAsync()
     {
@@ -423,6 +507,25 @@
         _loading = false;
     }
 
+    private async Task LoadConsumptionAsync()
+    {
+        _consumptionLoading = true;
+        _consumptionError = null;
+
+        try
+        {
+            _consumption = await Dashboard.GetConsumptionAsync(SelectedDay);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException or InvalidOperationException)
+        {
+            Logger.LogError(ex, "Could not load hourly energy consumption");
+            _consumption = [];
+            _consumptionError = "Consumption data is unavailable.";
+        }
+
+        _consumptionLoading = false;
+    }
+
     private static string Price(decimal value) => value.ToString("0.00", NumberCulture);
     private static string Quantity(decimal value) => value.ToString("0.#", NumberCulture);
 
@@ -462,4 +565,13 @@
         var details = entry.PriceDetails;
         return $"{details.StartsAt:HH:mm} — {Price(details.PriceTotal)} SEK/kWh · MyHome: {LevelName(details.LevelInternal)} · Tibber: {LevelName(details.LevelExternal)}";
     }
+
+    private string ConsumptionBarStyle(EnergyConsumptionHour entry)
+    {
+        var height = Math.Max(0, entry.ConsumptionKWh) / ConsumptionMax * 100;
+        return FormattableString.Invariant($"bottom:0%;height:{height:0.##}%");
+    }
+
+    private string ConsumptionTooltip(EnergyConsumptionHour entry) =>
+        $"{entry.StartsAt:HH:mm} — {Quantity(entry.ConsumptionKWh)} kWh";
 }

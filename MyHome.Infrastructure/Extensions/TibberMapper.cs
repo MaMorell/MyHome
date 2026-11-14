@@ -29,4 +29,16 @@ public static class TibberMapper
         var levelString = level?.ToString() ?? PriceLevel.Normal.ToString();
         return Enum.Parse<EnergyPriceLevel>(levelString);
     }
+
+    public static ICollection<EnergyConsumptionHour> ToEnergyConsumptionHours(this IEnumerable<ConsumptionEntry> entries)
+    {
+        return entries
+            .Where(entry => entry.From.HasValue)
+            .Select(entry => new EnergyConsumptionHour
+            {
+                StartsAt = entry.From!.Value,
+                ConsumptionKWh = entry.Consumption ?? 0
+            })
+            .ToList();
+    }
 }

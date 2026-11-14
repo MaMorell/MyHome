@@ -32,6 +32,30 @@ public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient, IMe
         return cachedPrices ?? ReadOnlyCollection<EnergyPrice>.Empty;
     }
 
+    public async Task<ICollection<EnergyConsumptionHour>> GetEnergyConsumption(DateOnly day)
+    {
+        string cacheKey = $"EnergyConsumption_{day:yyyy-MM-dd}";
+
+        var cachedConsumption = await memoryCache.GetOrCreateAsync(cacheKey, async entry =>
+        {
+            var isToday = day == DateOnly.FromDateTime(DateTime.Now);
+            entry.AbsoluteExpirationRelativeToNow = isToday ? TimeSpan.FromMinutes(10) : TimeSpan.FromDays(1);
+
+            var homeId = await GetHomeId();
+            var query = BuildEnergyConsumptionQuery(homeId);
+            var queryResponse = await tibberApiClient.Query(query);
+
+            var nodes = queryResponse.Data.Viewer.Home?.Consumption?.Nodes ??
+                throw new TibberApiException(GetTibberApiErrorMessage(queryResponse.Data));
+
+            return nodes
+                .Where(node => node.From.HasValue && DateOnly.FromDateTime(node.From.Value.DateTime) == day)
+                .ToEnergyConsumptionHours();
+        });
+
+        return cachedConsumption ?? ReadOnlyCollection<EnergyConsumptionHour>.Empty;
+    }
+
     private async Task<Guid> GetHomeId()
     {
         return await memoryCache.GetOrCreateAsync("TibberHomeId", async entry =>
@@ -65,6 +89,32 @@ public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient, IMe
                                     .WithAllScalarFields()
                                     .WithPriceInfo(priceInfoBuilder, resolution: PriceInfoResolution.QuarterHourly)
                             ),
+                        homeId
+                    )
+            );
+
+        return customQueryBuilder.Build();
+    }
+
+    private static string BuildEnergyConsumptionQuery(Guid homeId)
+    {
+        var consumptionNodesBuilder = new ConsumptionEntryQueryBuilder()
+            .WithFrom()
+            .WithTo()
+            .WithConsumption();
+
+        var consumptionConnectionBuilder = new HomeConsumptionConnectionQueryBuilder()
+            .WithNodes(consumptionNodesBuilder);
+
+        var customQueryBuilder = new TibberQueryBuilder()
+            .WithAllScalarFields()
+            .WithViewer(
+                new ViewerQueryBuilder()
+                    .WithAllScalarFields()
+                    .WithHome(
+                        new HomeQueryBuilder()
+                            .WithAllScalarFields()
+                            .WithConsumption(consumptionConnectionBuilder, resolution: EnergyResolution.Hourly, last: 72),
                         homeId
                     )
             );

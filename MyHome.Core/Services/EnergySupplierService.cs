@@ -5,7 +5,9 @@ using MyHome.Core.PriceCalculations;
 
 namespace MyHome.Core.Services;
 
-public class EnergySupplierService(IEnergySupplierRepository energyRepository, PriceLevelGenerator energyPriceCalculator)
+public class EnergySupplierService(
+    IEnergySupplierRepository energyRepository,
+    PriceLevelGenerator energyPriceCalculator)
 {
     private readonly IEnergySupplierRepository _energyRepository = energyRepository;
     private readonly PriceLevelGenerator _energyPriceCalculator = energyPriceCalculator;
@@ -18,4 +20,7 @@ public class EnergySupplierService(IEnergySupplierRepository energyRepository, P
             .Select(price => new EnergyConsumptionEntry { PriceDetails = price })
             .ToList();
     }
+
+    public async Task<IReadOnlyList<EnergyConsumptionHour>> GetHourlyConsumptionAsync(DateOnly day) =>
+        (await _energyRepository.GetEnergyConsumption(day)).ToList();
 }

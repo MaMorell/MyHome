@@ -118,6 +118,14 @@ h2 { margin: 7px 0 4px; font-size: 19px; font-weight: 800; letter-spacing: -.6px
 .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
 .legend-dot.very-cheap { background: #1f9d5c; }
 .legend-dot.cheap { background: #52c285; }
+.consumption-header { margin: 34px 0 16px; padding-top: 24px; border-top: 1px solid #243038; }
+.consumption-header h3 { margin: 0 0 4px; font-size: 14px; font-weight: 800; color: #dbe6e4; }
+.consumption-header p { margin: 0; color: #879eab; font-size: 11px; }
+.consumption-frame .chart-plot { height: 110px; }
+.consumption-bar { position: absolute; left: 13%; width: 74%; bottom: 0; min-height: 2px; border-radius: 2px 2px 0 0; background: #5fa8d3; transition: filter .15s; }
+.consumption-bar:hover { filter: brightness(1.45); z-index: 2; }
+.consumption-bar.past { background: #5fa8d3; }
+.consumption-bar.future { background: #3a4a56; }
 .legend-dot.normal { background: #8ddfae; }
 .legend-dot.expensive { background: #e4a967; }
 .legend-dot.very-expensive { background: #e88476; }
