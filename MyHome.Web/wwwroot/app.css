@@ -105,9 +105,9 @@ h2 { margin: 7px 0 4px; font-size: 19px; font-weight: 800; letter-spacing: -.6px
 .chart-legend strong { width: 100%; color: #8fdfb1; font-size: 9px; letter-spacing: 1px; }
 .chart-legend span { display: flex; align-items: center; gap: 7px; }
 .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
-.legend-dot.very-cheap { background: #58d695; }
-.legend-dot.cheap { background: #8bda9e; }
-.legend-dot.normal { background: #b8bf80; }
+.legend-dot.very-cheap { background: #1f9d5c; }
+.legend-dot.cheap { background: #52c285; }
+.legend-dot.normal { background: #8ddfae; }
 .legend-dot.expensive { background: #e4a967; }
 .legend-dot.very-expensive { background: #e88476; }
 .legend-dot.unknown { background: #708698; }
