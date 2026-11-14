@@ -102,10 +102,14 @@ public static class WebApplicationBuilderExtensions
             new ThermostatClient(
                 sp.GetRequiredService<IHomeAssistantClient>(),
                 "climate.thermostat_bath0_thermostat"));
-        services.AddKeyedScoped<IThermostatClient>("thermostatGarage", (sp, _) =>
+        services.AddKeyedScoped<IThermostatClient>("llvpGree", (sp, _) =>
             new ThermostatClient(
                 sp.GetRequiredService<IHomeAssistantClient>(),
                 "climate.c03937056c70"));
+        services.AddKeyedScoped<IThermostatClient>("llvpHero", (sp, _) =>
+            new ThermostatClient(
+                sp.GetRequiredService<IHomeAssistantClient>(),
+                "climate.living_room_hero_pumpen"));
 
         return services;
     }

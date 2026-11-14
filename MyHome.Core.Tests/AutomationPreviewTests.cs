@@ -11,13 +11,13 @@ public class AutomationPreviewTests
     private static readonly DateTimeOffset MondayMidday = new(2026, 1, 5, 11, 1, 0, TimeSpan.FromHours(1));
 
     [Theory]
-    [InlineData(EnergyPriceLevel.VeryCheap, 2, 26, 28, 14, 63)]
-    [InlineData(EnergyPriceLevel.Cheap, 1, 25, 27, 13, 64)]
-    [InlineData(EnergyPriceLevel.Normal, 0, 24, 26, 12, 65)]
-    [InlineData(EnergyPriceLevel.Expensive, -2, 22, 24, 10, 67)]
-    [InlineData(EnergyPriceLevel.VeryExpensive, -4, 20, 22, 8, 69)]
+    [InlineData(EnergyPriceLevel.VeryCheap, 2, 26, 28, 14, 23, 63)]
+    [InlineData(EnergyPriceLevel.Cheap, 1, 25, 27, 13, 22, 64)]
+    [InlineData(EnergyPriceLevel.Normal, 0, 24, 26, 12, 21, 65)]
+    [InlineData(EnergyPriceLevel.Expensive, -2, 22, 24, 10, 19, 67)]
+    [InlineData(EnergyPriceLevel.VeryExpensive, -4, 20, 22, 8, 17, 69)]
     public void PriceLevelsChangeAllNumericDeviceTargets(
-        EnergyPriceLevel level, int offset, int bathZero, int bathOne, int garage, int humidity)
+        EnergyPriceLevel level, int offset, int bathZero, int bathOne, int llvpGree, int llvpHero, int humidity)
     {
         var time = new DateTimeOffset(2026, 1, 4, 5, 0, 0, TimeSpan.FromHours(1));
         var price = new EnergyPriceDetails { StartsAt = time, PriceTotal = 0.1m, LevelInternal = level };
@@ -27,7 +27,8 @@ public class AutomationPreviewTests
         Assert.Equal(offset, targets.HeatOffset);
         Assert.Equal(bathZero, targets.ThermostatBathZeroTemperature);
         Assert.Equal(bathOne, targets.ThermostatBathOneTemperature);
-        Assert.Equal(garage, targets.ThermostatGarageTemperature);
+        Assert.Equal(llvpGree, targets.LlvpGreeTemperature);
+        Assert.Equal(llvpHero, targets.LlvpHeroTemperature);
         Assert.Equal(humidity, targets.DehumidifierTargetHumidity);
     }
 
@@ -66,6 +67,7 @@ public class AutomationPreviewTests
         Assert.Equal(OpMode.Auto, targets.OpMode);
         Assert.Equal(21, targets.ThermostatBathZeroTemperature);
         Assert.Equal(23, targets.ThermostatBathOneTemperature);
-        Assert.Equal(13, targets.ThermostatGarageTemperature);
+        Assert.Equal(13, targets.LlvpGreeTemperature);
+        Assert.Equal(22, targets.LlvpHeroTemperature);
     }
 }

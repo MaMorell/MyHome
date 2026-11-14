@@ -17,7 +17,8 @@ public class HouseAutomationService(
     IDehumidifierClient dehumidifierClient,
     [FromKeyedServices("thermostatBathOne")] IThermostatClient bathOneThermostat,
     [FromKeyedServices("thermostatBathZero")] IThermostatClient bathZeroThermostat,
-    [FromKeyedServices("thermostatGarage")] IThermostatClient garageThermostat,
+    [FromKeyedServices("llvpGree")] IThermostatClient llvpGreeThermostat,
+    [FromKeyedServices("llvpHero")] IThermostatClient llvpHeroThermostat,
     IRepository<DeviceSettingsProfile> deviceSettingsRepository,
     IHomeAssistantEnergyClient homeAssistantEnergyClient,
     ILogger<HouseAutomationService> logger)
@@ -29,7 +30,8 @@ public class HouseAutomationService(
     private readonly IDehumidifierClient _dehumidifierClient = dehumidifierClient ?? throw new ArgumentNullException(nameof(dehumidifierClient));
     private readonly IThermostatClient _bathOneThermostat = bathOneThermostat;
     private readonly IThermostatClient _bathZeroThermostat = bathZeroThermostat;
-    private readonly IThermostatClient _garageThermostat = garageThermostat;
+    private readonly IThermostatClient _llvpGreeThermostat = llvpGreeThermostat;
+    private readonly IThermostatClient _llvpHeroThermostat = llvpHeroThermostat;
     private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository = deviceSettingsRepository;
     private readonly IHomeAssistantEnergyClient _homeAssistantEnergyClient = homeAssistantEnergyClient ?? throw new ArgumentNullException(nameof(homeAssistantEnergyClient));
     private readonly ILogger<HouseAutomationService> _logger = logger;
@@ -48,7 +50,8 @@ public class HouseAutomationService(
         _logger.LogInformation(
             "PriceNow: StartsAt={StartsAt}, PriceTotal={PriceTotal}, LevelInternal={LevelInternal}, LevelExternal={LevelExternal} | " +
             "DeviceSettings: HeatOffset={HeatOffset}, ComfortMode={ComfortMode}, OpMode={OpMode}, " +
-            "BathZeroTemp={BathZeroTemp}, BathOneTemp={BathOneTemp}, GarageTemp={GarageTemp}, DehumidifierTargetHumidity={DehumidifierTargetHumidity}",
+            "BathZeroTemp={BathZeroTemp}, BathOneTemp={BathOneTemp}, LlvpGreeTemp={LlvpGreeTemp}, LlvpHeroTemp={LlvpHeroTemp}, " +
+            "DehumidifierTargetHumidity={DehumidifierTargetHumidity}",
             priceNow.StartsAt,
             priceNow.PriceTotal,
             priceNow.LevelInternal,
@@ -58,7 +61,8 @@ public class HouseAutomationService(
             deviceSettings.OpMode,
             deviceSettings.ThermostatBathZeroTemperature,
             deviceSettings.ThermostatBathOneTemperature,
-            deviceSettings.ThermostatGarageTemperature,
+            deviceSettings.LlvpGreeTemperature,
+            deviceSettings.LlvpHeroTemperature,
             deviceSettings.DehumidifierTargetHumidity);
 
         await ApplyDeviceSettings(deviceSettings, cancellationToken);
@@ -85,9 +89,12 @@ public class HouseAutomationService(
         var updateBathOneThermostatTask = ExecuteDeviceUpdateSafely(
             "bath one thermostat",
             () => _bathOneThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatBathOneTemperature));
-        var updateGarageThermostatTask = ExecuteDeviceUpdateSafely(
-            "garage thermostat",
-            () => _garageThermostat.UpdateSetTemperatureAsync(deviceSettings.ThermostatGarageTemperature));
+        var updateLlvpGreeThermostatTask = ExecuteDeviceUpdateSafely(
+            "llvp gree thermostat",
+            () => _llvpGreeThermostat.UpdateSetTemperatureAsync(deviceSettings.LlvpGreeTemperature));
+        var updateLlvpHeroThermostatTask = ExecuteDeviceUpdateSafely(
+            "llvp hero thermostat",
+            () => _llvpHeroThermostat.UpdateSetTemperatureAsync(deviceSettings.LlvpHeroTemperature));
         var configureDehumidifierTask = ExecuteDeviceUpdateSafely(
             "dehumidifier",
             () => _dehumidifierClient.SetTargetHumidityAsync(deviceSettings.DehumidifierTargetHumidity, cancellationToken));
@@ -96,7 +103,8 @@ public class HouseAutomationService(
             configureHeatPumpTask,
             updateBathZeroThermostatTask,
             updateBathOneThermostatTask,
-            updateGarageThermostatTask,
+            updateLlvpGreeThermostatTask,
+            updateLlvpHeroThermostatTask,
             configureDehumidifierTask);
     }
 

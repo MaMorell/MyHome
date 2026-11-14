@@ -25,7 +25,8 @@ public class DeviceTargetsFactory
             OpMode = GetMode(priceLevel, profile.OpModes),
             ThermostatBathZeroTemperature = profile.ThermostatBathZeroTemperatureBaseline + delta,
             ThermostatBathOneTemperature = profile.ThermostatBathOneTemperatureBaseline + delta,
-            ThermostatGarageTemperature = profile.ThermostatGarageTemperatureBaseline + delta,
+            LlvpGreeTemperature = profile.LlvpGreeTemperatureBaseline + delta,
+            LlvpHeroTemperature = profile.LlvpHeroTemperatureBaseline + delta,
             DehumidifierTargetHumidity = profile.DehumidifierTargetHumidityBaseline - delta
         };
     }

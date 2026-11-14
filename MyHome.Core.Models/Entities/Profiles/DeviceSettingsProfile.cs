@@ -9,7 +9,8 @@ public class DeviceSettingsProfile : IEntity
     public int HeatOffsetBaseline { get; set; } = 0;
     public int ThermostatBathZeroTemperatureBaseline { get; set; } = 24;
     public int ThermostatBathOneTemperatureBaseline { get; set; } = 26;
-    public int ThermostatGarageTemperatureBaseline { get; set; } = 12;
+    public int LlvpGreeTemperatureBaseline { get; set; } = 12;
+    public int LlvpHeroTemperatureBaseline { get; set; } = 21;
     public int DehumidifierTargetHumidityBaseline { get; set; } = 65;
     public ComfortModeProfile ComfortModes { get; set; } = new ComfortModeProfile();
     public OpModeProfile OpModes { get; set; } = new OpModeProfile();

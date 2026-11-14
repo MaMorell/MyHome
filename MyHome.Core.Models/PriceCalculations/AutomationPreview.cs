@@ -17,6 +17,7 @@ public sealed record DeviceTargets
     public required OpMode OpMode { get; init; }
     public required int ThermostatBathZeroTemperature { get; init; }
     public required int ThermostatBathOneTemperature { get; init; }
-    public required int ThermostatGarageTemperature { get; init; }
+    public required int LlvpGreeTemperature { get; init; }
+    public required int LlvpHeroTemperature { get; init; }
     public required int DehumidifierTargetHumidity { get; init; }
 }
