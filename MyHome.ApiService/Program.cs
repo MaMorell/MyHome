@@ -15,9 +15,6 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
 builder.Services.AddMemoryCache();
 
 builder.Services.RegisterLocalDependencies(builder.Configuration);
@@ -29,11 +26,6 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 EnergysupplierEndpoints.Map(app);
 PriceThearsholdsEndpoints.Map(app);
