@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MyHome.Core.Exceptions;
 using MyHome.Core.Extensions;
 using MyHome.Core.Interfaces;
+using MyHome.Core.Models.Audit;
 using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.Models.Entities.Constants;
 using MyHome.Core.Models.Entities.Profiles;
@@ -21,6 +22,7 @@ public class HouseAutomationService(
     [FromKeyedServices("llvpHero")] IThermostatClient llvpHeroThermostat,
     IRepository<DeviceSettingsProfile> deviceSettingsRepository,
     IHomeAssistantEnergyClient homeAssistantEnergyClient,
+    IRepository<AuditEvent> auditRepository,
     ILogger<HouseAutomationService> logger)
 {
     private const decimal HourlyConsumptionLimitKWH = 3;
@@ -34,6 +36,7 @@ public class HouseAutomationService(
     private readonly IThermostatClient _llvpHeroThermostat = llvpHeroThermostat;
     private readonly IRepository<DeviceSettingsProfile> _deviceSettingsRepository = deviceSettingsRepository;
     private readonly IHomeAssistantEnergyClient _homeAssistantEnergyClient = homeAssistantEnergyClient ?? throw new ArgumentNullException(nameof(homeAssistantEnergyClient));
+    private readonly IRepository<AuditEvent> _auditRepository = auditRepository;
     private readonly ILogger<HouseAutomationService> _logger = logger;
 
     public async Task RunCurrentPeriodAutomationAsync(CancellationToken cancellationToken = default)
@@ -45,7 +48,7 @@ public class HouseAutomationService(
         var priceNow = PriceLevelGenerator.GetForSpecificDate(now, prices);
 
         var deviceSettings = DeviceTargetsPlanner.Create(priceNow, prices, profile, now);
-        (deviceSettings, _, _) = await ApplyConsumptionOverride(deviceSettings, profile, now, cancellationToken);
+        deviceSettings = await ApplyConsumptionOverride(deviceSettings, profile, now, cancellationToken);
 
         _logger.LogInformation(
             "PriceNow: StartsAt={StartsAt}, PriceTotal={PriceTotal}, LevelInternal={LevelInternal}, LevelExternal={LevelExternal} | " +
@@ -120,54 +123,44 @@ public class HouseAutomationService(
         }
     }
 
-    private async Task<(DeviceTargets Settings, ConsumptionOverrideStatus Status, decimal? Consumption)> ApplyConsumptionOverride(
+    private async Task<DeviceTargets> ApplyConsumptionOverride(
         DeviceTargets settings,
         DeviceSettingsProfile profile,
         DateTimeOffset at,
-        CancellationToken cancellationToken,
-        bool readOutsideOverrideWindow = false)
+        CancellationToken cancellationToken)
     {
-        var overrideApplicable = at.DateTime.IsWeekdayDayTime();
-        if (!overrideApplicable && !readOutsideOverrideWindow)
+        if (!at.DateTime.IsWeekdayDayTime())
         {
-            return (settings, ConsumptionOverrideStatus.NotApplicable, null);
+            return settings;
         }
 
-        decimal accumulatedConsumptionCurrentHour;
         try
         {
-            accumulatedConsumptionCurrentHour = await _homeAssistantEnergyClient
-                .GetAccumulatedConsumptionCurrentHourAsync(cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
+            var accumulatedConsumptionCurrentHour = await _homeAssistantEnergyClient.GetAccumulatedConsumptionCurrentHourAsync(cancellationToken);
+            if (accumulatedConsumptionCurrentHour > HourlyConsumptionLimitKWH)
+            {
+                _logger.LogInformation(
+                    "Accumulated Consumption Current Hour {Consumption} is above the threshold {Threshold} kWh. " +
+                    "Applying Max savings",
+                    accumulatedConsumptionCurrentHour,
+                    HourlyConsumptionLimitKWH);
+
+                await _auditRepository.UpsertAsync(new AuditEvent
+                {
+                    Description = "Accumulated consumption current hour exceeded threshold. Applying Max savings",
+                    NewValue = accumulatedConsumptionCurrentHour,
+                    OldValue = HourlyConsumptionLimitKWH
+                });
+
+                return DeviceTargetsFactory.CreateFromLevel(EnergyPriceLevel.VeryExpensive, profile);
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to read accumulated consumption from Home Assistant");
-            return (settings, overrideApplicable ? ConsumptionOverrideStatus.Unavailable : ConsumptionOverrideStatus.NotApplicable, null);
         }
 
-        if (!overrideApplicable)
-        {
-            return (settings, ConsumptionOverrideStatus.NotApplicable, accumulatedConsumptionCurrentHour);
-        }
-
-        if (accumulatedConsumptionCurrentHour < HourlyConsumptionLimitKWH)
-        {
-            return (settings, ConsumptionOverrideStatus.BelowLimit, accumulatedConsumptionCurrentHour);
-        }
-
-        _logger.LogInformation(
-            "Accumulated Consumption Current Hour {Consumption} is above the threshold {Threshold} kWh. " +
-            "Applying Max savings",
-            accumulatedConsumptionCurrentHour,
-            HourlyConsumptionLimitKWH);
-
-        return (DeviceTargetsFactory.CreateFromLevel(EnergyPriceLevel.VeryExpensive, profile),
-            ConsumptionOverrideStatus.Applied,
-            accumulatedConsumptionCurrentHour);
+        return settings;
     }
 
     private async Task ConfigureHeatPump(DeviceTargets settings, CancellationToken cancellationToken)

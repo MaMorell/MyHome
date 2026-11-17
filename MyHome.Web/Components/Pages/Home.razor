@@ -8,8 +8,10 @@
 @using MyHome.Core.Models.EnergySupplier.Enums
 @using MyHome.Core.Models.Integrations.HeatPump
 @using MyHome.Web.Services
+@using MyHome.Core.Models.Audit
 @inject EnergyDashboardClient Dashboard
 @inject DeviceSettingsClient DeviceSettings
+@inject AuditEventsClient AuditEvents
 @inject ILogger<Home> Logger
 
 <PageTitle>Energy dashboard | MyHome</PageTitle>
@@ -26,6 +28,7 @@
             <a class="nav-link active" href="#overview"><span class="nav-symbol">◫</span> Overview</a>
             <a class="nav-link" href="#prices"><span class="nav-symbol">▥</span> Price explorer</a>
             <a class="nav-link" href="#device-settings"><span class="nav-symbol">⚙</span> Device settings</a>
+            <a class="nav-link" href="#audit-events"><span class="nav-symbol">⌛</span> Activity log</a>
         </nav>
 
         <div class="sidebar-bottom">
@@ -367,6 +370,44 @@
                 }
             </section>
 
+            <section class="panel audit-panel" id="audit-events" aria-labelledby="audit-events-title">
+                <div class="panel-header">
+                    <div>
+                        <div class="section-kicker">AUTOMATION HISTORY</div>
+                        <h2 id="audit-events-title">Activity log</h2>
+                        <p>Notable automation events, such as when hourly consumption went above the limit and max savings were applied.</p>
+                    </div>
+                </div>
+
+                @if (_auditEventsLoading && _auditEvents.Count == 0)
+                {
+                    <div class="loading-state" role="status">Loading activity log...</div>
+                }
+                else if (_auditEventsError is not null)
+                {
+                    <div class="alert" role="alert">
+                        <strong>Activity log could not be loaded.</strong>
+                        <span>@_auditEventsError</span>
+                    </div>
+                }
+                else if (_auditEvents.Count > 0)
+                {
+                    <ul class="audit-list">
+                        @foreach (var auditEvent in _auditEvents)
+                        {
+                            <li class="audit-item">
+                                <span class="audit-timestamp">@auditEvent.Timestamp.ToString("dd MMM HH:mm:ss")</span>
+                                <span class="audit-description">@auditEvent.Description</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="empty-state">No activity has been logged yet.</div>
+                }
+            </section>
+
             <footer class="footer">
                 <span>MYHOME <span class="footer-divider">/</span> ENERGY DASHBOARD</span>
                 <span>@(_lastUpdated is null ? "Waiting for data" : $"Updated {_lastUpdated:HH:mm:ss}") · Prices provided by Tibber</span>
@@ -425,9 +466,13 @@
     private bool _deviceSettingsLoading = true;
     private bool _deviceSettingsSaving;
 
+    private IReadOnlyList<AuditEvent> _auditEvents = [];
+    private string? _auditEventsError;
+    private bool _auditEventsLoading = true;
+
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(RefreshAsync(), LoadConsumptionAsync(), LoadDeviceSettingsAsync());
+        await Task.WhenAll(RefreshAsync(), LoadConsumptionAsync(), LoadDeviceSettingsAsync(), LoadAuditEventsAsync());
     }
 
     private async Task SelectDayAsync(bool showTomorrow)
@@ -442,7 +487,7 @@
     }
 
     private async Task RefreshAllAsync() =>
-        await Task.WhenAll(RefreshAsync(), LoadConsumptionAsync());
+        await Task.WhenAll(RefreshAsync(), LoadConsumptionAsync(), LoadAuditEventsAsync());
 
     private async Task LoadDeviceSettingsAsync()
     {
@@ -485,6 +530,24 @@
         }
 
         _deviceSettingsSaving = false;
+    }
+
+    private async Task LoadAuditEventsAsync()
+    {
+        _auditEventsLoading = true;
+        _auditEventsError = null;
+
+        try
+        {
+            _auditEvents = await AuditEvents.GetAsync();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException or InvalidOperationException)
+        {
+            Logger.LogError(ex, "Could not load activity log");
+            _auditEventsError = "Activity log is unavailable.";
+        }
+
+        _auditEventsLoading = false;
     }
 
     private async Task RefreshAsync()

@@ -25,6 +25,12 @@ builder.Services.AddHttpClient<DeviceSettingsClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(15);
 });
 
+builder.Services.AddHttpClient<AuditEventsClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler("/error");
