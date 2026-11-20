@@ -1,6 +1,6 @@
 services:
   compose-dashboard:
-    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.5"
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
     ports:
       - "18888"
     expose:
@@ -35,15 +35,12 @@ services:
       MYHOME_API_HTTP: "http://myhome-api:${MYHOME_API_PORT}"
       services__myhome-api__http__0: "http://myhome-api:${MYHOME_API_PORT}"
       MYHOME_API_HTTPS: "https://myhome-api:${MYHOME_API_PORT}"
+      TZ: "Europe/Stockholm"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "myhome-web"
     ports:
-      - "5001:${MYHOME_WEB_PORT}"
       - "${MYHOME_WEB_PORT}"
-    depends_on:
-      myhome-api:
-        condition: "service_started"
     networks:
       - "aspire"
 networks:

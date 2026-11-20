@@ -1,6 +1,5 @@
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
-using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Core.PriceCalculations;
 
 namespace MyHome.Core.Services;
@@ -14,7 +13,7 @@ public class EnergySupplierService(
 
     public async Task<IEnumerable<EnergyConsumptionEntry>> GetFutureEnergyPrices()
     {
-        var prices = await _energyPriceCalculator.CreateAsync(EnergyPriceRange.TodayAndTomorrow);
+        var prices = await _energyPriceCalculator.CreateAsync();
 
         return prices
             .Select(price => new EnergyConsumptionEntry { PriceDetails = price })

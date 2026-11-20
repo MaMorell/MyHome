@@ -1,11 +1,10 @@
 ﻿using MyHome.Core.Models.EnergySupplier;
-using MyHome.Core.Models.EnergySupplier.Enums;
 
 namespace MyHome.Core.Interfaces;
 
 public interface IEnergySupplierRepository
 {
-    Task<ICollection<EnergyPrice>> GetEnergyPrices(EnergyPriceRange range);
+    Task<ICollection<EnergyPrice>> GetEnergyPrices();
 
     /// <summary>
     /// Returns the measured energy consumption for every hour of <paramref name="day"/> that

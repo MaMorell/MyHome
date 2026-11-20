@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using MyHome.Core.Interfaces;
 using MyHome.Core.Models.EnergySupplier;
-using MyHome.Core.Models.EnergySupplier.Enums;
 using MyHome.Infrastructure.Extensions;
 using System.Collections.ObjectModel;
 using System.Text.Json;
@@ -11,25 +10,37 @@ namespace MyHome.Infrastructure.Integrations.EnergySupplier;
 
 public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient, IMemoryCache memoryCache) : IEnergySupplierRepository
 {
-    public async Task<ICollection<EnergyPrice>> GetEnergyPrices(EnergyPriceRange priceType)
+    public async Task<ICollection<EnergyPrice>> GetEnergyPrices()
     {
-        string cacheKey = $"EnergyPrices_{priceType}";
+        const string cacheKey = "EnergyPrices";
 
         var cachedPrices = await memoryCache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            entry.AbsoluteExpiration = DateTime.Today.AddDays(1);
-
             var homeId = await GetHomeId();
             var query = BuildEnergyPricesQuery(homeId);
             var queryResponse = await tibberApiClient.Query(query);
 
-            var result = GetPricesFromQueryResponse(queryResponse, priceType) ??
-                throw new TibberApiException(GetTibberApiErrorMessage(queryResponse.Data));
+            var prices = GetPricesFromQueryResponse(queryResponse).ToEnergyPrices();
 
-            return result.ToEnergyPrices() ?? ReadOnlyCollection<EnergyPrice>.Empty;
+            entry.AbsoluteExpiration = GetEnergyPricesCacheExpirationTime(queryResponse);
+
+            return prices;
         });
 
         return cachedPrices ?? ReadOnlyCollection<EnergyPrice>.Empty;
+    }
+
+    private static DateTime GetEnergyPricesCacheExpirationTime(TibberApiQueryResponse queryResponse)
+    {
+        var now = DateTime.Now;
+
+        var pricePublicationTime = now.Date.AddHours(13);
+        
+        var hasTomorrowPrices = queryResponse.Data.Viewer.Home?.CurrentSubscription?.PriceInfo?.Tomorrow?.Any() == true;
+
+        return hasTomorrowPrices
+            ? pricePublicationTime.AddDays(1)
+            : now < pricePublicationTime ? pricePublicationTime : now.AddMinutes(5);
     }
 
     public async Task<ICollection<EnergyConsumptionHour>> GetEnergyConsumption(DateOnly day)
@@ -122,22 +133,17 @@ public class TibberEnergySupplierRepository(TibberApiClient tibberApiClient, IMe
         return customQueryBuilder.Build();
     }
 
-    private static ReadOnlyCollection<Price>? GetPricesFromQueryResponse(TibberApiQueryResponse result, EnergyPriceRange priceType)
+    private static ReadOnlyCollection<Price> GetPricesFromQueryResponse(TibberApiQueryResponse result)
     {
         var pricesToday = result.Data.Viewer.Home?.CurrentSubscription?.PriceInfo?.Today;
         var pricesTomorrow = result.Data.Viewer.Home?.CurrentSubscription?.PriceInfo?.Tomorrow;
 
-        var prices = priceType switch
+        if (pricesToday?.Any() != true)
         {
-            EnergyPriceRange.Today => pricesToday?.ToList(),
-            EnergyPriceRange.Tomorrow => pricesTomorrow?.ToList(),
-            EnergyPriceRange.TodayAndTomorrow => CombinePrices(pricesToday, pricesTomorrow),
-            _ => throw new ArgumentOutOfRangeException(nameof(priceType), priceType, null)
-        };
+            throw new TibberApiException(GetTibberApiErrorMessage(result.Data));
+        }
 
-        return prices != null
-            ? new ReadOnlyCollection<Price>(prices)
-            : null;
+        return new ReadOnlyCollection<Price>(CombinePrices(pricesToday, pricesTomorrow));
     }
 
     private static List<Price> CombinePrices(params IEnumerable<IEnumerable<Price>?> prices)

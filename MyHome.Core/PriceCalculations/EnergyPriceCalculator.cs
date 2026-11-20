@@ -40,11 +40,11 @@ public class PriceLevelGenerator
         throw new ArgumentException($"Price not found for {dateRounded:yyyy-MM-dd HH:mm}", nameof(date));
     }
 
-    public async Task<IEnumerable<EnergyPriceDetails>> CreateAsync(EnergyPriceRange priceRange)
+    public async Task<IEnumerable<EnergyPriceDetails>> CreateAsync()
     {
         var profile = await _priceThearsholdsRepository.GetByIdAsync(EntityIdConstants.PriceThearsholdsId);
 
-        var prices = await _energySupplierRepository.GetEnergyPrices(priceRange);
+        var prices = await _energySupplierRepository.GetEnergyPrices();
 
         var pricesOrderedByTime = prices.OrderBy(p => p.StartsAt).ToList();
 

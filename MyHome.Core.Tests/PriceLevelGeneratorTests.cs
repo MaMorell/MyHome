@@ -17,9 +17,6 @@ public class PriceLevelGeneratorTests
     private readonly Mock<IRepository<PriceThearsholdsProfile>> _priceThearsholdsRepository;
     private readonly PriceLevelGenerator _sut;
     private readonly IFixture _fixture = new Fixture();
-    private List<EnergyPrice> _pricesToday = [];
-    private List<EnergyPrice> _pricesTomorrow = [];
-
     public PriceLevelGeneratorTests()
     {
         _energySupplierRepository = new Mock<IEnergySupplierRepository>();
@@ -33,7 +30,7 @@ public class PriceLevelGeneratorTests
 
     private void SetupEnergyPriceMocks()
     {
-        _pricesToday = Enumerable.Range(0, 24)
+        var pricesToday = Enumerable.Range(0, 24)
             .Select(i => new EnergyPrice
             {
                 Level = _fixture.Create<EnergyPriceLevel>(),
@@ -41,7 +38,7 @@ public class PriceLevelGeneratorTests
                 StartsAt = GetDateTimeNow(i),
             })
             .ToList();
-        _pricesTomorrow = Enumerable.Range(0, 24)
+        var pricesTomorrow = Enumerable.Range(0, 24)
             .Select(i => new EnergyPrice
             {
                 Level = _fixture.Create<EnergyPriceLevel>(),
@@ -49,72 +46,47 @@ public class PriceLevelGeneratorTests
                 StartsAt = GetDateTimeNow(24 + i),
             })
             .ToList();
-        var pricesTodayAndTomorrow = _pricesToday
-            .Concat(_pricesTomorrow)
+        var pricesTodayAndTomorrow = pricesToday
+            .Concat(pricesTomorrow)
             .ToList();
 
         _energySupplierRepository
-            .Setup(r => r.GetEnergyPrices(EnergyPriceRange.Today))
-            .ReturnsAsync(_pricesToday);
-        _energySupplierRepository
-            .Setup(r => r.GetEnergyPrices(EnergyPriceRange.Tomorrow))
-            .ReturnsAsync(_pricesTomorrow);
-        _energySupplierRepository
-            .Setup(r => r.GetEnergyPrices(EnergyPriceRange.TodayAndTomorrow))
+            .Setup(r => r.GetEnergyPrices())
             .ReturnsAsync(pricesTodayAndTomorrow);
     }
 
     [Fact]
     public async Task CreateAsync_ShoulFetchPriceThearsholdsProfile()
     {
-        await _sut.CreateAsync(EnergyPriceRange.Tomorrow);
+        await _sut.CreateAsync();
 
         _priceThearsholdsRepository.Verify(r => r.GetByIdAsync(EntityIdConstants.PriceThearsholdsId));
     }
 
-    [Theory]
-    [InlineData(EnergyPriceRange.Today)]
-    [InlineData(EnergyPriceRange.Tomorrow)]
-    [InlineData(EnergyPriceRange.TodayAndTomorrow)]
-    public async Task CreateAsync_ShoulCallGetEnergyPrices(EnergyPriceRange priceRange)
+    [Fact]
+    public async Task CreateAsync_ShoulCallGetEnergyPrices()
     {
         _energySupplierRepository
-            .Setup(r => r.GetEnergyPrices(priceRange))
+            .Setup(r => r.GetEnergyPrices())
             .ReturnsAsync([]);
 
-        await _sut.CreateAsync(priceRange);
+        await _sut.CreateAsync();
 
-        _energySupplierRepository.Verify(r => r.GetEnergyPrices(priceRange));
+        _energySupplierRepository.Verify(r => r.GetEnergyPrices());
     }
 
-    [Theory]
-    [InlineData(EnergyPriceRange.Today, 24)]
-    [InlineData(EnergyPriceRange.Tomorrow, 24)]
-    [InlineData(EnergyPriceRange.TodayAndTomorrow, 48)]
-    public async Task CreateAsync_ShouldReturnCorrectNumberOfEntities(EnergyPriceRange priceRange, int expectedEntitiesCount)
+    [Fact]
+    public async Task CreateAsync_ShouldReturnPricesForTodayAndTomorrow()
     {
-        var result = await _sut.CreateAsync(priceRange);
+        var result = await _sut.CreateAsync();
 
-        result.Count().ShouldBe(expectedEntitiesCount);
-    }
+        result.Count().ShouldBe(48);
 
-    [Theory]
-    [InlineData(EnergyPriceRange.Today, 0)]
-    [InlineData(EnergyPriceRange.Tomorrow, 24)]
-    [InlineData(EnergyPriceRange.TodayAndTomorrow, 0)]
-    public async Task CreateAsync_ShouldSetCorrectStartsAtDates(EnergyPriceRange priceRange, int hoursFromToday)
-    {
-        var expectedStartsAt = GetDateTimeNow(addHours: hoursFromToday);
-
-        var result = await _sut.CreateAsync(priceRange);
-
-        var i = 0;
-        foreach (var item in result.OrderBy(p => p.StartsAt))
+        var expectedStartsAt = GetDateTimeNow();
+        foreach (var (item, i) in result.OrderBy(p => p.StartsAt).Select((item, i) => (item, i)))
         {
             item.StartsAt.ShouldBe(expectedStartsAt.AddHours(i));
             item.PriceTotal.ShouldBeGreaterThanOrEqualTo(0);
-
-            i++;
         }
     }
 
@@ -141,11 +113,11 @@ public class PriceLevelGeneratorTests
             })
             .ToList();
         _energySupplierRepository
-            .Setup(r => r.GetEnergyPrices(It.IsAny<EnergyPriceRange>()))
+            .Setup(r => r.GetEnergyPrices())
             .ReturnsAsync(prices);
 
         // Act
-        var result = await _sut.CreateAsync(EnergyPriceRange.Today);
+        var result = await _sut.CreateAsync();
 
         // Assert
         result.Count().ShouldBe(prices.Count);
@@ -178,11 +150,11 @@ public class PriceLevelGeneratorTests
             })
             .ToList();
         _energySupplierRepository
-            .Setup(r => r.GetEnergyPrices(It.IsAny<EnergyPriceRange>()))
+            .Setup(r => r.GetEnergyPrices())
             .ReturnsAsync(prices);
 
         // Act
-        var result = await _sut.CreateAsync(EnergyPriceRange.Today);
+        var result = await _sut.CreateAsync();
 
         // Assert
         result.Count().ShouldBe(prices.Count);
@@ -215,11 +187,11 @@ public class PriceLevelGeneratorTests
             })
             .ToList();
         _energySupplierRepository
-            .Setup(r => r.GetEnergyPrices(It.IsAny<EnergyPriceRange>()))
+            .Setup(r => r.GetEnergyPrices())
             .ReturnsAsync(prices);
 
         // Act
-        var result = await _sut.CreateAsync(EnergyPriceRange.Today);
+        var result = await _sut.CreateAsync();
 
         // Assert
         result.Count().ShouldBe(prices.Count);

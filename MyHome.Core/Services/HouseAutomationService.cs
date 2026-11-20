@@ -73,7 +73,7 @@ public class HouseAutomationService(
 
     private async Task<(IReadOnlyList<EnergyPriceDetails> Prices, DeviceSettingsProfile Profile)> GetPlanningInputsAsync()
     {
-        var prices = (await _energyPriceCalculator.CreateAsync(EnergyPriceRange.TodayAndTomorrow))
+        var prices = (await _energyPriceCalculator.CreateAsync())
             .OrderBy(price => price.StartsAt)
             .ToList();
         var profile = await _deviceSettingsRepository.GetByIdAsync(EntityIdConstants.DeviceSettingsId)
