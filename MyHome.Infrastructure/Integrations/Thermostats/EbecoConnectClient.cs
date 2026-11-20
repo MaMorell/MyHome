@@ -1,7 +1,5 @@
 ﻿using MyHome.Core.Interfaces;
-using MyHome.Core.Models.Audit;
 using MyHome.Infrastructure.Integrations.Thermostats.Models;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
@@ -10,13 +8,11 @@ namespace MyHome.Infrastructure.Integrations.Thermostats;
 public class EbecoConnectClient : IThermostatClient
 {
     private readonly HttpClient _httpClient;
-    private readonly IRepository<AuditEvent> _auditRepository;
     private const int ThermostatId = 29438;
 
-    public EbecoConnectClient(HttpClient httpClient, IRepository<AuditEvent> auditRepository)
+    public EbecoConnectClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _auditRepository = auditRepository;
     }
 
     public async Task<double> GetSetTemperatureAsync()
@@ -33,13 +29,6 @@ public class EbecoConnectClient : IThermostatClient
             return;
         }
 
-        var auditEvent = new AuditEvent
-        {
-            Description = $"{userDevice.DisplayName} - Temperatur",
-            NewValue = temperature,
-            OldValue = userDevice.TemperatureSet
-        };
-
         var requestBody = new UpdateDeviceInput()
         {
             Id = ThermostatId,
@@ -51,8 +40,6 @@ public class EbecoConnectClient : IThermostatClient
         var content = new StringContent(requestBodyJson, Encoding.UTF8, "application/json");
         var response = await _httpClient.PutAsync(url, content);
         response.EnsureSuccessStatusCode();
-
-        await _auditRepository.UpsertAsync(auditEvent);
     }
 
     private async Task<UserDevice> GetUserDeviceAsync()
