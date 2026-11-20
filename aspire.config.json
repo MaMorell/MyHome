@@ -1,5 +1,8 @@
 {
   "appHost": {
     "path": "MyHome.AppHost/MyHome.AppHost.csproj"
+  },
+  "sdk": {
+    "version": "17.0.0"
   }
 }

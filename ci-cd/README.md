@@ -4,7 +4,7 @@ The **Build Raspberry Pi deployment** GitHub Actions workflow runs on every push
 to `main`. It can also be started manually from the repository's **Actions** tab
 using **Run workflow** (once the workflow is on the default branch).
 
-The workflow uses a GitHub-hosted Linux runner with .NET 10 and Aspire CLI 13.5.4.
+The workflow uses a GitHub-hosted Linux runner with .NET 11 and Aspire CLI 13.5.4.
 It builds Release containers for Linux ARM64, matching a Raspberry Pi running a
 64-bit OS. It does not require a self-hosted runner or application secrets.
 
