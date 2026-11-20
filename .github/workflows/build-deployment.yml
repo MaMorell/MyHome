@@ -26,7 +26,7 @@ jobs:
           dotnet-version: 11.0.x
 
       - name: Install Aspire CLI
-        run: dotnet tool install --global Aspire.Cli --version 13.5.4
+        run: dotnet tool install --global Aspire.Cli --version 17.0.0
 
       - name: Generate Docker Compose file
         shell: bash
